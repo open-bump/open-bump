@@ -35,7 +35,7 @@ const GuildSchema = new mongoose.Schema({
     required: false
   },
   lastBump: {
-    user: {
+    Guild: {
       type: String,
       required: false
     },
@@ -54,3 +54,9 @@ const GuildSchema = new mongoose.Schema({
     required: false
   }
 });
+
+GuildSchema.plugin(findOrCreate);
+
+const Guild = mongoose.model('Guild', GuildSchema);
+
+module.exports = Guild;
