@@ -18,6 +18,16 @@ const GuildSchema = new mongoose.Schema({
     color: {
       type: Number,
       required: false
+    },
+    invite: {
+      type: String,
+      required: false
+    }
+  },
+  settings: {
+    prefix: {
+      type: String,
+      required: false
     }
   },
   feed: {
