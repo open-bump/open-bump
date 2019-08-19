@@ -31,7 +31,9 @@ client.on('message', msg => {
   const guild = msg.guild;
 
   Guild.findOrCreate({ id: guild.id }).then(guildDatabase => {
-    const prefix = guildDatabase.settings.prefix ? guildDatabase.settings.prefix : config.settings.prefix;
+    const prefix = guildDatabase.settings && guildDatabase.settings.prefix ? guildDatabase.settings.prefix : config.settings.prefix;
+
+    const cont = msg.content;
 
     const invoke = cont.split(' ')[0].substr(prefix.length),
           args   = cont.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g).slice(1);
