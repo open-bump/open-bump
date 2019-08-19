@@ -9,7 +9,7 @@ const config = require('./config');
 // Database
 mongoose.connect(config.database.mongoURI, { useNewUrlParser: true })
     .then(() => {
-      console.log('Database successfully connected!')
+      console.log('Database successfully connected!');
       client.login(config.discord.token);
     })
     .catch(err => { console.log('Error while connecting to database!'); console.log(err) });
