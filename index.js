@@ -11,15 +11,16 @@ const config = require('./config');
 // Discord
 client.once('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
-});
 
-// Webserver (will be moved to ready event later)
-apiserver.run();
+  // Webserver (got moved to ready event)
+  apiserver.run();
+});
 
 // Commands
 const commands = new Discord.Collection();
 commands.set('help', require('./commands/help'));
 commands.set('setinvite', require('./commands/setinvite'));
+commands.set('setprefix', require('./commands/setprefix'));
 
 client.on('message', msg => {
   // Splitting args with " " but not in quotes
@@ -30,27 +31,31 @@ client.on('message', msg => {
 
   const guild = msg.guild;
 
-  Guild.findOrCreate({ id: guild.id }).then(guildDatabase => {
+  Guild.findOrCreate({ id: guild.id }).then(async guildDatabase => {
+    guildDatabase = await Guild.findById(guildDatabase.doc._id);
+
     const prefix = guildDatabase.settings && guildDatabase.settings.prefix ? guildDatabase.settings.prefix : config.settings.prefix;
 
     const cont = msg.content;
 
-    const invoke = cont.split(' ')[0].substr(prefix.length),
-          args   = cont.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g).slice(1);
+    if(cont.startsWith(prefix)) {
+      const invoke = cont.split(' ')[0].substr(prefix.length),
+            args   = cont.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g).slice(1);
 
-    if(commands.has(invoke)) {
-      const command = commands.get(invoke);
-      try {
-        command.run(msg, prefix);
-      } catch (err) {
-        const options = {
-          embed: {
-            color: 0xff0000,
-            title: 'An error occured!',
-            description: `\`\`\`js\n${err}\`\`\``
-          }
-        };
-        msg.channel.send('', options);
+      if(commands.has(invoke)) {
+        const command = commands.get(invoke);
+        try {
+          await command.run(msg, invoke, args, prefix, guildDatabase);
+        } catch (err) {
+          const options = {
+            embed: {
+              color: 0xff0000,
+              title: 'An error occured!',
+              description: `\`\`\`js\n${err}\`\`\``
+            }
+          };
+          msg.channel.send('', options);
+        }
       }
     }
   }).catch(err => console.log(`Catched: ${err}`));

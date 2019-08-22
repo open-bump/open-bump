@@ -1,6 +1,6 @@
 const main = require('./../index');
 
-module.exports.run = (msg, prefix) => {
+module.exports.run = (msg, invoke, args, prefix, guildDatabase) => {
   let showcase = [];
   showcase.push(main.commands.get('help'));
   let fields = [];
