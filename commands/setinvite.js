@@ -6,30 +6,26 @@ const Guild = require('./../models/Guild');
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel;
   if(channel.permissionsFor(msg.guild.me).has('CREATE_INSTANT_INVITE')) {
-    try{
-      let invite = await channel.createInvite({
-        maxAge: 0
-      }, `${msg.author.tag} (${msg.author.id$}) changed the invite's channel`);
-      if(invite) {
-        if(!guildDatabase.bump) guildDatabase.bump = {};
-        guildDatabase.bump.invite = invite.code;
-        await guildDatabase.save();
+    let invite = await channel.createInvite({
+      maxAge: 0
+    }, `${msg.author.tag} (${msg.author.id$}) changed the invite's channel`);
+    if(invite) {
+      if(!guildDatabase.bump) guildDatabase.bump = {};
+      guildDatabase.bump.invite = invite.code;
+      await guildDatabase.save();
 
-        let url = `https://discord.gg/${invite.code}`;
-        let options = {
-          embed: {
-            color: colors.green,
-            title: 'Invite has been changed!',
-            description: `**New Invite:** [${invite.code}](${url})\n` +
-                `**Channel:** ${msg.channel}`
-          }
-        };
-        msg.channel.send('', options);
-      } else {
-        errors.errorInternal(msg, 'Fetched invite is false');
-      }
-    } catch (err) {
-      errors.errorException(msg, err);
+      let url = `https://discord.gg/${invite.code}`;
+      let options = {
+        embed: {
+          color: colors.green,
+          title: 'Invite has been changed!',
+          description: `**New Invite:** [${invite.code}](${url})\n` +
+              `**Channel:** ${msg.channel}`
+        }
+      };
+      msg.channel.send('', options);
+    } else {
+      errors.errorInternal(msg, 'Fetched invite is false');
     }
   } else {
     errors.errorPermissions(msg, ['CREATE_INSTANT_INVITE']);
