@@ -5,6 +5,12 @@ const Discord = require('discord.js'),
       mongoose = require('mongoose'),
       apiserver = require('./api');
 
+// Prototype Changes (not recommended, but the most effective)
+String.prototype.replaceAll = (search, replacement) => {
+    var target = this;
+    return target.replace(new RegExp(search, 'g'), replacement);
+};
+
 // Config
 const config = require('./config');
 
@@ -18,29 +24,68 @@ client.once('ready', () => {
 
 // Commands
 const commands = new Discord.Collection();
-commands.set('help', require('./commands/help'));
-commands.set('setinvite', require('./commands/setinvite'));
-commands.set('setprefix', require('./commands/setprefix'));
+registerCommand('./commands/help');
+registerCommand('./commands/invite');
+registerCommand('./commands/prefix');
+registerCommand('./commands/setbanner');
+registerCommand('./commands/setinvite');
+registerCommand('./commands/setprefix');
 
-client.on('message', msg => {
-  // Splitting args with " " but not in quotes
-  // -> https://stackoverflow.com/questions/16261635/javascript-split-string-by-space-but-ignore-space-in-quotes-notice-not-to-spli#16261693
-  const author = msg.author;
+function registerCommand(path, name, alias) {
+  let command = require(path);
+  if(!name) name = command.name;
+  if(!name) throw 'Trying to register a command that is not a command!';
+  commands.set(name, command);
+  if(!alias && command.aliases) {
+    command.aliases.forEach(alias => {
+      registerCommand(path, alias, true);
+    });
+  }
+}
 
-  if(author.bot || author.id === client.user.id) return; // Returned because of own message
+client.on('message', async msg => {
+  try {
+    // Splitting args with " " but not in quotes
+    // -> https://stackoverflow.com/questions/16261635/javascript-split-string-by-space-but-ignore-space-in-quotes-notice-not-to-spli#16261693
+    const author = msg.author;
 
-  const guild = msg.guild;
+    if(author.bot || author.id === client.user.id) return; // Returned because of own message
 
-  Guild.findOrCreate({ id: guild.id }).then(async guildDatabase => {
-    guildDatabase = await Guild.findById(guildDatabase.doc._id);
+    const guild = msg.guild;
 
-    const prefix = guildDatabase.settings && guildDatabase.settings.prefix ? guildDatabase.settings.prefix : config.settings.prefix;
+    /* Fetch or Create important Guild Information, e.g. Prefix and Features */
+    const guildDatabase = (await Guild.findOrCreate({ id: guild.id })).doc;
 
+    // Preparing Prefixes
+    let var1 = guildDatabase.settings && guildDatabase.settings.prefix ? guildDatabase.settings.prefix.trim() + ' ' : null;
+    const var2 = config.settings.prefix.trim() + ' ';
+    const var3 = `${client.user}`.trim() + ' ';
     const cont = msg.content;
 
-    if(cont.startsWith(prefix)) {
-      const invoke = cont.split(' ')[0].substr(prefix.length),
-            args   = cont.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g).slice(1);
+    /* Remove Custom Prefix if Server hasn't the requried Feature */
+    if(!guildDatabase.features.includes('PREFIX')) var1 = config.settings.prefix.trim() + ' ';
+
+    /* Check which Prefix was used */
+    let used = null;
+    if(var1 != null && cont.startsWith(var1)) {
+      used = var1;
+    } else if (var2 != null && cont.startsWith(var2)) {
+      used = var2;
+    } else if (var3 != null && cont.startsWith(var3)) {
+      used = var3;
+    } else if(var1 != null && cont.startsWith(var1.trim())) {
+      used = var1.trim();
+    } else if(var2 != null && cont.startsWith(var2.trim())) {
+      used = var2.trim();
+    } else if(var3 != null && cont.startsWith(var3.trim())) {
+      used = var3.trim();
+    }
+
+    const prefix = (var1 ? var1 : (var2 ? var2 : var3)).trim();
+
+    if(used) {
+      const invoke = cont.substr(used.length).split(' ')[0],
+            args   = cont.substr(used.length + invoke.length + 1).match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g);
 
       if(commands.has(invoke)) {
         const command = commands.get(invoke);
@@ -58,7 +103,10 @@ client.on('message', msg => {
         }
       }
     }
-  }).catch(err => console.log(`Catched: ${err}`));
+  } catch (err) {
+    console.log('Catched Error!');
+    console.log(err);
+  }
 });
 
 // Database

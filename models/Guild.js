@@ -17,7 +17,8 @@ const GuildSchema = new mongoose.Schema({
     },
     color: {
       type: Number,
-      required: false
+      required: true,
+      default: -1
     },
     invite: {
       type: String,

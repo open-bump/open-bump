@@ -5,8 +5,8 @@ const Guild = require('./../models/Guild');
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel;
-  if(args.length >= 1) {
-    try{
+  if(guildDatabase.features.includes('PREFIX')) {
+    if(args.length >= 1) {
       let newPrefix = args.join(" ");
       if(!guildDatabase.settings) guildDatabase.settings = {};
       guildDatabase.settings.prefix = newPrefix;
@@ -20,11 +20,12 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
           description: `**New Prefix:** ${newPrefix}`
         }
       };
-    } catch (err) {
-      errors.errorException(msg, err);
+      msg.channel.send('', options);
+    } else {
+      errors.errorSyntax(msg, prefix, module.exports.syntax);
     }
   } else {
-    errors.errorSyntax(msg, prefix, module.exports.syntax);
+    errors.errorMissingFeature(msg, 'PREFIX');
   }
 };
 

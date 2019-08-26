@@ -6,7 +6,7 @@ module.exports.run = (msg, invoke, args, prefix, guildDatabase) => {
   let fields = [];
   showcase.forEach(cmd => {
     fields.push({
-      name: prefix + cmd.syntax ? cmd.syntax : cmd.name,
+      name: prefix + (cmd.syntax ? cmd.syntax : cmd.name),
       value: cmd.description ? cmd.description : 'No Description set!',
       inline: false
     });
