@@ -6,9 +6,8 @@ const Discord = require('discord.js'),
       apiserver = require('./api');
 
 // Prototype Changes (not recommended, but the most effective)
-String.prototype.replaceAll = (search, replacement) => {
-    var target = this;
-    return target.replace(new RegExp(search, 'g'), replacement);
+String.prototype.replaceAll = (str, search, replacement) => {
+  return str && str.replace ? str.replace(new RegExp(search, 'g'), replacement) : str;
 };
 
 // Config
@@ -24,10 +23,12 @@ client.once('ready', () => {
 
 // Commands
 const commands = new Discord.Collection();
+registerCommand('./commands/eval');
 registerCommand('./commands/help');
 registerCommand('./commands/invite');
 registerCommand('./commands/prefix');
 registerCommand('./commands/setbanner');
+registerCommand('./commands/setchannel');
 registerCommand('./commands/setinvite');
 registerCommand('./commands/setprefix');
 
@@ -62,7 +63,7 @@ client.on('message', async msg => {
     const var3 = `${client.user}`.trim() + ' ';
     const cont = msg.content;
 
-    /* Remove Custom Prefix if Server hasn't the requried Feature */
+    /* Remove Custom Prefix if Server hasn't the required Feature */
     if(!guildDatabase.features.includes('PREFIX')) var1 = config.settings.prefix.trim() + ' ';
 
     /* Check which Prefix was used */
@@ -84,8 +85,10 @@ client.on('message', async msg => {
     const prefix = (var1 ? var1 : (var2 ? var2 : var3)).trim();
 
     if(used) {
-      const invoke = cont.substr(used.length).split(' ')[0],
-            args   = cont.substr(used.length + invoke.length + 1).match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g);
+      let invoke = cont.substr(used.length).split(' ')[0],
+          args   = cont.substr(used.length + invoke.length + 1).match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g);
+
+      if(!args) args = [];
 
       if(commands.has(invoke)) {
         const command = commands.get(invoke);
@@ -110,7 +113,7 @@ client.on('message', async msg => {
 });
 
 // Database
-mongoose.connect(config.database.mongoURI, { useNewUrlParser: true })
+mongoose.connect(''.replaceAll(config.database.mongoURI, '%database%', config.database.database), { useNewUrlParser: true })
     .then(() => {
       console.log('Database successfully connected!');
       client.login(config.discord.token);

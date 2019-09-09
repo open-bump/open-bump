@@ -32,4 +32,4 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 module.exports.name = 'setprefix';
 module.exports.aliases = ['set-prefix'];
 module.exports.description = 'Use this command to set your server\'s prefix.';
-module.exports.syntax = 'setprefix <prefix...>';
+module.exports.syntax = 'setprefix <prefix...|reset>';
