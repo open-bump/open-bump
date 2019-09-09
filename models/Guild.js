@@ -45,6 +45,11 @@ const GuildSchema = new mongoose.Schema({
       required: false
     }
   },
+  bumps: {
+    type: Number,
+    required: true,
+    default: 0
+  },
   features: {
     type: Array,
     required: true,

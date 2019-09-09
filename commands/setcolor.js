@@ -11,7 +11,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 
       let colorInt;
       try {
-        if(colorInt.toLowerCase() === 'default' || colorInt.toLowerCase() === 'reset') colorInt = -1;
+        if(colorInt.toLowerCase() === 'reset' || colorInt.toLowerCase() === 'default') colorInt = -1;
         else {
           let colorCode;
           if(newColor.length === 6) {
@@ -67,4 +67,4 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 module.exports.name = 'setcolor';
 module.exports.aliases = ['set-color'];
 module.exports.description = 'Use this command to set your server\'s color.';
-module.exports.syntax = 'setcolor <color|default>';
+module.exports.syntax = 'setcolor <color|reset>';

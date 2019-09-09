@@ -29,4 +29,4 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 module.exports.name = 'setdescription';
 module.exports.aliases = ['set-description', 'setdesc', 'set-desc'];
 module.exports.description = 'Use this command to set your server\'s description.';
-module.exports.syntax = 'setdescription <prefix...>';
+module.exports.syntax = 'setdescription <description...|reset>';
