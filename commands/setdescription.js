@@ -17,7 +17,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         color: colors.green,
         title: 'Description has been changed!',
         description: `**New Description:**\n` +
-            newPrefix
+            newDesc
       }
     };
     msg.channel.send('', options);
