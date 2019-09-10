@@ -6,8 +6,8 @@ const Guild = require('./../models/Guild');
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel;
-  if(args.length >= 1) {
-    if(args[0] !== 'reset' && args[0] !== 'default') {
+  if(args.length === 1) {
+    if(!(args[0] === 'reset' || args[0] === 'default')) {
       let newChannel = args[0];
 
       let channel = links.channel(newChannel, msg.guild);
@@ -20,8 +20,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         let options = {
           embed: {
             color: colors.green,
-            title: 'Channel has been changed!',
-            description: `**New Channel:** ${channel}`
+            title: '**Channel has been changed**',
+            description: `__**New Channel:**__ ${channel}`
           }
         };
         msg.channel.send('', options);
@@ -42,8 +42,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       let options = {
         embed: {
           color: colors.green,
-          title: 'Channel has been changed!',
-          description: `**New Channel:** No Channel`
+          title: '**Channel has been changed**',
+          description: `__**New Channel:**__ No Channel`
         }
       };
       msg.channel.send('', options);

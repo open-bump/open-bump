@@ -7,7 +7,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel;
   if(guildDatabase.features.includes('COLOR')) {
     if(args.length === 1) {
-      if(args[0] !== 'reset' && args[0] !== 'default') {
+      if(!(args[0] === 'reset' || args[0] === 'default')) {
         let newColor = args[0];
         let colorCode;
         let colorInt
@@ -40,7 +40,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
           return errors.error(msg, 'Please enter a valid hex code or `reset` to reset the color!');
         }
 
-        if(!guildDatabase.bump) guildDatabase.bump = {};
         guildDatabase.bump.color = colorInt;
 
         await guildDatabase.save();
@@ -48,8 +47,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         let options = {
           embed: {
             color: colors.green,
-            title: 'Color has been changed!',
-            description: `**New Color:** #${displaySix(colorInt.toString(16))}`,
+            title: '**Color has been changed**',
+            description: `__**New Color:**__ #${displaySix(colorInt.toString(16))}`,
             thumbnail: {
               url: `https://via.placeholder.com/300/${displaySix(colorInt.toString(16))}/${displaySix(colorInt.toString(16))}`
             }
@@ -57,7 +56,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         };
         msg.channel.send('', options);
       } else {
-        if(!guildDatabase.bump) guildDatabase.bump = {};
         guildDatabase.bump.color = -1;
 
         await guildDatabase.save();
@@ -65,8 +63,11 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         let options = {
           embed: {
             color: colors.green,
-            title: 'Color has been changed!',
-            description: `**New Color:** No Color`
+            title: '**Color has been changed**',
+            description: `__**New Color:**__ Default Color (#${displaySix(colors.openbump.toString(16))})`,
+            thumbnail: {
+              url: `https://via.placeholder.com/300/${displaySix(colors.openbump.toString(16))}/${displaySix(colors.openbump.toString(16))}`
+            }
           }
         };
         msg.channel.send('', options);

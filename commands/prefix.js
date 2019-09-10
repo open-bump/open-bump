@@ -8,8 +8,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let options = {
     embed: {
       color: colors.green,
-      title: 'Prefix',
-      description: `**Current Prefix:** ${prefix}`
+      title: '**Prefix**',
+      description: `__**Current Prefix:**__ ${prefix}`
     }
   };
   msg.channel.send('', options);

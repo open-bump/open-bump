@@ -3,6 +3,7 @@ module.exports = {
   lock_key: '🔐',
   lock_open: '🔓',
   zap: '⚡',
+  bell: '🔔',
   arrow_right: '➡',
   owner: '<:owner:547102770696814592>',
   region: '<:region:547102740799553615>',
@@ -16,7 +17,10 @@ module.exports = {
   streaming : '<:streaming:547114192646176793>',
   invisible : '<:invisible:546621324131565574>',
   loading : '<a:loading:547809249552760842>',
-  check : '<:check:546716856094949376>',
-  neutral : '<:neutral:546716846871543808>',
-  xmark : '<:xmark:546716838155911191>'
+  check : '<:check:621063206235930634>',
+  xmark : '<:xmark:621063205854380086>',
+  neutral : '<:neutral:621063802028294155>', // same as neutralGray
+  neutralGray : '<:neutral:621063802028294155>',
+  neutralYellow : '<:neutral:621063205854380057>',
+  important_notice: '<:importantnotice:621049166759460884>'
 }
