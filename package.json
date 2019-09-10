@@ -21,6 +21,8 @@
     "express": "^4.17.1",
     "mongoose": "^5.6.9",
     "mongoose-findorcreate": "^3.0.0",
+    "ms": "^2.1.2",
+    "node-fetch": "^2.6.0",
     "nodemon": "^1.19.1"
   }
 }

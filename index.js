@@ -10,6 +10,32 @@ String.prototype.replaceAll = (str, search, replacement) => {
   return str && str.replace ? str.replace(new RegExp(search, 'g'), replacement) : str;
 };
 
+Object.defineProperty(global, '__stack', {
+get: function() {
+        var orig = Error.prepareStackTrace;
+        Error.prepareStackTrace = function(_, stack) {
+            return stack;
+        };
+        var err = new Error;
+        Error.captureStackTrace(err, arguments.callee);
+        var stack = err.stack;
+        Error.prepareStackTrace = orig;
+        return stack;
+    }
+});
+
+Object.defineProperty(global, '__line', {
+get: function() {
+        return __stack[1].getLineNumber();
+    }
+});
+
+Object.defineProperty(global, '__function', {
+get: function() {
+        return __stack[1].getFunctionName();
+    }
+});
+
 // Config
 const config = require('./config');
 
@@ -29,13 +55,15 @@ registerCommand('./commands/invite');
 registerCommand('./commands/prefix');
 registerCommand('./commands/setbanner');
 registerCommand('./commands/setchannel');
+registerCommand('./commands/setcolor');
+registerCommand('./commands/setdescription');
 registerCommand('./commands/setinvite');
 registerCommand('./commands/setprefix');
 
 function registerCommand(path, name, alias) {
   let command = require(path);
   if(!name) name = command.name;
-  if(!name) throw 'Trying to register a command that is not a command!';
+  if(!name) throw new Error('Trying to register a command that is not a command!');
   commands.set(name, command);
   if(!alias && command.aliases) {
     command.aliases.forEach(alias => {
@@ -90,10 +118,14 @@ client.on('message', async msg => {
 
       if(!args) args = [];
 
+      let argtions = [];
+
+      while(args.length >= 1 && args[args.length - 1].startsWith('-')) argtions.unshift(args.pop());
+
       if(commands.has(invoke)) {
         const command = commands.get(invoke);
         try {
-          await command.run(msg, invoke, args, prefix, guildDatabase);
+          await command.run(msg, invoke, args, prefix, guildDatabase, argtions);
         } catch (err) {
           const options = {
             embed: {

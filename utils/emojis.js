@@ -3,5 +3,20 @@ module.exports = {
   lock_key: '🔐',
   lock_open: '🔓',
   zap: '⚡',
-  arrow_right: '➡'
+  arrow_right: '➡',
+  owner: '<:owner:547102770696814592>',
+  region: '<:region:547102740799553615>',
+  created : '<:created:547102739503644672>',
+  slink : '<:slink:547112000778403844>',
+  members : '<:members:547112000765821039>',
+  info : '<:info:547112000765820949>',
+  online : '<:online:546621462715301888>',
+  dnd : '<:dnd:546621462434414593>',
+  idle : '<:idle:546621462677684225>',
+  streaming : '<:streaming:547114192646176793>',
+  invisible : '<:invisible:546621324131565574>',
+  loading : '<a:loading:547809249552760842>',
+  check : '<:check:546716856094949376>',
+  neutral : '<:neutral:546716846871543808>',
+  xmark : '<:xmark:546716838155911191>'
 }

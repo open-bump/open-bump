@@ -6,14 +6,13 @@ const Guild = require('./../models/Guild');
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel;
   if(guildDatabase.features.includes('COLOR')) {
-    if(args.length == 1) {
-      let newColor = args[0];
+    if(args.length === 1) {
+      if(args[0] !== 'reset' && args[0] !== 'default') {
+        let newColor = args[0];
+        let colorCode;
+        let colorInt
 
-      let colorInt;
-      try {
-        if(colorInt.toLowerCase() === 'reset' || colorInt.toLowerCase() === 'default') colorInt = -1;
-        else {
-          let colorCode;
+        try {
           if(newColor.length === 6) {
             colorCode = newColor;
           } else if(newColor.length === 7 && newColor.startsWith('#')) {
@@ -30,32 +29,48 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
           } else if(newColor.length === 8 && newColor.startsWith('0x')) {
             colorCode = newColor.substr(2);
           } else {
-            throw 'Invalid color code; please use a valid Hex color code!'
+            throw new Error('Invalid color code; please use a valid Hex color code!');
           }
-          if(!colorcode || colorcode.length !== 6) throw 'Unknown error occured: Calculated end color code is not 6 characters long!';
+
+          if(!colorCode || colorCode.length !== 6) throw new Error('Unknown error occured: Calculated end color code is null or not 6 characters long!');
+
           colorInt = parseInt(colorCode, 16);
+          if(isNaN(colorInt)) throw new Error('ColorInt is NaN!');
+        } catch (err) {
+          return errors.error(msg, 'Please enter a valid hex code or `reset` to reset the color!');
         }
-      } catch (err) => {
-        colorInt = null;
-        return errors.error(msg, 'Please enter a valid hex code or `default` to reset the color!');
-      }
 
-      if(!guildDatabase.bump) guildDatabase.bump = {};
-      guildDatabase.bump.color = colorInt;
+        if(!guildDatabase.bump) guildDatabase.bump = {};
+        guildDatabase.bump.color = colorInt;
 
-      await guildDatabase.save();
+        await guildDatabase.save();
 
-      let options = {
-        embed: {
-          color: colors.green,
-          title: 'Color has been changed!',
-          description: `**New Color:** #${colorInt.toString(16)}`,
-          image: {
-            url: `https://via.placeholder.com/300/${colorInt.toString(16)}/${colorInt.toString(16)}`
+        let options = {
+          embed: {
+            color: colors.green,
+            title: 'Color has been changed!',
+            description: `**New Color:** #${displaySix(colorInt.toString(16))}`,
+            thumbnail: {
+              url: `https://via.placeholder.com/300/${displaySix(colorInt.toString(16))}/${displaySix(colorInt.toString(16))}`
+            }
           }
-        }
-      };
-      msg.channel.send('', options);
+        };
+        msg.channel.send('', options);
+      } else {
+        if(!guildDatabase.bump) guildDatabase.bump = {};
+        guildDatabase.bump.color = -1;
+
+        await guildDatabase.save();
+
+        let options = {
+          embed: {
+            color: colors.green,
+            title: 'Color has been changed!',
+            description: `**New Color:** No Color`
+          }
+        };
+        msg.channel.send('', options);
+      }
     } else {
       errors.errorSyntax(msg, prefix, module.exports.syntax);
     }
@@ -63,6 +78,12 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
     errors.errorMissingFeature(msg, 'COLOR');
   }
 };
+
+function displaySix(raw) {
+  if(!raw.length) return;
+  while(raw.length < 6) raw = '0' + raw;
+  return raw;
+}
 
 module.exports.name = 'setcolor';
 module.exports.aliases = ['set-color'];

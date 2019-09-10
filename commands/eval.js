@@ -1,72 +1,104 @@
 const main = require('./../index');
 const colors = require('./../utils/colors');
 const errors = require('./../utils/errors');
+const lyne = require('./../utils/lyne');
 
-module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
+module.exports.run = async (msg, invoke, args, prefix, guildDatabase, argtions) => {
   let channel = msg.channel;
-  let author = msg.author;
-  let member = msg.member;
+  let guild = msg.guild; // eval arg
+  let author = msg.author; // eval arg
+  let user = author; // eval arg
+  let member = msg.member; // eval arg
+  let message = msg; // eval arg
   let query = args.join(" ");
   if(query.startsWith('```') && query.endsWith('```')) query = query.substring(3, query.length - 3);
   else if(query.startsWith('```js') && query.endsWith('```')) query = query.substring(5, query.length - 3);
   else if(query.startsWith('```javascript') && query.endsWith('```')) query = query.substring(13, query.length - 3);
+
   let calledBack = false;
   if(author.id === '422373229278003231') {
     if(args.length === 0) {
-      return sendCatch(channel, 'SyntaxError: No arguments passed');
+      return sendCatch(channel, 'SyntaxError: No arguments passed', argtions);
     }
     try {
-      let result = eval(query);
+      let result = await eval(query);
       if(result && result.then) {
         result.then(result => {
-          if(!calledBack) sendSuccess(channel, result);
+          if(!calledBack) sendSuccess(channel, result, argtions);
           calledBack = true;
         });
       } else {
-        if(!calledBack) sendSuccess(channel, result);
+        if(!calledBack) sendSuccess(channel, result, argtions);
         calledBack = true;
       }
       if(result && result.catch) {
         result.catch(err => {
-          if(!calledBack) sendCatch(channel, err);
+          if(!calledBack) sendCatch(channel, err, argtions);
           calledBack = true;
         });
       } else if(result && result.error) {
         result.error(err => {
-          if(!calledBack) sendCatch(channel, err);
+          if(!calledBack) sendCatch(channel, err, argtions);
           calledBack = true;
         });
       }
     } catch (err) {
-      if(!calledBack) sendCatch(channel, err);
+      if(!calledBack) sendCatch(channel, err, argtions);
       calledBack = true;
     }
   }
 };
 
-function sendSuccess(channel, result) {
-  let options = {
-    embed: {
-      title: 'Success',
-      color: colors.green,
-      description: `\`\`\`js\n${``.replaceAll(`${result}`, '`', '\u200b`\u200b')}\`\`\``
-    }
-  };
-  channel.send('', options);
+async function sendSuccess(channel, result, argtions) {
+  if(`${result}`.length < 2000 && !argtions.includes('-lyne')) {
+    let options = {
+      embed: {
+        title: 'Successfully evaluated',
+        color: colors.green,
+        description: `\`\`\`js\n${``.replaceAll(`${result}`, '`', '\u200b`\u200b')}\`\`\``
+      }
+    };
+    channel.send('', options);
+  } else {
+    result = await lyne(`${result}`);
+    let options = {
+      embed: {
+        title: 'Successfully evaluated',
+        color: colors.green,
+        description: `**Full Result:** [${result}](${result})`
+      }
+    };
+    channel.send('', options);
+  }
 }
 
-function sendCatch(channel, err) {
-  let options = {
-    embed: {
-      title: 'Error',
-      color: colors.red,
-      description: `\`\`\`js\n${``.replaceAll(`${err}`, '`', '\u200b`\u200b')}\`\`\``
-    }
-  };
-  channel.send('', options);
+async function sendCatch(channel, err, argtions) {
+  let lyneLink = err.stack ? await lyne(err.stack) : null;
+  if(`${err}`.length < 2000 && !argtions.includes('-lyne')) {
+    let options = {
+      embed: {
+        title: 'Error while evaluating',
+        color: colors.red,
+        description: `\`\`\`js\n${``.replaceAll(`${err}`, '`', '\u200b`\u200b')}\`\`\`` +
+            (lyneLink ? `\n**Full StackTrace:** [${lyneLink}](${lyneLink})` : '')
+      }
+    };
+    channel.send('', options);
+  } else {
+    err = await lyne(`${err}`);
+    let options = {
+      embed: {
+        title: 'Error while evaluating',
+        color: colors.red,
+        description: `**Full Error:** [${err}](${err})` +
+            (lyneLink ? `\n**Full StackTrace:** [${lyneLink}](${lyneLink})` : '')
+      }
+    };
+    channel.send('', options);
+  }
 }
 
 module.exports.name = 'eval';
 module.exports.aliases = ['evaluate', 'calc', 'calculate'];
 module.exports.description = 'Use this command to test out code quickly.';
-module.exports.syntax = 'eval <code...>';
+module.exports.syntax = 'eval <code...> [-lyne]';

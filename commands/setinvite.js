@@ -33,6 +33,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 };
 
 module.exports.name = 'setinvite';
-module.exports.aliases = ['set-invite'];
+module.exports.aliases = ['set-invite', 'setinv', 'set-inv'];
 module.exports.description = 'Use this command to set your server\'s invite.';
 module.exports.syntax = 'setinvite';
