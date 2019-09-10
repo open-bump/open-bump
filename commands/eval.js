@@ -53,7 +53,7 @@ async function sendSuccess(channel, result, argtions) {
   if(`${result}`.length < 2000 && !argtions.includes('-lyne')) {
     let options = {
       embed: {
-        title: 'Successfully evaluated',
+        title: '**Successfully evaluated**',
         color: colors.green,
         description: `\`\`\`js\n${``.replaceAll(`${result}`, '`', '\u200b`\u200b')}\`\`\``
       }
@@ -63,9 +63,9 @@ async function sendSuccess(channel, result, argtions) {
     result = await lyne(`${result}`);
     let options = {
       embed: {
-        title: 'Successfully evaluated',
+        title: '**Successfully evaluated**',
         color: colors.green,
-        description: `**Full Result:** [${result}](${result})`
+        description: `__**Full Result:**__ [${result}](${result})`
       }
     };
     channel.send('', options);
@@ -77,10 +77,10 @@ async function sendCatch(channel, err, argtions) {
   if(`${err}`.length < 2000 && !argtions.includes('-lyne')) {
     let options = {
       embed: {
-        title: 'Error while evaluating',
+        title: '**Error while evaluating**',
         color: colors.red,
         description: `\`\`\`js\n${``.replaceAll(`${err}`, '`', '\u200b`\u200b')}\`\`\`` +
-            (lyneLink ? `\n**Full StackTrace:** [${lyneLink}](${lyneLink})` : '')
+            (lyneLink ? `\n__**Full StackTrace:**__ [${lyneLink}](${lyneLink})` : '')
       }
     };
     channel.send('', options);
@@ -88,10 +88,10 @@ async function sendCatch(channel, err, argtions) {
     err = await lyne(`${err}`);
     let options = {
       embed: {
-        title: 'Error while evaluating',
+        title: '**Error while evaluating**',
         color: colors.red,
-        description: `**Full Error:** [${err}](${err})` +
-            (lyneLink ? `\n**Full StackTrace:** [${lyneLink}](${lyneLink})` : '')
+        description: `__**Full Error:**__ [${err}](${err})` +
+            (lyneLink ? `\n__**Full StackTrace:**__ [${lyneLink}](${lyneLink})` : '')
       }
     };
     channel.send('', options);

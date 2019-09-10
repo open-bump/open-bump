@@ -14,8 +14,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let options = {
     embed: {
       color: colors.green,
-      title: 'Invite',
-      description: `**Current Invite:** ${invite}`
+      title: '**Invite**',
+      description: `__**Current Invite:**__ ${invite}`
     }
   };
   msg.channel.send('', options);

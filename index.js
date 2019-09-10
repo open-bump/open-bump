@@ -130,7 +130,7 @@ client.on('message', async msg => {
           const options = {
             embed: {
               color: 0xff0000,
-              title: 'An error occured!',
+              title: '**An error occured!**',
               description: `\`\`\`js\n${err}\`\`\``
             }
           };
@@ -154,3 +154,4 @@ mongoose.connect(''.replaceAll(config.database.mongoURI, '%database%', config.da
 
 module.exports.client = client;
 module.exports.commands = commands;
+module.exports.config = config;

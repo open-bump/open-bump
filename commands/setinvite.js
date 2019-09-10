@@ -10,7 +10,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       maxAge: 0
     }, `${msg.author.tag} (${msg.author.id$}) changed the invite's channel`);
     if(invite) {
-      if(!guildDatabase.bump) guildDatabase.bump = {};
       guildDatabase.bump.invite = invite.code;
       await guildDatabase.save();
 
@@ -18,9 +17,9 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       let options = {
         embed: {
           color: colors.green,
-          title: 'Invite has been changed!',
-          description: `**New Invite:** [${invite.code}](${url})\n` +
-              `**Channel:** ${msg.channel}`
+          title: '**Invite has been changed**',
+          description: `__**New Invite:**__ [${invite.code}](${url})\n` +
+              `__**Channel:**__ ${msg.channel}`
         }
       };
       msg.channel.send('', options);
