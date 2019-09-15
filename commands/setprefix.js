@@ -1,6 +1,7 @@
 const main = require('./../index');
 const colors = require('./../utils/colors');
 const errors = require('./../utils/errors');
+const emojis = require('./../utils/emojis');
 const Guild = require('./../models/Guild');
 
 const common = [

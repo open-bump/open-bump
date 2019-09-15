@@ -119,7 +119,7 @@ client.on('message', async msg => {
 
     if(used) {
       let invoke = cont.substr(used.length).split(' ')[0],
-          args   = cont.substr(used.length + invoke.length + 1).match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g);
+          args   = cont.substr(used.length + invoke.length + 1).match(/(".*?"|[^"\r\v ]+)+(?=\s*|\s*$)/g);
 
       if(!args) args = [];
 
