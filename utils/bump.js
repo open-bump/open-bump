@@ -121,7 +121,10 @@ module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
               `**Emotes:** ${emotes}`,
           inline: true
         }
-      ]
+      ],
+      image: {
+        url: banner
+      }
     }
   };
   return options;
