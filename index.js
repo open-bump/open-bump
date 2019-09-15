@@ -5,6 +5,8 @@ const Discord = require('discord.js'),
       mongoose = require('mongoose'),
       apiserver = require('./api');
 
+module.exports.client = client;
+
 // Prototype Changes (not recommended, but the most effective)
 String.prototype.replaceAll = (str, search, replacement) => {
   return str && str.replace ? str.replace(new RegExp(search, 'g'), replacement) : str;
@@ -38,6 +40,7 @@ get: function() {
 
 // Config
 const config = require('./config');
+module.exports.config = config;
 
 // Discord
 client.once('ready', () => {
@@ -49,10 +52,12 @@ client.once('ready', () => {
 
 // Commands
 const commands = new Discord.Collection();
+module.exports.commands = commands;
 registerCommand('./commands/eval');
 registerCommand('./commands/help');
 registerCommand('./commands/invite');
 registerCommand('./commands/prefix');
+registerCommand('./commands/preview');
 registerCommand('./commands/setbanner');
 registerCommand('./commands/setchannel');
 registerCommand('./commands/setcolor');
@@ -151,7 +156,3 @@ mongoose.connect(''.replaceAll(config.database.mongoURI, '%database%', config.da
       client.login(config.discord.token);
     })
     .catch(err => { console.log('Error while connecting to database!'); console.log(err) });
-
-module.exports.client = client;
-module.exports.commands = commands;
-module.exports.config = config;

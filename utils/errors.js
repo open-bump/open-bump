@@ -19,7 +19,7 @@ module.exports.errorSyntax = (msg, prefix, syntax) => {
 }
 
 module.exports.errorMissingFeature = (msg, feature) => {
-  module.exports.error(msg, `${emojis.lock_key} **Missing Feature**`, feature);
+  module.exports.error(msg, `${emojis.lockKey} **Missing Feature**`, feature);
 }
 
 module.exports.error = (msg, title, description) => {

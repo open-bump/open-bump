@@ -71,7 +71,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       await guildDatabase.save();
 
       notices.push({
-        name: `${emojis.important_notice} **Important Notice: Description required**`,
+        name: `${emojis.importantNotice} **Important Notice: Description required**`,
         value: 'Please note that you need to set your description again if you want to continue using this bot.',
         inline: false
       });
