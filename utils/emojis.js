@@ -1,10 +1,10 @@
 module.exports = {
   lock: '🔒',
-  lock_key: '🔐',
-  lock_open: '🔓',
+  lockKey: '🔐',
+  lockOpen: '🔓',
   zap: '⚡',
   bell: '🔔',
-  arrow_right: '➡',
+  arrowRight: '➡',
   owner: '<:owner:547102770696814592>',
   region: '<:region:547102740799553615>',
   created : '<:created:547102739503644672>',
@@ -22,5 +22,9 @@ module.exports = {
   neutral : '<:neutral:621063802028294155>', // same as neutralGray
   neutralGray : '<:neutral:621063802028294155>',
   neutralYellow : '<:neutral:621063205854380057>',
-  important_notice: '<:importantnotice:621049166759460884>'
+  importantNotice: '<:importantnotice:621049166759460884>',
+  featured: '<:FeaturedServer:622845429045919745>',
+  unitedServer: '<:UnitedServer:622845429435858955>',
+  earlySupporter: '<:EarlySupporter:622852038031835137>',
+  affiliatedServer: '<:AffiliatedServer:622857526924279848>'
 }

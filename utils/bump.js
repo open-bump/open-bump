@@ -29,14 +29,6 @@ module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
   if(!guildDatabase.bump) throw new Error('GuildNotReady: bump');
   if(!guildDatabase.bump.description) throw new Error('GuildNotReady: description');
   if(!guildDatabase.bump.invite) throw new Error('GuildNotReady: invite');
-  let invite = await client.fetchInvite(guildDatabase.bump.invite);
-  if(!(invite && invite.guild && invite.guild.id === guild.id)) throw new Error('ValueNotValid: invite');
-  invite = 'https://discord.gg/' + invite.code;
-  let color = guildDatabase.bump.color && guildDatabase.bump.color >= 1 && guildDatabase.features.includes('COLOR') ? guildDatabase.bump.color : colors.openbump;
-  // Regions
-  let regions = await guild.fetchVoiceRegions();
-  let region = 'Unknown';
-  regions.forEach(regionIndex => region = regionIndex.id === guild.region ? regionIndex.name : region);
 
   // Stats
   let total = 0;
@@ -68,6 +60,31 @@ module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
   channels = guild.channels.size;
   emotes = guild.emojis.size;
 
+  // Invite
+  let invite = await client.fetchInvite(guildDatabase.bump.invite);
+  if(!(invite && invite.guild && invite.guild.id === guild.id)) throw new Error('ValueNotValid: invite');
+  invite = 'https://discord.gg/' + invite.code;
+
+  // Color
+  let color = guildDatabase.bump.color && guildDatabase.bump.color >= 1 && guildDatabase.features.includes('COLOR') ? guildDatabase.bump.color : colors.openbump;
+
+  // Region
+  let regions = await guild.fetchVoiceRegions();
+  let region = 'Unknown';
+  regions.forEach(regionIndex => region = regionIndex.id === guild.region ? regionIndex.name : region);
+
+  // Banner
+  let banner = guildDatabase.features.includes('BANNER') && guildDatabase.bump.banner ? guildDatabase.bump.banner : undefined;
+
+  // Featured
+  let badges = "";
+  if(guildDatabase.features.includes('EARLY_SUPPORTER')) badges = badges + emojis.earlySupporter + " ";
+  if(guildDatabase.features.includes('FEATURED')) badges = badges + emojis.featured + " ";
+  if(guildDatabase.features.includes('UNITED_SERVER')) badges = badges + emojis.unitedServer + " ";
+  if(guildDatabase.features.includes('AFFILIATED')) badges = badges + emojis.affiliatedServer + " ";
+
+  if(badges != "") badges = " | " + badges;
+
   // Creating
   let description = `${emojis.owner} **Owner:** ${guild.owner.user.tag}\n` +
       `${emojis.region} **Region:** ${region}\n` +
@@ -76,7 +93,7 @@ module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
       `${guildDatabase.bump.description}`;
   let options = {
     embed: {
-      title: `**${guild.name}**`,
+      title: `**${guild.name}**${badges}`,
       thumbnail: {
         url: guild.iconURL
       },
@@ -92,7 +109,7 @@ module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
           name: `${emojis.members} **Members [${total}]**`,
           value: `${emojis.online} **Online:** ${online}\n` +
               `${emojis.dnd} **Do Not Disturb:** ${dnd}\n` +
-              `${emojis.idle} **Idle:** ${dnd}\n` +
+              `${emojis.idle} **Idle:** ${idle}\n` +
               `${emojis.invisible} **Offline:** ${offline}`,
           inline: true
         },
