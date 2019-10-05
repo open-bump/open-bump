@@ -1,4 +1,4 @@
-const main = require('./../index');
+const main = require('../bot');
 const client = main.client;
 
 module.exports.channel = (input, guild) => {

@@ -1,8 +1,8 @@
-const main = require('./../index');
-const colors = require('./../utils/colors');
-const errors = require('./../utils/errors');
-const bump = require('./../utils/bump');
-const Guild = require('./../models/Guild');
+const main = require('../bot');
+const colors = require('../utils/colors');
+const errors = require('../utils/errors');
+const bump = require('../utils/bump');
+const Guild = require('../models/Guild');
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let guild = msg.guild;

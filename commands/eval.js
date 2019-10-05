@@ -1,12 +1,13 @@
-const main = require('./../index');
-const colors = require('./../utils/colors');
-const errors = require('./../utils/errors');
-const lyne = require('./../utils/lyne');
+const main = require('../bot');
+const colors = require('../utils/colors');
+const errors = require('../utils/errors');
+const lyne = require('../utils/lyne');
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase, argtions) => {
+  let author = msg.author; // eval arg
+  if(author.id !== '422373229278003231') return;
   let channel = msg.channel;
   let guild = msg.guild; // eval arg
-  let author = msg.author; // eval arg
   let user = author; // eval arg
   let member = msg.member; // eval arg
   let message = msg; // eval arg
@@ -16,36 +17,34 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase, argtions) 
   else if(query.startsWith('```javascript') && query.endsWith('```')) query = query.substring(13, query.length - 3);
 
   let calledBack = false;
-  if(author.id === '422373229278003231') {
-    if(args.length === 0) {
-      return sendCatch(channel, 'SyntaxError: No arguments passed', argtions);
-    }
-    try {
-      let result = await eval(query);
-      if(result && result.then) {
-        result.then(result => {
-          if(!calledBack) sendSuccess(channel, result, argtions);
-          calledBack = true;
-        });
-      } else {
+  if(args.length === 0) {
+    return sendCatch(channel, 'SyntaxError: No arguments passed', argtions);
+  }
+  try {
+    let result = await eval(query);
+    if(result && result.then) {
+      result.then(result => {
         if(!calledBack) sendSuccess(channel, result, argtions);
         calledBack = true;
-      }
-      if(result && result.catch) {
-        result.catch(err => {
-          if(!calledBack) sendCatch(channel, err, argtions);
-          calledBack = true;
-        });
-      } else if(result && result.error) {
-        result.error(err => {
-          if(!calledBack) sendCatch(channel, err, argtions);
-          calledBack = true;
-        });
-      }
-    } catch (err) {
-      if(!calledBack) sendCatch(channel, err, argtions);
+      });
+    } else {
+      if(!calledBack) sendSuccess(channel, result, argtions);
       calledBack = true;
     }
+    if(result && result.catch) {
+      result.catch(err => {
+        if(!calledBack) sendCatch(channel, err, argtions);
+        calledBack = true;
+      });
+    } else if(result && result.error) {
+      result.error(err => {
+        if(!calledBack) sendCatch(channel, err, argtions);
+        calledBack = true;
+      });
+    }
+  } catch (err) {
+    if(!calledBack) sendCatch(channel, err, argtions);
+    calledBack = true;
   }
 };
 

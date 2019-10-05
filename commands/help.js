@@ -1,4 +1,4 @@
-const main = require('../index');
+const main = require('../bot');
 const colors = require('../utils/colors');
 const emojis = require('../utils/emojis');
 const errors = require('../utils/errors');

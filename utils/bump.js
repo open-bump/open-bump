@@ -1,9 +1,9 @@
-const main = require('./../index');
+const main = require('../bot');
 const client = main.client;
 const colors = require('./colors')
 const emojis = require('./emojis')
 const ms = require('ms');
-const Guild = require('./../models/Guild');
+const Guild = require('../models/Guild');
 
 module.exports.bumpToAllShards = async (options) => {
   const guilds = await Guild.find({
@@ -20,7 +20,7 @@ module.exports.bumpToAllShards = async (options) => {
 }
 
 module.exports.bumpToThisShard = async (channels, options) => {
-  
+
 }
 
 module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
