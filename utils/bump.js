@@ -3,24 +3,38 @@ const client = main.client;
 const colors = require('./colors')
 const emojis = require('./emojis')
 const ms = require('ms');
+const common = require('./common');
 const Guild = require('../models/Guild');
 
 module.exports.bumpToAllShards = async (options) => {
-  const guilds = await Guild.find({
-    $and: [
-      { feed: { $exists: true } },
-      { feed: { $ne: null } },
-      { feed: { $ne: '' } }
-    ]
-  });
-  console.log(guilds);
-
-  const guilds2 = await Guild.find({});
-  console.log(guilds2);
+  return common.sharding.bumpToAllShards(options);
 }
 
-module.exports.bumpToThisShard = async (channels, options) => {
+module.exports.bumpToThisShard = (channels, options) => {
+  let amount = 0;
 
+  channels.forEach(channels => {
+    let guildId = channels.guild;
+    let channelId = channels.channel;
+    if(common.sharding.getGuildShardId(guildId) === main.client.shard.id) {
+      let guild = main.client.guilds.get(guildId);
+      if(guild) {
+        let channel = guild.channels.get(channelId);
+        if(channel) {
+          if(channel.permissionsFor(guild.me).has(['SEND_MESSAGES', 'VIEW_CHANNEL', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'])) {
+            channel.send('', options).catch(() => console.log(`Unknown error occured while trying to bump ${guild.id}!`));
+            amount++;
+          } else {
+            console.log(`Guild ${guild.id} has set a bump channel but the bot doesn't have enough permissions to use it!`)
+          }
+        } else {
+          console.log(`Guild ${guild.id} has set a bump channel but it's missing!`);
+        }
+      }
+    }
+  });
+
+  return amount;
 }
 
 module.exports.getPreviewEmbed = async (guild, guildDatabase) => {

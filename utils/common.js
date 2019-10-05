@@ -1,4 +1,6 @@
 const main = require('../bot');
+const bump = require('./bump');
+const Guild = require('../models/Guild');
 
 module.exports.id = {
   min: 41943044,
@@ -25,4 +27,24 @@ module.exports.sharding.getGuild = async (guildId) => {
   let guilds = (await main.client.shard.broadcastEval(`this.shard.id === ${shardId} ? this.guilds.get('${guildId}') : null`));
   if(guilds.length >= 1) return guilds[0];
   return null;
+}
+
+module.exports.sharding.bumpToAllShards = async (options) => {
+  const guildsDatabase = await Guild.find({
+    $and: [
+      { feed: { $exists: true } },
+      { feed: { $ne: null } },
+      { feed: { $ne: '' } }
+    ]
+  });
+  let args = [];
+  guildsDatabase.forEach(guildDatabase => {
+    args.push({guild: guildDatabase.id, channel: guildDatabase.feed});
+  });
+
+  return (await main.client.shard.broadcastEval(`this.require('./utils/common').sharding.bumpToThisShard(${JSON.stringify(args)}, ${JSON.stringify(options)})`)).reduce((prev, guildCount) => prev + guildCount, 0);
+}
+
+module.exports.sharding.bumpToThisShard = (channels, options) => {
+  return bump.bumpToThisShard(channels, options);
 }
