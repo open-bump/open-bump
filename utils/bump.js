@@ -20,7 +20,7 @@ module.exports.bumpToAllShards = async (options) => {
 }
 
 module.exports.bumpToThisShard = async (channels, options) => {
-
+  
 }
 
 module.exports.getPreviewEmbed = async (guild, guildDatabase) => {

@@ -6,11 +6,13 @@ const Guild = require('./../models/Guild');
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel;
   if(guildDatabase.features.includes('BANNER')) {
+    let member = msg.member;
+    if(!member.hasPermission('MANAGE_GUILD', true, true, true)) return errors.errorPermissions(msg, 'Manage Server');
     if(args.length === 1) {
       if(!(args[0] === 'reset' || args[0] === 'default')) {
         let newBanner = args.join(" ");
 
-        if (/\.(png|jpg|jpeg|webp|gif)$/.test(newBanner)) {
+          if (/\.(png|jpg|jpeg|webp|gif)$/.test(newBanner)) {
           guildDatabase.bump.banner = newBanner;
           await guildDatabase.save();
 
@@ -51,5 +53,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 
 module.exports.name = 'setbanner';
 module.exports.aliases = ['set-banner'];
+module.exports.restrictions = ['BANNER'];
 module.exports.description = 'Use this command to set your server\'s banner.';
 module.exports.syntax = 'setbanner <banner|reset>';

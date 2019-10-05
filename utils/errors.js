@@ -10,8 +10,13 @@ module.exports.errorInternal = (msg, message) => {
 }
 
 module.exports.errorPermissions = (msg, permissions) => {
-  let permissionsText = 'You are missing the following permission' + (permissions.size !== 1 ? 's: `' : ': `') + permissions.join('`, `') + '`';
+  let permissionsText = 'You are missing the following permission' + (permissions.size !== 1 ? 's: `' : ': `') + (permissions.join ? permissions.join('`, `') : permissions) + '`' + '.';
   module.exports.error(msg, `${emojis.xmark} **Permission Error**`, permissionsText);
+}
+
+module.exports.errorBotPermissions = (msg, permissions, channel) => {
+  let permissionsText = 'The bot is missing the following permission' + (permissions.size !== 1 ? 's: `' : ': `') + (permissions.join ? permissions.join('`, `') : permissions) + '`' + channel ? ` in the channel ${channel}.` : '.';
+  module.exports.error(msg, `${emojis.xmark} **Bot Permission Error**`, permissionsText);
 }
 
 module.exports.errorSyntax = (msg, prefix, syntax) => {
@@ -19,7 +24,7 @@ module.exports.errorSyntax = (msg, prefix, syntax) => {
 }
 
 module.exports.errorMissingFeature = (msg, feature) => {
-  module.exports.error(msg, `${emojis.lockKey} **Missing Feature**`, feature);
+  module.exports.error(msg, `${emojis.lockKey} **Premium Feature**`, 'This is a premium command. Check out our store at [https://openbump.com/#premium](https://openbump.com/#premium) to see all available features.');
 }
 
 module.exports.error = (msg, title, description) => {

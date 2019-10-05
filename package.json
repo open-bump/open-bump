@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Reactfail/open-bump.git"
+    "url": "git+https://github.com/lyne/open-bump.git"
   },
   "author": "Looat",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Reactfail/open-bump/issues"
+    "url": "https://github.com/lyne/open-bump/issues"
   },
-  "homepage": "https://github.com/Reactfail/open-bump#readme",
+  "homepage": "https://openbump.com/",
   "dependencies": {
     "discord.js": "^11.5.1",
     "express": "^4.17.1",

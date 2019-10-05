@@ -5,6 +5,8 @@ const links = require('./../utils/links');
 const Guild = require('./../models/Guild');
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
+  let member = msg.member;
+  if(!member.hasPermission('MANAGE_GUILD', true, true, true)) return errors.errorPermissions(msg, 'Manage Server');
   let channel = msg.channel;
   if(args.length === 1) {
     if(!(args[0] === 'reset' || args[0] === 'default')) {

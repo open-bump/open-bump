@@ -4,6 +4,8 @@ const errors = require('./../utils/errors');
 const Guild = require('./../models/Guild');
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
+  let member = msg.member;
+  if(!member.hasPermission('MANAGE_GUILD', true, true, true)) return errors.errorPermissions(msg, 'Manage Server');
   let channel = msg.channel;
   if(channel.permissionsFor(msg.guild.me).has('CREATE_INSTANT_INVITE')) {
     let invite = await channel.createInvite({
@@ -27,7 +29,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       errors.errorInternal(msg, 'Fetched invite is false');
     }
   } else {
-    errors.errorPermissions(msg, ['CREATE_INSTANT_INVITE']);
+    errors.errorBotPermissions(msg, ['CREATE_INSTANT_INVITE']);
   }
 };
 

@@ -14,6 +14,8 @@ const regexLib = {
 }
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
+  let member = msg.member;
+  if(!member.hasPermission('MANAGE_GUILD', true, true, true)) return errors.errorPermissions(msg, 'Manage Server');
   let channel = msg.channel;
   let notices = [];
   if(args.length >= 1) {
