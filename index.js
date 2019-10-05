@@ -53,9 +53,9 @@ client.once('ready', () => {
 // Commands
 const commands = new Discord.Collection();
 module.exports.commands = commands;
+registerCommand('./commands/about');
 registerCommand('./commands/eval');
 registerCommand('./commands/help');
-registerCommand('./commands/invite');
 registerCommand('./commands/prefix');
 registerCommand('./commands/preview');
 registerCommand('./commands/setbanner');
@@ -150,7 +150,7 @@ client.on('message', async msg => {
 });
 
 // Database
-mongoose.connect(''.replaceAll(config.database.mongoURI, '%database%', config.database.database), { useNewUrlParser: true })
+mongoose.connect(''.replaceAll(config.database.mongoURI, '%database%', config.database.database), { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
       console.log('Database successfully connected!');
       client.login(config.discord.token);

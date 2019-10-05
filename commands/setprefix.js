@@ -14,6 +14,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel;
   let notices = [];
   if(guildDatabase.features.includes('PREFIX')) {
+    let member = msg.member;
+    if(!member.hasPermission('MANAGE_GUILD', true, true, true)) return errors.errorPermissions(msg, 'Manage Server');
     if(args.length >= 1) {
       if(!((args[0] === 'reset' || args[0] === 'default') && args.length === 1)) {
         let newPrefix = args.join(" ");
@@ -65,5 +67,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 
 module.exports.name = 'setprefix';
 module.exports.aliases = ['set-prefix'];
+module.exports.restrictions = ['PREFIX'];
 module.exports.description = 'Use this command to set your server\'s prefix.';
 module.exports.syntax = 'setprefix <prefix...|reset>';

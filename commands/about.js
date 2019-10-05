@@ -2,6 +2,7 @@ const main = require('./../index');
 const colors = require('./../utils/colors');
 const errors = require('./../utils/errors');
 const Guild = require('./../models/Guild');
+const package = require('../package');
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel;
@@ -21,6 +22,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   msg.channel.send('', options);
 };
 
-module.exports.name = 'invite';
-module.exports.description = 'Use this command to display your server\'s invite.';
-module.exports.syntax = 'invite';
+module.exports.name = 'about';
+module.exports.description = 'This command shows information about this bot.';
+module.exports.syntax = 'about';

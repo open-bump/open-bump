@@ -6,6 +6,8 @@ const Guild = require('./../models/Guild');
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel;
   if(guildDatabase.features.includes('COLOR')) {
+    let member = msg.member;
+    if(!member.hasPermission('MANAGE_GUILD', true, true, true)) return errors.errorPermissions(msg, 'Manage Server');
     if(args.length === 1) {
       if(!(args[0] === 'reset' || args[0] === 'default')) {
         let newColor = args[0];
@@ -88,5 +90,6 @@ function displaySix(raw) {
 
 module.exports.name = 'setcolor';
 module.exports.aliases = ['set-color'];
+module.exports.restrictions = ['COLOR'];
 module.exports.description = 'Use this command to set your server\'s color.';
 module.exports.syntax = 'setcolor <color|reset>';
