@@ -1,12 +1,17 @@
-const main = require('./index'),
+const main = require('./bot'),
       express = require('express'),
       app = express(),
       port = 3000;
 
-module.exports.run = () => {
-  app.listen(port, () => {
-    console.log('API webserver successfully started!');
-  });
+module.exports.run = async () => {
+  // try {
+  //   await app.listen(port);
+  //   console.log(`Successfully started API Server on port ${port}!`);
+  //   return true;
+  // } catch (err) {
+  //   console.log(`Error while starting API Server on port ${port}!`);
+  //   return err;
+  // }
 };
 
 app.get('/', (req, res) => {
