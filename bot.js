@@ -39,6 +39,10 @@ get: function() {
     }
 });
 
+client.require = (path) => {
+  return require(path);
+};
+
 // Config
 const config = require('./config');
 module.exports.config = config;
@@ -55,6 +59,7 @@ client.once('ready', () => {
 const commands = new Discord.Collection();
 module.exports.commands = commands;
 registerCommand('./commands/about');
+registerCommand('./commands/bump');
 registerCommand('./commands/eval');
 registerCommand('./commands/help');
 registerCommand('./commands/prefix');
@@ -92,8 +97,8 @@ client.on('message', async msg => {
     /* Fetch or Create important Guild Information, e.g. Prefix and Features */
     const guildDatabase = (await Guild.findOrCreate({ id: guild.id })).doc;
 
-    if(config.closedBeta) {
-      if(!guildDatabase.features.includes('EARLY_ACCESS') && !config.owners.includes(author.id)) {
+    if(config.discord.closedBeta) {
+      if(!guildDatabase.features.includes('EARLY_ACCESS') && !config.discord.owners.includes(author.id)) {
         if(msg.content.startsWith('ob!')) {
           let options = {
             embed: {
