@@ -83,7 +83,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         msg.channel.send('', options);
       }
     } catch (err) {
-      console.log(err);
       errors.error(msg, 'That shard or guild could not be found!');
     }
   } else {
