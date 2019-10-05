@@ -3,7 +3,8 @@ const Discord = require('discord.js'),
       Guild = require('./models/Guild'),
       client = new Discord.Client(),
       mongoose = require('mongoose'),
-      apiserver = require('./api');
+      apiserver = require('./api'),
+      colors = require('./utils/colors');
 
 module.exports.client = client;
 
@@ -90,6 +91,25 @@ client.on('message', async msg => {
     /* Fetch or Create important Guild Information, e.g. Prefix and Features */
     const guildDatabase = (await Guild.findOrCreate({ id: guild.id })).doc;
 
+    if(config.closedBeta) {
+      if(!guildDatabase.features.includes('EARLY_ACCESS') && !config.owners.includes(author.id)) {
+        if(msg.content.startsWith('ob!')) {
+          let options = {
+            embed: {
+              color: colors.orange,
+              title: 'Early Access Program',
+              description: 'We are currently working on a new version of Open Bump. At the moment, only certain servers have access to all features. Other servers don\'t have access to Open Bump at all.\n' +
+                  'Because the old version of Open Bump can\'t handle the high amount of requests, we are not able to keep it running until the new version is released. We are very sorry about this and hope you understand it.\n' +
+                  '\n' +
+                  'We are currently rolling out feature by feature, server by server. It is possible that you see other servers which already have new features.\n' +
+                  'If you want to stay updated, please join [Open Advertisements](https://discord.gg/eBFu8HF). There you\'ll get the latest news about Open Bump.'
+            }
+          };
+          msg.channel.send('', options);
+        }
+        return;
+      }
+    }
     // Preparing Prefixes
     let var1 = guildDatabase.settings && guildDatabase.settings.prefix ? guildDatabase.settings.prefix.trim() + ' ' : null;
     const var2 = config.settings.prefix.trim() + ' ';
