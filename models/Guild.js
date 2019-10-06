@@ -55,8 +55,8 @@ const GuildSchema = new mongoose.Schema({
     required: true,
     default: []
   },
-  donator: {
-    type: String,
+  donators: {
+    type: Array,
     required: false
   }
 });
