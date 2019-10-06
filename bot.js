@@ -3,7 +3,6 @@ const Discord = require('discord.js'),
       Guild = require('./models/Guild'),
       client = new Discord.Client(),
       mongoose = require('mongoose'),
-      apiserver = require('./api'),
       colors = require('./utils/colors');
 
 module.exports.client = client;
@@ -50,9 +49,6 @@ module.exports.config = config;
 // Discord
 client.once('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
-
-  // Webserver (got moved to ready event)
-  apiserver.run();
 });
 
 // Commands

@@ -2,7 +2,7 @@
   "name": "open-bump",
   "version": "1.0.0",
   "description": "",
-  "main": "bot.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,6 +19,7 @@
   "dependencies": {
     "discord.js": "^11.5.1",
     "express": "^4.17.1",
+    "form-data": "^2.5.1",
     "moment": "^2.24.0",
     "mongoose": "^5.7.1",
     "mongoose-findorcreate": "^3.0.0",

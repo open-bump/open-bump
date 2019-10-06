@@ -94,6 +94,7 @@ module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
   let badges = "";
   if(guildDatabase.features.includes('EARLY_SUPPORTER')) badges = badges + emojis.earlySupporter + " ";
   if(guildDatabase.features.includes('FEATURED')) badges = badges + emojis.featured + " ";
+  if(guildDatabase.features.includes('BUMP_CHANNEL')) badges = badges + emojis.bumpChannel + " ";
   if(guildDatabase.features.includes('UNITED_SERVER')) badges = badges + emojis.unitedServer + " ";
   if(guildDatabase.features.includes('AFFILIATED')) badges = badges + emojis.affiliatedServer + " ";
 
