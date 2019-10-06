@@ -9,6 +9,7 @@ module.exports.run = (msg, invoke, args, prefix, guildDatabase) => {
     let showcase = [];
     showcase.push(main.commands.get('help'));
     showcase.push(main.commands.get('preview'));
+    showcase.push(main.commands.get('bump'));
     showcase.push(main.commands.get('setdescription'));
     showcase.push(main.commands.get('setinvite'));
     showcase.push(main.commands.get('setchannel'));

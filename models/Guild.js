@@ -36,7 +36,7 @@ const GuildSchema = new mongoose.Schema({
     required: false
   },
   lastBump: {
-    Guild: {
+    user: {
       type: String,
       required: false
     },
