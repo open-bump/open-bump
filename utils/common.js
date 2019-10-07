@@ -48,3 +48,11 @@ module.exports.sharding.bumpToAllShards = async (options) => {
 module.exports.sharding.bumpToThisShard = (channels, options) => {
   return bump.bumpToThisShard(channels, options)
 }
+
+module.exports.processArray = async (t, fun/*, thisp */) => {
+  let length = t.length >>> 0;
+  let thisp = arguments[2];
+  for (let i = 0; i < length; i++) {
+    if (i in t) await fun.call(thisp, t[i], i, t)
+  }
+}
