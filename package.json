@@ -24,6 +24,7 @@
     "mongoose": "^5.7.1",
     "mongoose-findorcreate": "^3.0.0",
     "ms": "^2.1.2",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "patreon": "^0.4.1"
   }
 }
