@@ -32,6 +32,7 @@ module.exports.run = async () => {
     console.log(`Access Token: ${accessToken}`)
 
     console.log(await getCampaign());
+    console.log(await getCampaignMembers());
 
     // await module.exports.fullScan()
     //
@@ -127,7 +128,16 @@ async function fetchAccessToken() {
 }
 
 async function getCampaign() {
-  let res = await fetch('https://www.patreon.com/api/oauth2/v2/campaigns/' + config.patreon.campaign, {
+  let res = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/${config.patreon.campaign}`, {
+    headers: {
+      'Authorization': 'Bearer ' + accessToken
+    }
+  }).then(res => res.json());
+  return res;
+}
+
+async function getCampaignMembers() {
+  let res = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/${config.patreon.campaign}/members`, {
     headers: {
       'Authorization': 'Bearer ' + accessToken
     }
