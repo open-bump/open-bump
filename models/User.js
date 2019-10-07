@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const findOrCreate = require('mongoose-findorcreate');
+const mongoose = require('mongoose')
+const findOrCreate = require('mongoose-findorcreate')
 
 const GuildSchema = new mongoose.Schema({
   id: {
@@ -36,10 +36,10 @@ const GuildSchema = new mongoose.Schema({
       default: []
     }
   }
-});
+})
 
-GuildSchema.plugin(findOrCreate);
+GuildSchema.plugin(findOrCreate)
 
-const Guild = mongoose.model('Guild', GuildSchema);
+const Guild = mongoose.model('Guild', GuildSchema)
 
-module.exports = Guild;
+module.exports = Guild

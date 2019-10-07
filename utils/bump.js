@@ -1,111 +1,111 @@
-const main = require('../bot');
-const client = main.client;
+const main = require('../bot')
+const client = main.client
 const colors = require('./colors')
 const emojis = require('./emojis')
-const ms = require('ms');
-const common = require('./common');
-const Guild = require('../models/Guild');
+const ms = require('ms')
+const common = require('./common')
+const Guild = require('../models/Guild')
 
 module.exports.bumpToAllShards = async (options) => {
-  return common.sharding.bumpToAllShards(options);
+  return common.sharding.bumpToAllShards(options)
 }
 
 module.exports.bumpToThisShard = (channels, options) => {
-  let amount = 0;
+  let amount = 0
 
   channels.forEach(channels => {
-    let guildId = channels.guild;
-    let channelId = channels.channel;
+    let guildId = channels.guild
+    let channelId = channels.channel
     if(common.sharding.getGuildShardId(guildId) === main.client.shard.id) {
-      let guild = main.client.guilds.get(guildId);
+      let guild = main.client.guilds.get(guildId)
       if(guild) {
-        let channel = guild.channels.get(channelId);
+        let channel = guild.channels.get(channelId)
         if(channel) {
           if(channel.permissionsFor(guild.me).has(['SEND_MESSAGES', 'VIEW_CHANNEL', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'])) {
-            channel.send('', options).catch(() => console.log(`Unknown error occured while trying to bump ${guild.id}!`));
-            amount++;
+            channel.send('', options).catch(() => console.log(`Unknown error occured while trying to bump ${guild.id}!`))
+            amount++
           } else {
             console.log(`Guild ${guild.id} has set a bump channel but the bot doesn't have enough permissions to use it!`)
           }
         } else {
-          console.log(`Guild ${guild.id} has set a bump channel but it's missing!`);
+          console.log(`Guild ${guild.id} has set a bump channel but it's missing!`)
         }
       }
     }
-  });
+  })
 
-  return amount;
+  return amount
 }
 
 module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
-  if(!guild) throw new Error('MissingArgument: guild');
-  if(!guildDatabase) guildDatabase = (await Guild.findOrCreate({ id: guild.id })).doc;
-  if(!guildDatabase.bump) throw new Error('GuildNotReady: bump');
-  if(!guildDatabase.bump.description) throw new Error('GuildNotReady: description');
-  if(!guildDatabase.bump.invite) throw new Error('GuildNotReady: invite');
+  if(!guild) throw new Error('MissingArgument: guild')
+  if(!guildDatabase) guildDatabase = (await Guild.findOrCreate({ id: guild.id })).doc
+  if(!guildDatabase.bump) throw new Error('GuildNotReady: bump')
+  if(!guildDatabase.bump.description) throw new Error('GuildNotReady: description')
+  if(!guildDatabase.bump.invite) throw new Error('GuildNotReady: invite')
 
   // Stats
-  let total = 0;
-  let online = 0;
-  let dnd = 0;
-  let idle = 0;
-  let offline = 0;
-  let roles = 0;
-  let bots = 0;
-  let channels = 0;
-  let emotes = 0;
+  let total = 0
+  let online = 0
+  let dnd = 0
+  let idle = 0
+  let offline = 0
+  let roles = 0
+  let bots = 0
+  let channels = 0
+  let emotes = 0
 
   guild.members.forEach(member => {
     if(member.presence) {
       if(member.presence.status === 'online') {
-        online++;
+        online++
       } else if(member.presence.status === 'dnd') {
-        dnd++;
+        dnd++
       } else if(member.presence.status === 'idle') {
-        idle++;
+        idle++
       }
     }
-    if(member.user.bot) bots++;
-    total++;
-  });
-  offline = total - (online + dnd + idle);
+    if(member.user.bot) bots++
+    total++
+  })
+  offline = total - (online + dnd + idle)
 
-  roles = guild.roles.size;
-  channels = guild.channels.size;
-  emotes = guild.emojis.size;
+  roles = guild.roles.size
+  channels = guild.channels.size
+  emotes = guild.emojis.size
 
   // Invite
-  let invite = await client.fetchInvite(guildDatabase.bump.invite);
-  if(!(invite && invite.guild && invite.guild.id === guild.id)) throw new Error('ValueNotValid: invite');
-  invite = 'https://discord.gg/' + invite.code;
+  let invite = await client.fetchInvite(guildDatabase.bump.invite)
+  if(!(invite && invite.guild && invite.guild.id === guild.id)) throw new Error('ValueNotValid: invite')
+  invite = 'https://discord.gg/' + invite.code
 
   // Color
-  let color = guildDatabase.bump.color && guildDatabase.bump.color >= 1 && guildDatabase.features.includes('COLOR') ? guildDatabase.bump.color : colors.openbump;
+  let color = guildDatabase.bump.color && guildDatabase.bump.color >= 1 && guildDatabase.features.includes('COLOR') ? guildDatabase.bump.color : colors.openbump
 
   // Region
-  let regions = await guild.fetchVoiceRegions();
-  let region = 'Unknown';
-  regions.forEach(regionIndex => region = regionIndex.id === guild.region ? regionIndex.name : region);
+  let regions = await guild.fetchVoiceRegions()
+  let region = 'Unknown'
+  regions.forEach(regionIndex => region = regionIndex.id === guild.region ? regionIndex.name : region)
 
   // Banner
-  let banner = guildDatabase.features.includes('BANNER') && guildDatabase.bump.banner ? guildDatabase.bump.banner : undefined;
+  let banner = guildDatabase.features.includes('BANNER') && guildDatabase.bump.banner ? guildDatabase.bump.banner : undefined
 
   // Featured
-  let badges = "";
-  if(guildDatabase.features.includes('EARLY_SUPPORTER')) badges = badges + emojis.earlySupporter + " ";
-  if(guildDatabase.features.includes('FEATURED')) badges = badges + emojis.featured + " ";
-  if(guildDatabase.features.includes('BUMP_CHANNEL')) badges = badges + emojis.bumpChannel + " ";
-  if(guildDatabase.features.includes('UNITED_SERVER')) badges = badges + emojis.unitedServer + " ";
-  if(guildDatabase.features.includes('AFFILIATED')) badges = badges + emojis.affiliatedServer + " ";
+  let badges = ""
+  if(guildDatabase.features.includes('EARLY_SUPPORTER')) badges = badges + emojis.earlySupporter + " "
+  if(guildDatabase.features.includes('FEATURED')) badges = badges + emojis.featured + " "
+  if(guildDatabase.features.includes('BUMP_CHANNEL')) badges = badges + emojis.bumpChannel + " "
+  if(guildDatabase.features.includes('UNITED_SERVER')) badges = badges + emojis.unitedServer + " "
+  if(guildDatabase.features.includes('AFFILIATED')) badges = badges + emojis.affiliatedServer + " "
 
-  if(badges != "") badges = " | " + badges;
+  if(badges != "") badges = " | " + badges
 
   // Creating
   let description = `${emojis.owner} **Owner:** ${guild.owner.user.tag}\n` +
       `${emojis.region} **Region:** ${region}\n` +
       `${emojis.created} **Created:** ${ms(Date.now().valueOf() - guild.createdAt.valueOf(), { long: true })} ago\n` +
       `\n` +
-      `${guildDatabase.bump.description}`;
+      `${guildDatabase.bump.description}`
   let options = {
     embed: {
       title: `**${guild.name}**${badges}`,
@@ -141,6 +141,6 @@ module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
         url: banner
       }
     }
-  };
-  return options;
+  }
+  return options
 }
