@@ -1,8 +1,9 @@
 const fetch = require('node-fetch')
 const FormData = require('form-data')
 const fs = require('fs')
-var patreon = require('patreon')
-var patreonAPI = patreon.patreon
+const patreon = require('patreon')
+const patreonAPI = patreon.patreon
+const common = require('./utils/common')
 const config = JSON.parse(fs.readFileSync('./config.json', 'utf8'))
 const CLIENT_ID = config.patreon.clientId
 const CLIENT_SECRET = config.patreon.clientSecret
@@ -29,7 +30,26 @@ module.exports.run = async () => {
     await fetchAccessToken()
     console.log(`Refresh Token: ${refreshToken}`)
     console.log(`Access Token: ${accessToken}`)
-    module.exports.fullScan()
+
+    console.log(await getCampaign());
+
+    // await module.exports.fullScan()
+    //
+    // console.log(cache)
+    //
+    // await common.processArray(cache.campaign.pledges.index, async pledge => {
+    //   let user = pledge.id;
+    //   console.log(user);
+    //
+    //   let res = await fetch('https://www.patreon.com/api/oauth2/v2/members/' + user, {
+    //     method: 'GET',
+    //     headers: {
+    //       'Authorization': 'Bearer ' + accessToken
+    //     }
+    //   })
+    //
+    //   console.log(res)
+    // })
   } catch(err) {
     console.log(err)
   }
@@ -75,9 +95,6 @@ module.exports.fullScan = async () => {
   } catch (error) {
     console.log(error)
   }
-
-  console.log(cache);
-  console.log(cache.campaign.pledges);
 }
 
 async function fetchAccessToken() {
@@ -109,6 +126,15 @@ async function fetchAccessToken() {
   setTimeout(() => fetchAccessToken(), 1000*60*60*24)  // Refresh it every day to make sure it stays fresh
 }
 
+async function getCampaign() {
+  let res = await fetch('https://www.patreon.com/api/oauth2/v2/campaigns/' + config.patreon.campaign, {
+    headers: {
+      'Authorization': 'Bearer ' + accessToken
+    }
+  }).then(res => res.json());
+  return res;
+}
+
 async function get(path) {
-  return fetch(path).then(res => res.json())
+  return fetch(path)/*.then(res => res.json())*/
 }
