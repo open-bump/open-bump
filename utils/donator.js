@@ -23,5 +23,5 @@ module.exports.tiers = {
 }
 
 module.exports.translateGuild = (guildDatabase) => {
-  let tiers = [];
+  let tiers = []
 }
