@@ -31,68 +31,11 @@ module.exports.run = async () => {
     console.log(`Refresh Token: ${refreshToken}`)
     console.log(`Access Token: ${accessToken}`)
 
-    console.log(await getCampaign());
-    console.log(await getCampaignMembers());
-
-    // await module.exports.fullScan()
-    //
-    // console.log(cache)
-    //
-    // await common.processArray(cache.campaign.pledges.index, async pledge => {
-    //   let user = pledge.id;
-    //   console.log(user);
-    //
-    //   let res = await fetch('https://www.patreon.com/api/oauth2/v2/members/' + user, {
-    //     method: 'GET',
-    //     headers: {
-    //       'Authorization': 'Bearer ' + accessToken
-    //     }
-    //   })
-    //
-    //   console.log(res)
-    // })
-  } catch(err) {
-    console.log(err)
-  }
-}
-
-module.exports.fullScan = async () => {
-  console.log('Starting patreon full scan...')
-
-  let res
-
-  // current_user
-  try {
-    res = (await client('/current_user')).rawJson.data
-    if(res) cache.user.index = res
-    else throw new Error('Current user is invalid!');
-  } catch (error) {
-    console.log(error)
-  }
-
-  // campaign
-  try {
-    res = (await client('/current_user/campaigns')).rawJson.data
-    res = res.filter(res => res.id === config.patreon.campaign)[0];
-    if(res) cache.campaign.index = res;
-    else throw new Error('Campaign is invalid!');
-  } catch (error) {
-    console.log(error)
-  }
-
-  // campaign pledges
-  try {
-    res = (await client(`/campaigns/${config.patreon.campaign}/pledges`)).rawJson.data
-    if(res) cache.campaign.pledges.index = res
-    else throw new Error('Campaign\'s pledges are invalid!');
-
-    try {
-      res.forEach(pledge => {
-        console.log(pledge);
-      });
-    } catch (error) {
-      //throw error;
-    }
+    let campaign = await getCampaign()
+    let members = await getCampaignMembers()
+    members.data.forEach(async member => {
+      console.log(await getMember(member.id))
+    })
   } catch (error) {
     console.log(error)
   }
@@ -132,8 +75,8 @@ async function getCampaign() {
     headers: {
       'Authorization': 'Bearer ' + accessToken
     }
-  }).then(res => res.json());
-  return res;
+  }).then(res => res.json())
+  return res
 }
 
 async function getCampaignMembers() {
@@ -141,8 +84,17 @@ async function getCampaignMembers() {
     headers: {
       'Authorization': 'Bearer ' + accessToken
     }
-  }).then(res => res.json());
-  return res;
+  }).then(res => res.json())
+  return res
+}
+
+async function getMember(id) {
+  let res = await fetch(`https://www.patreon.com/api/oauth2/v2/members/${id}`, {
+    headers: {
+      'Authorization': 'Bearer ' + accessToken
+    }
+  }).then(res => res.json())
+  return res
 }
 
 async function get(path) {
