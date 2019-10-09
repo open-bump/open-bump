@@ -84,7 +84,7 @@ async function getCampaign() {
 }
 
 async function getCampaignMembers() {
-  let res = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/${config.patreon.campaign}/members?fields%5Bmember%5D=full_name,email,patron_status&include=user&fields%5Buser%5D=full_name,social_connections`, {
+  let res = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/${config.patreon.campaign}/members?fields%5Bmember%5D=full_name,email,patron_status,currently_entitled_amount_cents&include=user&fields%5Buser%5D=full_name,social_connections`, {
     headers: {
       'Authorization': 'Bearer ' + accessToken
     }
