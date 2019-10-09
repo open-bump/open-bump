@@ -1,5 +1,3 @@
-const main = require('../bot')
-const client = main.client
 const colors = require('./colors')
 const emojis = require('./emojis')
 const ms = require('ms')
@@ -14,6 +12,8 @@ module.exports.bumpToThisShard = (channels, options) => {
   let amount = 0
 
   channels.forEach(channels => {
+    const main = require('../bot')
+    const client = main.client
     let guildId = channels.guild
     let channelId = channels.channel
     if(common.sharding.getGuildShardId(guildId) === main.client.shard.id) {
@@ -38,6 +38,8 @@ module.exports.bumpToThisShard = (channels, options) => {
 }
 
 module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
+  const main = require('../bot')
+  const client = main.client
   if(!guild) throw new Error('MissingArgument: guild')
   if(!guildDatabase) guildDatabase = (await Guild.findOrCreate({ id: guild.id })).doc
   if(!guildDatabase.bump) throw new Error('GuildNotReady: bump')

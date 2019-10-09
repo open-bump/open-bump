@@ -33,8 +33,12 @@ module.exports.run = async () => {
 
     let campaign = await getCampaign()
     let members = await getCampaignMembers()
+    console.log(members)
     members.data.forEach(async member => {
-      console.log(await getMember(member.id))
+      console.log(JSON.stringify(member, null, 2))
+    })
+    members.included.forEach(async user => {
+      console.log(JSON.stringify(user, null, 2))
     })
   } catch (error) {
     console.log(error)
@@ -80,7 +84,7 @@ async function getCampaign() {
 }
 
 async function getCampaignMembers() {
-  let res = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/${config.patreon.campaign}/members`, {
+  let res = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/${config.patreon.campaign}/members?fields%5Bmember%5D=full_name,email,patron_status&include=user&fields%5Buser%5D=full_name,social_connections`, {
     headers: {
       'Authorization': 'Bearer ' + accessToken
     }
@@ -89,7 +93,7 @@ async function getCampaignMembers() {
 }
 
 async function getMember(id) {
-  let res = await fetch(`https://www.patreon.com/api/oauth2/v2/members/${id}`, {
+  let res = await fetch(`https://www.patreon.com/api/oauth2/v2/members/${id}?include=email`, {
     headers: {
       'Authorization': 'Bearer ' + accessToken
     }

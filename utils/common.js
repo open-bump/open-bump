@@ -1,4 +1,3 @@
-const main = require('../bot')
 const bump = require('./bump')
 const Guild = require('../models/Guild')
 
@@ -19,10 +18,12 @@ module.exports.includesAll = (array, contains) => {
 module.exports.sharding = {}
 
 module.exports.sharding.getGuildShardId = (guildId) => {
+  const main = require('../bot')
   return ~~((typeof guildId === 'number' ? guildId : parseInt(guildId)) / 4194304 % main.client.shard.count)
 }
 
 module.exports.sharding.getGuild = async (guildId) => {
+  const main = require('../bot')
   let shardId = module.exports.sharding.getGuildShardId(guildId)
   let guilds = (await main.client.shard.broadcastEval(`this.shard.id === ${shardId} ? this.guilds.get('${guildId}') : null`))
   if(guilds.length >= 1) return guilds[0]
@@ -30,6 +31,7 @@ module.exports.sharding.getGuild = async (guildId) => {
 }
 
 module.exports.sharding.bumpToAllShards = async (options) => {
+  const main = require('../bot')
   const guildsDatabase = await Guild.find({
     $and: [
       { feed: { $exists: true } },
@@ -50,8 +52,8 @@ module.exports.sharding.bumpToThisShard = (channels, options) => {
 }
 
 module.exports.processArray = async (t, fun/*, thisp */) => {
-  let length = t.length >>> 0;
-  let thisp = arguments[2];
+  let length = t.length >>> 0
+  let thisp = arguments[2]
   for (let i = 0; i < length; i++) {
     if (i in t) await fun.call(thisp, t[i], i, t)
   }
