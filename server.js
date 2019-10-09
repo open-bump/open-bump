@@ -1,6 +1,7 @@
-const express = require('express'),
-      app = express(),
-      port = 3000
+const express = require('express')
+const app = express()
+const port = 3000
+const config = require('./config')
 
 module.exports.run = async () => {
   try {
@@ -17,12 +18,10 @@ module.exports.run = async () => {
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
+app.use('/api', require('./api').router);
+
 // Listeners
 app.all('*', (req, res) => {
-  let response = {
-    code: 404,
-    message: 'Endpoint Not Found!'
-  }
   res.status(404)
-  res.json(response)
+  res.send('404 Not Found')
 })

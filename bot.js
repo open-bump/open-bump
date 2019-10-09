@@ -59,6 +59,7 @@ registerCommand('./commands/bump')
 registerCommand('./commands/eval')
 registerCommand('./commands/help')
 registerCommand('./commands/prefix')
+registerCommand('./commands/premium')
 registerCommand('./commands/preview')
 registerCommand('./commands/setbanner')
 registerCommand('./commands/setchannel')
@@ -91,7 +92,13 @@ client.on('message', async msg => {
     const guild = msg.guild
 
     /* Fetch or Create important Guild Information, e.g. Prefix and Features */
-    const guildDatabase = (await Guild.findOrCreate({ id: guild.id })).doc
+    const guildDatabase = (await Guild.findOrCreate({ id: guild.id }, { id: guild.id, name: guild.name, name_lower: guild.name.toLowerCase() })).doc
+
+    if(guildDatabase.name !== guild.name) {
+      guildDatabase.name = guild.name
+      guildDatabase.name_lower = guild.name.toLowerCase()
+      guildDatabase.save()
+    }
 
     if(config.discord.closedBeta) {
       if(!guildDatabase.features.includes('EARLY_ACCESS') && !config.discord.owners.includes(author.id)) {
