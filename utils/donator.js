@@ -4,21 +4,36 @@ module.exports.tiers = {
     features: ['BUMP_CHANNEL']
   },*/
   wumpus: { // $1
-    features: ['COLOR', 'BANNER', 'PREFIX', 'FEATURED']
+    features: ['COLOR', 'BANNER', 'PREFIX', 'FEATURED'],
+    cost: 100,
+    name: 'Wumpus',
+    id: 101
   },
   boxer: { // $3
-    features: ['AUTOBUMP', 'PREFIX']
+    features: ['AUTOBUMP', 'PREFIX'],
+    cost: 300,
+    name: 'Boxer',
+    id: 102
   },
   cool_wumpus: { // $5
     features: ['COLOR', 'BANNER', 'PREFIX', 'FEATURED', 'AUTOBUMP'],
+    cost: 500,
+    name: 'Cool Wumpus',
+    id: 103
   },
   fast_boxer: { // $5
     features: ['AUTOBUMP', 'PREFIX'],
-    cooldown: 30
+    cooldown: 30,
+    cost: 500,
+    name: 'Fast Boxer',
+    id: 104
   },
   super_wumpus: { // $7
     features: ['COLOR', 'BANNER', 'PREFIX', 'FEATURED', 'AUTOBUMP'],
-    cooldown: 30
+    cooldown: 30,
+    cost: 700,
+    name: 'Super Wumpus',
+    id: 105
   }
 }
 

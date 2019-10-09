@@ -1,5 +1,6 @@
 const bump = require('./bump')
 const Guild = require('../models/Guild')
+const User = require('../models/User')
 
 module.exports.id = {
   min: 41943044,
@@ -49,6 +50,11 @@ module.exports.sharding.bumpToAllShards = async (options) => {
 
 module.exports.sharding.bumpToThisShard = (channels, options) => {
   return bump.bumpToThisShard(channels, options)
+}
+
+module.exports.getUserDatabase = async (user) => {
+  const userDatabase = (await User.findOrCreate({ id: user })).doc
+  return userDatabase
 }
 
 module.exports.processArray = async (t, fun/*, thisp */) => {

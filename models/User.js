@@ -1,36 +1,36 @@
 const mongoose = require('mongoose')
 const findOrCreate = require('mongoose-findorcreate')
 
-const GuildSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
   id: {
     type: String,
     required: true
   },
   donator: {
-    tier: {
-      type: String,
-      required: false
-    },
     amount: {
       type: Number,
-      required: false
+      required: true,
+      default: 0
     },
-    patreon: {
-      email: {
-        type: String,
+    transition: {
+      to: {
+        type: Number,
+        required: false
+      },
+      detection: {
+        type: Date,
         required: false
       }
     },
-    history: {
-      type: Array,
-      required: true,
-      default: []
-    },
-    lastChange: {
-      type: Date,
+    patreonId: {
+      type: String,
       required: false
     },
     assigned: {
+      // {
+      //   id: 561984986274725900,
+      //   tier: 103
+      // }
       type: Array,
       required: true,
       default: []
@@ -38,8 +38,8 @@ const GuildSchema = new mongoose.Schema({
   }
 })
 
-GuildSchema.plugin(findOrCreate)
+UserSchema.plugin(findOrCreate)
 
-const Guild = mongoose.model('Guild', GuildSchema)
+const User = mongoose.model('User', UserSchema)
 
-module.exports = Guild
+module.exports = User

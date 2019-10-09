@@ -6,6 +6,14 @@ const GuildSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  name: {
+    type: String,
+    required: false
+  },
+  name_lower: {
+    type: String,
+    required: false
+  },
   bump: {
     description: {
       type: String,
@@ -56,8 +64,13 @@ const GuildSchema = new mongoose.Schema({
     default: []
   },
   donators: {
+    // {
+    // id: '422373229278003231',
+    // tier:
+    // }
     type: Array,
-    required: false
+    required: true,
+    default: []
   }
 })
 

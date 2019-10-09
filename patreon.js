@@ -18,30 +18,75 @@ let cache = {
   },
   campaign: {
     index: null,
-    pledges: {
-      index: null
+    members: {
+      index: {}
     }
   }
 }
 
 module.exports.run = async () => {
   try {
-    console.log('Starting patreon services...')
-    await fetchAccessToken()
-    console.log(`Refresh Token: ${refreshToken}`)
-    console.log(`Access Token: ${accessToken}`)
-
-    let campaign = await getCampaign()
-    let members = await getCampaignMembers()
-    console.log(members)
-    members.data.forEach(async member => {
-      console.log(JSON.stringify(member, null, 2))
-    })
-    members.included.forEach(async user => {
-      console.log(JSON.stringify(user, null, 2))
-    })
+    await module.exports.init();
+    await module.exports.refresh();
   } catch (error) {
+    console.log('Error while trying to access Patreon\'s API!')
     console.log(error)
+  }
+}
+
+module.exports.init = async () => {
+  console.log('Starting patreon services...')
+  await fetchAccessToken()
+  console.log(`Refresh Token: ${refreshToken}`)
+  console.log(`Access Token: ${accessToken}`)
+
+  let campaign = await getCampaign()
+  if(campaign) cache.campaign.index = campaign
+}
+
+module.exports.refresh = async () => {
+  let members = await getCampaignMembers()
+  if(members) {
+    let users = []
+    await common.processArray(members.included, async user => {
+      if(user) users[user.id] = user
+    })
+    await common.processArray(members.data, async member => {
+      let userId = member.relationships.user.data.id
+      let user = users[userId]
+      if(member) {
+        if(user) member.user = user
+        cache.campaign.members.index[member.id] = member
+      }
+    })
+  }
+}
+
+module.exports.getPatreonUser = (discordId) => {
+  let membersReturn = []
+  Object.keys(cache.campaign.members.index).forEach(id => {
+    let memberPatreon = cache.campaign.members.index[id]
+    let discordConnection = memberPatreon.user.attributes.social_connections.discord
+    if(discordConnection) {
+      let discordConnectionId = discordConnection.user_id
+      if(discordConnectionId && discordConnectionId === discordId) membersReturn.push(memberPatreon)
+    }
+  })
+  let cents = 0;
+  let pledges = [];
+  membersReturn.forEach(memberReturn => {
+    cents = cents + memberReturn.attributes.currently_entitled_amount_cents
+    pledges.push({
+      email: memberReturn.attributes.email,
+      name: memberReturn.attributes.full_name,
+      state: memberReturn.attributes.patron_status,
+      cents: memberReturn.attributes.currently_entitled_amount_cents
+    })
+  })
+  return {
+    id: discordId,
+    pledges: pledges,
+    cents: cents
   }
 }
 
