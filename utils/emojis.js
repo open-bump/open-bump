@@ -7,6 +7,7 @@ module.exports = {
   star: '⭐',
   arrowRight: '➡',
   information: 'ℹ',
+  mailbox: '📬',
   thumbsup: '<:thumbsup:631606538598875174>',
   thumbsdown: '<:thumbsdown:631606537827123221>',
   owner: '<:owner:547102770696814592>',

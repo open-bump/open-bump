@@ -68,6 +68,7 @@ client.once('ready', () => {
 const commands = new Discord.Collection()
 module.exports.commands = commands
 registerCommand('./commands/about')
+registerCommand('./commands/application')
 registerCommand('./commands/autobump')
 registerCommand('./commands/bump')
 registerCommand('./commands/eval')
@@ -187,9 +188,12 @@ client.on('message', async msg => {
 })
 
 // Database
-mongoose.connect(''.replaceAll(config.database.mongoURI, '%database%', config.database.database), { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => {
-      console.log('Database successfully connected!')
-      client.login(config.discord.token)
-    })
-    .catch(err => { console.log('Error while connecting to database!'); console.log(err) })
+mongoose.connect(''.replaceAll(config.database.mongoURI, '%database%', config.database.database), {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+  useCreateIndex: true
+}).then(() => {
+  console.log('Database successfully connected!')
+  client.login(config.discord.token)
+}).catch(err => { console.log('Error while connecting to database!'); console.log(err) })
