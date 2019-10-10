@@ -40,3 +40,21 @@ module.exports.tiers = {
 module.exports.translateGuild = (guildDatabase) => {
   let tiers = []
 }
+
+module.exports.getTier = (tierInput) => {
+  let tierTier = null
+  Object.keys(module.exports.tiers).forEach(key => {
+    let tier = module.exports.tiers[key]
+    if(tier.name && tier.name.toLowerCase() === tierInput) {
+      tierTier = tier
+    } else if (key.toLowerCase() === tierInput) {
+      tierTier = tier
+    } else if (`${tier.id}`.toLowerCase() === `${tierInput}`.toLowerCase()) {
+      tierTier = tier
+    }
+  })
+  return tierTier ? tierTier : {
+    name: undefined,
+    id: undefined
+  }
+}

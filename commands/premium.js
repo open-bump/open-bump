@@ -38,7 +38,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         if(tier) {
           used = used + tier.cost
         }
-        // TODO: Continue fetching tier and adding to used
       }
     });
     userDatabase = await common.getUserDatabase(author.id)
@@ -50,12 +49,30 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   }
 
   if(args.length === 0) {
+    let fields = []
+    if(hasPremium) fields.push({
+      name: `${emojis.bell} **You are a donator!**`,
+      value: `It looks like you already are a donator. View your activations using the command \`${prefix}premium list\``,
+      inline: false
+    })
     let options = {
       embed: {
         color: colors.green,
         title: `${emojis.star} **Premium**`,
         description: `Premium allows you to use additional features and commands. You can buy Premium from Patreon by using the link below:\n` +
-            `[https://patreon.com/Looat](https://www.patreon.com/Looat)`
+            `[https://patreon.com/Looat](https://www.patreon.com/Looat)`,
+        fields: fields
+      }
+    }
+    channel.send('', options)
+  } else if (!hasPremium) {
+    let options = {
+      embed: {
+        color: colors.red,
+        title: `${emojis.lockKey} **Premium required**`,
+        description: `Premium allows you to use additional features and commands. You can buy Premium from Patreon by using the link below:\n` +
+            `[https://patreon.com/Looat](https://www.patreon.com/Looat)`,
+        fields: fields
       }
     }
     channel.send('', options)
@@ -147,6 +164,10 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         }
         channel.send('', options)
       }
+    } else if (args[0] === 'deactivate') {
+      errors.errorSyntax(msg, prefix, 'premium deactivate <guildId>')
+    } else {
+      errors.errorSyntax(msg, prefix, module.exports.syntax)
     }
   } else if (args.length >= 2) {
     if(args[0] === 'activate') {
@@ -233,11 +254,59 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         channel.send('', options)
       }
     } else if(args.length === 2 && args[0] === 'deactivate') {
-      // TODO: Deactivate server
+      let guildId = args[1];
+      let targetGuildDatabase = await Guild.findOne({ id: guildId })
+      if(targetGuildDatabase) {
+        if(!targetGuildDatabase.donators) targetGuildDatabase.donators = []
+        let targetGuildDatabaseDonator = targetGuildDatabase.donators.filter(donator => donator.id === author.id)
+        if(targetGuildDatabaseDonator.length >= 1) {
+          targetGuildDatabaseDonator = targetGuildDatabaseDonator[0]
+          let options = {
+            embed: {
+              color: colors.blue,
+              title: `${emojis.loading} **Deactivating premium...**`
+            }
+          }
+          let message = await channel.send('', options)
+
+          targetGuildDatabase.donators = targetGuildDatabase.donators.slice()
+          targetGuildDatabase.donators = targetGuildDatabase.donators.filter(donator => donator.id !== author.id)
+          userDatabase.donator.assigned = userDatabase.donator.assigned.slice()
+          userDatabase.donator.assigned = userDatabase.donator.assigned.filter(assigned => assigned.id !== targetGuildDatabase.id)
+
+          await targetGuildDatabase.save()
+          await userDatabase.save()
+
+          console.log(targetGuildDatabaseDonator.tier)
+          console.log(donator.getTier(targetGuildDatabaseDonator.tier))
+
+          options = {
+            embed: {
+              color: colors.green,
+              title: `${emojis.check} **Premium deactivated successfully**`,
+              description: `You now have disabled \`${donator.getTier(targetGuildDatabaseDonator.tier).name}\` for ${targetGuildDatabase.name ? targetGuildDatabase.name : targetGuildDatabase.id}. Check out \`${prefix}premium list\` to see which servers are currently activated.`
+            }
+          }
+          message.edit('', options)
+        } else {
+          errors.error(msg, `You are not a Donator of guild ${targetGuildDatabase.name ? targetGuildDatabase.name : targetGuildDatabase.id}.\n` +
+              `Activate premium first using \`${prefix}premium activate <tier>\` before you can deactivate it.`)
+        }
+      } else {
+        let options = {
+          embed: {
+            color: colors.red,
+            title: `${emojis.xmark} **Guild could not be found!**`,
+            description: 'Please enter a valid guild ID. If you don\'t know how to get a guild\'s ID, ' +
+                `you can use the command \`${prefix}premium list\` to list all activated guilds and their ID.`
+          }
+        }
+        channel.send('', options)
+      }
     }
   }
 }
 
 module.exports.name = 'premium'
 module.exports.description = 'Use this command to activate your premium.'
-module.exports.syntax = 'premium [list|activate|deactivate] [tier...|guild]'
+module.exports.syntax = 'premium [list|activate|deactivate] [tier...|guildId]'

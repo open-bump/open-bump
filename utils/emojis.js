@@ -7,6 +7,8 @@ module.exports = {
   star: '⭐',
   arrowRight: '➡',
   information: 'ℹ',
+  thumbsup: '<:thumbsup:631606538598875174>',
+  thumbsdown: '<:thumbsdown:631606537827123221>',
   owner: '<:owner:547102770696814592>',
   region: '<:region:547102740799553615>',
   created: '<:created:547102739503644672>',
@@ -21,7 +23,7 @@ module.exports = {
   loading: '<a:loading:547809249552760842>',
   check: '<:check:621063206235930634>',
   xmark: '<:xmark:621063205854380086>',
-  neutral: '<:neutral:621063802028294155>', // same as neutralGray
+  neutral: '<:neutral:621063802028294155>', // same as neutralGray, deprecated
   neutralGray: '<:neutral:621063802028294155>',
   neutralYellow: '<:neutral:621063205854380057>',
   importantNotice: '<:importantnotice:621049166759460884>',
