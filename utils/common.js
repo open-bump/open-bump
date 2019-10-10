@@ -1,6 +1,7 @@
 const bump = require('./bump')
 const Guild = require('../models/Guild')
 const User = require('../models/User')
+const mongoose = require('mongoose')
 
 module.exports.id = {
   min: 41943044,
@@ -84,4 +85,13 @@ module.exports.getEmojiId = emoji => {
     })
     return res
   }
+}
+
+module.exports.toObjectId = input => {
+  let ObjectId = mongoose.Types.ObjectId
+  if(ObjectId.isValid(input)) {
+    let objectId = new ObjectId(input)
+    if(objectId.toString() === input.toString()) return objectId
+  }
+  return false
 }
