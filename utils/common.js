@@ -64,3 +64,7 @@ module.exports.processArray = async (t, fun/*, thisp */) => {
     if (i in t) await fun.call(thisp, t[i], i, t)
   }
 }
+
+module.exports.capitalizeFirstLetter = string => {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+}

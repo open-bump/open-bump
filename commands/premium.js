@@ -7,6 +7,7 @@ const donator = require('../utils/donator')
 const bump = require('../utils/bump')
 const common = require('../utils/common')
 const fetch = require('node-fetch')
+const ms = require('ms')
 const Guild = require('../models/Guild')
 const User = require('../models/User')
 
@@ -57,10 +58,33 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
     })
     let options = {
       embed: {
-        color: colors.green,
+        color: colors.orange,
         title: `${emojis.star} **Premium**`,
         description: `Premium allows you to use additional features and commands. You can buy Premium from Patreon by using the link below:\n` +
-            `[https://patreon.com/Looat](https://www.patreon.com/Looat)`,
+            `[https://patreon.com/Looat](https://www.patreon.com/Looat)\n\n` +
+            `If you want to see a list of all available tiers, please use the command \`${prefix}premium tiers\`.`,
+        fields: fields
+      }
+    }
+    channel.send('', options)
+  } else if (args.length === 1 && args[0] === 'tiers') {
+    let fields = [];
+    Object.keys(donator.tiers).forEach(key => {
+      let tier = donator.tiers[key]
+      let features = []
+      tier.features.forEach(feature => features.push('- ' + common.capitalizeFirstLetter(feature)))
+      if(tier.cooldown) features.push(`- ${ms(tier.cooldown*1000*60, { long: true })} cooldown`)
+      fields.push({
+        name: `${tier.name} | $${(tier.cost / 100).toFixed(2)}`,
+        value: features.join('\n'),
+        inline: false
+      })
+    })
+    let options = {
+      embed: {
+        color: colors.orange,
+        title: `${emojis.star} **Premium Tiers**`,
+        description: 'Below is a list of all available premium tiers. To buy a tier, please pledge on [https://patreon.com/Looat](https://www.patreon.com/Looat).',
         fields: fields
       }
     }
@@ -312,4 +336,4 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 
 module.exports.name = 'premium'
 module.exports.description = 'Use this command to activate your premium.'
-module.exports.syntax = 'premium [list|activate|deactivate] [tier...|guildId]'
+module.exports.syntax = 'premium [tiers|list|activate|deactivate] [tier...|guildId]'

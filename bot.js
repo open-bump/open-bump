@@ -7,8 +7,10 @@ const mongoose = require('mongoose')
 const fetch = require('node-fetch')
 const colors = require('./utils/colors')
 const emojis = require('./utils/emojis')
+const bump = require('./utils/bump')
 const common = require('./utils/common')
 const donator = require('./utils/donator')
+const lyne = require('./utils/lyne')
 
 module.exports.client = client
 
@@ -54,14 +56,15 @@ module.exports.config = config
 // Discord
 client.once('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`)
-  // TODO: setTimeout(() => checkPatreonLoop(), 1000*60 + client.shard.id*1000*60)
-  setTimeout(() => checkPatreonLoop(), client.shard.id*1000*60)
+  setTimeout(() => bump.autoBumpLoop(), 1000*30 + client.shard.id*1000*60)
+  setTimeout(() => checkPatreonLoop(), 1000*60 + client.shard.id*1000*60)
 })
 
 // Commands
 const commands = new Discord.Collection()
 module.exports.commands = commands
 registerCommand('./commands/about')
+registerCommand('./commands/autobump')
 registerCommand('./commands/bump')
 registerCommand('./commands/eval')
 registerCommand('./commands/help')
@@ -170,14 +173,27 @@ client.on('message', async msg => {
         try {
           await command.run(msg, invoke, args, prefix, guildDatabase, argtions)
         } catch (err) {
-          const options = {
-            embed: {
-              color: 0xff0000,
-              title: '**An error occured!**',
-              description: `\`\`\`js\n${err}\`\`\``
+          if(argtions.includes('-lyne')) {
+            let lynelink = err.stack ? await lyne(err.stack) : null;
+            const options = {
+              embed: {
+                color: 0xff0000,
+                title: '**An error occured!**',
+                description: `\`\`\`js\n${err}\`\`\`\n` +
+                    `**Full Error:** ${lynelink}`
+              }
             }
+            msg.channel.send('', options)
+          } else {
+            const options = {
+              embed: {
+                color: 0xff0000,
+                title: '**An error occured!**',
+                description: `\`\`\`js\n${err}\`\`\``
+              }
+            }
+            msg.channel.send('', options)
           }
-          msg.channel.send('', options)
         }
       }
     }
@@ -207,7 +223,6 @@ async function checkPatreonLoop() {
   try {
     let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/undefined?fetch=true&token=${config.server.token}`).then(res => res.json())
     console.log('Patreon refetched')
-    console.log(userPatreon)
 
     let usersDatabase = await User.find({ 'donator.amount': { $gt: 0 } })
     await common.processArray(usersDatabase, async userDatabase => {
@@ -314,7 +329,6 @@ async function checkPatreonLoop() {
     console.log(error)
   }
 
-  // TODO: Patreon Check
   setTimeout(() => checkPatreonLoop(), 1000*60*client.shard.count)
 }
 

@@ -1,6 +1,7 @@
 const colors = require('./colors')
 const emojis = require('./emojis')
 const ms = require('ms')
+const moment = require('moment')
 const common = require('./common')
 const Guild = require('../models/Guild')
 const donator = require('../utils/donator')
@@ -38,14 +39,62 @@ module.exports.bumpToThisShard = (channels, options) => {
   return amount
 }
 
+module.exports.bumpToAllShardsIfCorrectShard = async (guildId) => {
+  const main = require('../bot')
+  if(!main.client.guilds.has(guildId)) return
+  let guild = main.client.guilds.get(guildId)
+  let guildDatabase = await Guild.findOne({ id: guildId })
+  options = await module.exports.getPreviewEmbed(guild, guildDatabase)
+  let amount = await module.exports.bumpToAllShards(options)
+  return amount
+}
+
+module.exports.autoBumpLoop = async () => {
+  const main = require('../bot')
+  console.log(`Shard #${main.client.shard.id} is now doing autobumps...`)
+
+  try {
+    let guildsDatabase = await Guild.find({ autoBump: true })
+    common.processArray(guildsDatabase, async guildDatabase => {
+      let features = donator.translateFeatures(guildDatabase)
+      let cooldown = donator.translateCooldown(guildDatabase)
+      if(features.includes('AUTOBUMP')) {
+        if(guildDatabase.lastBump && guildDatabase.lastBump.time) {
+          let nextBump = moment(guildDatabase.lastBump.time.valueOf() + cooldown)
+          if(nextBump.isAfter(moment())) {
+            console.log(`Guild ${guildDatabase.name ? guildDatabase.name : guildDatabase.id} skipped as it is on cooldown`)
+            return
+          }
+        }
+
+        console.log(`Guild ${guildDatabase.name ? guildDatabase.name : guildDatabase.id} is now being autobumped`)
+        await main.client.shard.broadcastEval(`this.require('./utils/bump').bumpToAllShardsIfCorrectShard('${guildDatabase.id}')`)
+
+        guildDatabase.lastBump.user = main.client.user.id
+        guildDatabase.lastBump.time = Date.now()
+
+        guildDatabase.save()
+      } else {
+        guildDatabase.autoBump = false
+        guildDatabase.save()
+      }
+    })
+  } catch (error) {
+    console.log('Error while autobumping!')
+    console.log(error)
+  }
+
+  setTimeout(() => module.exports.autoBumpLoop(), 1000*60*main.client.shard.count)
+}
+
 module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
   const main = require('../bot')
   const client = main.client
   if(!guild) throw new Error('MissingArgument: guild')
   if(!guildDatabase) guildDatabase = (await Guild.findOrCreate({ id: guild.id })).doc
-  if(!guildDatabase.bump) throw new Error('GuildNotReady: bump')
-  if(!guildDatabase.bump.description) throw new Error('GuildNotReady: description')
-  if(!guildDatabase.bump.invite) throw new Error('GuildNotReady: invite')
+  if(!guildDatabase.bump) throw new Error('GuildNotReady: Description and more is missing!')
+  if(!guildDatabase.bump.description) throw new Error('GuildNotReady: Description is missing!')
+  if(!guildDatabase.bump.invite) throw new Error('GuildNotReady: Invite is missing!')
 
   // Stats
   let total = 0
