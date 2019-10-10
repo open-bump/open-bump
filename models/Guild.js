@@ -33,6 +33,11 @@ const GuildSchema = new mongoose.Schema({
       required: false
     }
   },
+  autoBump: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
   settings: {
     prefix: {
       type: String,

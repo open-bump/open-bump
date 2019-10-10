@@ -14,7 +14,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
           `**Author:** ${package.author}\n` +
           `**Description:**\n Open Bump allows you to automatically advertise your server on other servers and let them advertise their server on your server.\n` +
           `**Invite this Bot:** [Invite Link](https://discordapp.com/api/oauth2/authorize?client_id=546999467887427604&permissions=281665&scope=bot)\n` +
-          `**Support Server:** [https://discord.gg/eBFu8HF](https://discord.gg/eBFu8HF)`
+          `**Support Server:** [Invite Link](https://discord.gg/eBFu8HF)`
     }
   }
   msg.channel.send('', options)

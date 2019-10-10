@@ -52,7 +52,7 @@ module.exports.translateFeatures = (guildDatabase) => {
   return features
 }
 
-module.exports.getAutoBumpDuration = (guildDatabase) => {
+module.exports.translateCooldown = (guildDatabase) => {
   let cooldown = 60 // <-- Default Cooldown
   guildDatabase.donators.forEach(donator => {
     let tier = module.exports.getTier(donator.tier)
@@ -62,7 +62,7 @@ module.exports.getAutoBumpDuration = (guildDatabase) => {
       }
     }
   })
-  return cooldown
+  return cooldown*60*1000
 }
 
 module.exports.getTier = (tierInput) => {

@@ -24,13 +24,16 @@ let cache = {
   }
 }
 
-module.exports.run = async () => {
+module.exports.run = async (tries) => {
   try {
     await module.exports.init();
     await module.exports.refresh();
   } catch (error) {
     console.log('Error while trying to access Patreon\'s API!')
     console.log(error)
+    if (!tries || tries < 5) setTimeout(module.exports.run(tries ? tries + 1 : 1), 1000*5)
+    else if (tries < 8) setTimeout(module.exports.run(tries ? tries + 1 : 1), 1000*10)
+    else if (tries < 10) setTimeout(module.exports.run(tries ? tries + 1 : 1), 1000*30)
   }
 }
 

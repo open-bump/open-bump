@@ -17,6 +17,8 @@ module.exports.run = (msg, invoke, args, prefix, guildDatabase) => {
     showcase.push(main.commands.get('setprefix'))
     showcase.push(main.commands.get('setbanner'))
     showcase.push(main.commands.get('setcolor'))
+    showcase.push(main.commands.get('about'))
+    showcase.push(main.commands.get('premium'))
 
     let fields = []
     showcase.forEach(cmd => {
