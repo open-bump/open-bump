@@ -4,6 +4,7 @@ const fs = require('fs')
 const patreon = require('patreon')
 const patreonAPI = patreon.patreon
 const common = require('./utils/common')
+const donator = require('./utils/donator')
 const config = JSON.parse(fs.readFileSync('./config.json', 'utf8'))
 const CLIENT_ID = config.patreon.clientId
 const CLIENT_SECRET = config.patreon.clientSecret
@@ -11,6 +12,8 @@ const REFRESH_TOKEN = config.patreon.refreshToken
 const BASE_URL = ''
 let accessToken = null
 let client = null
+const Guild = require('./models/Guild')
+const User = require('./models/User')
 
 let cache = {
   user: {
@@ -151,4 +154,120 @@ async function getMember(id) {
 
 async function get(path) {
   return fetch(path)/*.then(res => res.json())*/
+}
+
+module.exports.checkPatreonLoop = async () => {
+  const main = require('./bot')
+  console.log(`Shard #${main.client.shard.id} is now doing patreon checks...`)
+
+  try {
+    let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/undefined?fetch=true&token=${config.server.token}`).then(res => res.json())
+    console.log('Patreon refetched')
+
+    let usersDatabase = await User.find({ 'donator.amount': { $gt: 0 } })
+    await common.processArray(usersDatabase, async userDatabase => {
+      let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${userDatabase.id}?token=${config.server.token}`).then(res => res.json())
+      if(userDatabase.donator.amount <= userPatreon.cents) userDatabase.donator.amount = userPatreon.cents
+      let guildsDatabase = await Guild.find({ 'donators.id': userDatabase.id })
+      let totalCost = 0
+      guildsDatabase.forEach(guildDatabase => {
+        if(!guildsDatabase.donators) guildsDatabase.donators = []
+        let guildDatabaseDonator = guildDatabase.donators.filter(donator => donator.id === userDatabase.id)
+        if(guildDatabaseDonator.length >= 1) {
+          guildDatabaseDonator = guildDatabaseDonator[0]
+          totalCost = totalCost + donator.getTier(guildDatabaseDonator.tier).cost
+        }
+      })
+      if(totalCost > userPatreon.cents) {
+        // Problem detected
+        if(userDatabase.donator.transition) {
+          // Already detected, check state and cancel perks if too long ago
+          if(main.client.users.has(userDatabase.id) && !userDatabase.donator.transition.informed) {
+            // Not yet informed but possible to inform, inform now
+            let userDiscord = main.client.users.get(userDatabase.id)
+            let options = {
+              embed: {
+                color: colors.red,
+                title: `${emojis.xmark} **Problem detected**`,
+                description: 'Hey there, we recently detected a problem with your Patreon pledge. It looks like your pledge does not contain enough slots for all activated servers. ' +
+                    'Please fix this issue asap. You can increase your pledge or disable/change servers. If you want to see all activated servers, ' +
+                    `you can use the command \`${config.settings.prefix}premium list\` to do so. Please note, the commands need to be executed on a server and not via DMs.\n` +
+                    'If you think this is an error, please contact our **[support](https://discord.gg/eBFu8HF)**.'
+              }
+            }
+            userDiscord.send('', options).catch(() => {})
+            userDatabase.donator.transition.informed = true
+            userDatabase.save()
+          }
+          if(!userDatabase.donator.transition.detected) userDatabase.donator.transition.detected = Date.now()
+
+          if((userDatabase.donator.transition.detected.valueOf() + 1000*60*5) <= (Date.now().valueOf())) {
+          // TODO: if((userDatabase.donator.transition.detected.valueOf() + 1000*60*60*24*3) <= (Date.now().valueOf())) {
+            // Too long ago, no change, premium cancelling
+            console.log(`User ${userDatabase.id} didn't pay for too long and now gets his premium deactivated.`)
+            let userDiscord = await main.client.fetchUser(userDatabase.id)
+            let options = {
+              embed: {
+                color: colors.red,
+                title: `${emojis.xmark} **Premium deactivated**`,
+                description: 'Hey there, this is a notice that you premium has been deactivated. This happened because we weren\'t able to check your pledge for 3 days.\n' +
+                    'All your premium activations have been disabled. If you think this is an error, please contact our **[support](https://discord.gg/eBFu8HF)**.'
+              }
+            }
+            if(userDiscord) userDiscord.send('', options).catch(() => {})
+            console.log(`Patreon checks premium disabled message sent to ${userDatabase.id}`)
+            guildsDatabase.forEach(guildDatabase => {
+              guildDatabase.donators = guildDatabase.donators.slice()
+              guildDatabase.donators = guildDatabase.donators.filter(donator => donator.id !== userDatabase.id)
+              guildDatabase.save()
+            })
+            userDatabase.donator.transition = undefined
+            userDatabase.donator.assigned = []
+            userDatabase.save()
+          }
+        } else {
+          // Not yet informed. Inform user and start transition
+          let userDiscord = await main.client.fetchUser(userDatabase.id)
+          let options = {
+            embed: {
+              color: colors.red,
+              title: `${emojis.xmark} **Problem detected**`,
+              description: 'Hey there, we recently detected a problem with your Patreon pledge. It looks like your pledge does not contain enough slots for all activated servers. ' +
+                  'Please fix this issue asap. You can increase your pledge or disable/change servers. If you want to see all activated servers, ' +
+                  `you can use the command \`${config.settings.prefix}premium list\` to do so. Please note, the commands need to be executed on a server and not via DMs.\n` +
+                  'If you think this is an error, please contact our **[support](https://discord.gg/eBFu8HF)**.'
+            }
+          }
+          if(userDiscord) userDiscord.send('', options).catch(() => {})
+          console.log(`Patreon checks problem detected message sent to ${userDatabase.id}`)
+          userDatabase.donator.transition.amount = userPatreon.cents
+          userDatabase.donator.transition.detected = Date.now()
+          userDatabase.donator.transition.informed = true
+          userDatabase.save()
+          console.log(`User ${userDatabase.id} changed his pledge. Starting transition process.`)
+        }
+      } else {
+        let userDiscord = await main.client.fetchUser(userDatabase.id)
+        if(userDatabase.donator.transition && userDatabase.donator.transition.informed) {
+          let options = {
+            embed: {
+              color: colors.green,
+              title: `${emojis.check} **Problem fixed**`,
+              description: 'Hey there, we recently detected a problem with your Patreon pledge. However, it looks like the problem has been resolved and we removed the entry from our database.\n' +
+                  'Thank you for your support!'
+            }
+          }
+          if(userDiscord) userDiscord.send('', options).catch(() => {})
+          console.log(`Patreon checks problem resolved message sent to ${userDatabase.id}`)
+        }
+        userDatabase.donator.transition = undefined
+        userDatabase.save()
+      }
+    })
+  } catch (error) {
+    console.log('Error while checking patreon!')
+    console.log(error)
+  }
+
+  setTimeout(() => module.exports.checkPatreonLoop(), 1000*60*main.client.shard.count)
 }

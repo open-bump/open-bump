@@ -208,7 +208,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       errors.errorSyntax(msg, prefix, module.exports.syntax)
     }
   } else if (args.length >= 2) {
-    if(args[0] === 'activate') {
+    if(args[0] === 'activate' || args[0] === 'add') {
       let argsTemp = args.slice()
       argsTemp.shift()
       let tierInput = argsTemp.join(' ').toLowerCase()
@@ -289,7 +289,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         }
         channel.send('', options)
       }
-    } else if(args.length === 2 && args[0] === 'deactivate') {
+    } else if(args.length === 2 && args[0] === 'deactivate' || args[0] === 'remove') {
       let guildId = args[1];
       let targetGuildDatabase = await Guild.findOne({ id: guildId })
       if(targetGuildDatabase) {

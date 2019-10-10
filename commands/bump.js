@@ -19,12 +19,34 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       let cooldown = donator.translateCooldown(guildDatabase)
       let nextBump = moment(guildDatabase.lastBump.time.valueOf() + cooldown)
       if(nextBump.isAfter(moment())) {
+        let fields = []
+        if(cooldown === 1000*60*60) {
+          if(!guildDatabase.lastBump || Math.floor(Math.random() * 3) === 0) {
+          fields.push({
+            name: `${emojis.bell} **Suggestion: Bump Channel**`,
+            value: 'You don\'t want to wait 1 hour until you can bump? Set your guild a bump channel!\n' +
+                `To set a bump channel, please use the \`${prefix}setchannel <channel>\` command.`,
+            inline: false
+          })
+          }
+        } else if(cooldown === 1000*60*45) {
+          if(!guildDatabase.lastBump || Math.floor(Math.random() * 3) === 0) {
+            fields.push({
+              name: `${emojis.bell} **Suggestion: Premium**`,
+              value: 'You don\'t want to wait 45 minutes until you can bump? Upgrade to premium!\n' +
+                  `To view more information about premium, please use the \`${prefix}premium\` command.`,
+              inline: false
+            })
+          }
+        }
         let remaining = ms(nextBump.valueOf() - moment().valueOf(), { long: true })
         let options = {
           embed: {
             color: colors.red,
             title: `${emojis.xmark} **Oops, you are on cooldown!**`,
-            description: `**Next Bump:** in ${remaining}`
+            description: `**Total Cooldown:** ${ms(cooldown, { long: true })}\n` +
+                `**Next Bump:** in ${remaining}`,
+            fields: fields
           }
         }
         return channel.send('', options)
