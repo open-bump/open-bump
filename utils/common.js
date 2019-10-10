@@ -68,3 +68,20 @@ module.exports.processArray = async (t, fun/*, thisp */) => {
 module.exports.capitalizeFirstLetter = string => {
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
+
+module.exports.getEmojiId = emoji => {
+  let regex = /<a?:.{0,}:([0-9]{10,20})>/gm
+  let m
+
+  while ((m = regex.exec(emoji)) !== null) {
+    if (m.index === regex.lastIndex) {
+      regex.lastIndex++
+    }
+
+    let res = null
+    m.forEach((match, groupIndex) => {
+      if(groupIndex === 1) res = match
+    })
+    return res
+  }
+}

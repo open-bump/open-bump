@@ -14,7 +14,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel
   let author = msg.author
 
-  if(!guildDatabase.autoBump) {
+  if(!donator.translateFeatures(guildDatabase).includes('AUTOBUMP') || !guildDatabase.autoBump) {
     if(guildDatabase.lastBump && guildDatabase.lastBump.time) {
       let cooldown = donator.translateCooldown(guildDatabase)
       let nextBump = moment(guildDatabase.lastBump.time.valueOf() + cooldown)

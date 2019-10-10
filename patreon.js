@@ -176,9 +176,9 @@ module.exports.checkPatreonLoop = async () => {
           let options = {
             embed: {
               color: colors.green,
-              title: `${emojis.check} **Boost power enabled!**`,
+              title: `${emojis.check} **Boost power enabled**`,
               description: 'Hey there, we just saw you boosted our server Open Advertisements. That\'s awesome, thank you so much! ' +
-                  `As a thank you, you get a free bonus of $5.00 that allows you to use premium of this bot.\n` +
+                  `As a thank you, you get a free bonus of $5.00 that allows you to use the premium version of this bot.\n` +
                   `To start using it, please check out the command \`${config.settings.prefix}premium\`. It will tell you how you can use your bonus.`
             }
           }
@@ -243,7 +243,7 @@ module.exports.checkPatreonLoop = async () => {
               embed: {
                 color: colors.red,
                 title: `${emojis.xmark} **Problem detected**`,
-                description: 'Hey there, we recently detected a problem with your Patreon pledge. It looks like your is not enough to cover the costs for all activated servers. ' +
+                description: 'Hey there, we recently detected a problem with your Patreon pledge. it looks like your balance is not enough to cover the costs for all activated servers. ' +
                     'Please fix this issue asap. You can increase your pledge or disable/change servers. If you want to see all activated servers, ' +
                     `you can use the command \`${config.settings.prefix}premium list\` to do so. Please note, the commands need to be executed on a server and not via DMs.\n` +
                     'If you think this is an error, please contact our **[support](https://discord.gg/eBFu8HF)**.'
@@ -286,7 +286,7 @@ module.exports.checkPatreonLoop = async () => {
             embed: {
               color: colors.red,
               title: `${emojis.xmark} **Problem detected**`,
-              description: 'Hey there, we recently detected a problem with your Patreon pledge. It looks like your is not enough to cover the costs for all activated servers. ' +
+              description: 'Hey there, we recently detected a problem with your Patreon pledge. it looks like your balance is not enough to cover the costs for all activated servers. ' +
                   'Please fix this issue asap. You can increase your pledge or disable/change servers. If you want to see all activated servers, ' +
                   `you can use the command \`${config.settings.prefix}premium list\` to do so. Please note, the commands need to be executed on a server and not via DMs.\n` +
                   'If you think this is an error, please contact our **[support](https://discord.gg/eBFu8HF)**.'
