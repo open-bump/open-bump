@@ -40,6 +40,12 @@ module.exports.tiers = {
   }
 }
 
+module.exports.translateAmount = (userPatreon, userDatabase) => {
+  let amount = userPatreon.cents
+  if(userDatabase.nitroBooster) amount = amount + 500
+  return amount
+}
+
 module.exports.translateFeatures = (guildDatabase) => {
   let features = guildDatabase.features.slice()
   guildDatabase.donators.forEach(donator => {

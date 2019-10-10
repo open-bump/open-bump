@@ -5,6 +5,8 @@ const patreon = require('patreon')
 const patreonAPI = patreon.patreon
 const common = require('./utils/common')
 const donator = require('./utils/donator')
+const colors = require('./utils/colors')
+const emojis = require('./utils/emojis')
 const config = JSON.parse(fs.readFileSync('./config.json', 'utf8'))
 const CLIENT_ID = config.patreon.clientId
 const CLIENT_SECRET = config.patreon.clientSecret
@@ -161,13 +163,65 @@ module.exports.checkPatreonLoop = async () => {
   console.log(`Shard #${main.client.shard.id} is now doing patreon checks...`)
 
   try {
+    if(main.client.guilds.has(config.discord.server)) {
+      let boosters = [];
+      let guild = main.client.guilds.get(config.discord.server)
+      let role = guild.roles.get(config.discord.boosterRole)
+      role.members.forEach(member => boosters.push(member.user.id))
+      role.members.forEach(async member => {
+        let userDatabase = await common.getUserDatabase(member.user.id)
+        if(!userDatabase.nitroBooster) {
+          userDatabase.nitroBooster = true
+          userDatabase.save()
+          let options = {
+            embed: {
+              color: colors.green,
+              title: `${emojis.check} **Boost power enabled!**`,
+              description: 'Hey there, we just saw you boosted our server Open Advertisements. That\'s awesome, thank you so much! ' +
+                  `As a thank you, you get a free bonus of $5.00 that allows you to use premium of this bot.\n` +
+                  `To start using it, please check out the command \`${config.settings.prefix}premium\`. It will tell you how you can use your bonus.`
+            }
+          }
+          // TODO: Send to all users, remove if statement
+          if(config.discord.owners.includes(member.user.id)) member.user.send('', options).catch(() => {})
+        }
+      })
+
+      let boostersDatabase = await User.find({ nitroBooster: true })
+      boostersDatabase.forEach(async boosterDatabase => {
+        if(!boosters.includes(boosterDatabase.id)) {
+          let boosterDiscord = main.client.fetchUser(boosterDatabase.id)
+          boosterDatabase.nitroBooster = false
+          boosterDatabase.save()
+          if(boosterDiscord) {
+            let options = {
+              embed: {
+                color: colors.red,
+                title: `${emojis.xmark} **Boost power disabled**`,
+                description: 'Hey there, we just saw you removed your boost from Open Advertisements. ' +
+                    `Because of that, you lost your free $5.00 bonus. That's sad!\n` +
+                    `You may receive further messages from this bot in case your new balance isn't enough to cover the costs for all activated servers.`
+              }
+            }
+            // TODO: Send to all users, remove if statement
+            if(config.discord.owners.includes(boosterDiscord.id)) boosterDiscord.send('', options).catch(() => {})
+          }
+        }
+      })
+    }
+  } catch (error) {
+    console.log('Error while checking for Nitro Boosters:')
+    console.log(error)
+  }
+
+  try {
     let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/undefined?fetch=true&token=${config.server.token}`).then(res => res.json())
     console.log('Patreon refetched')
 
     let usersDatabase = await User.find({ 'donator.amount': { $gt: 0 } })
     await common.processArray(usersDatabase, async userDatabase => {
       let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${userDatabase.id}?token=${config.server.token}`).then(res => res.json())
-      if(userDatabase.donator.amount <= userPatreon.cents) userDatabase.donator.amount = userPatreon.cents
+      if(userDatabase.donator.amount <= userPatreon) userDatabase.donator.amount = donator.translateAmount(userPatreon, userDatabase)
       let guildsDatabase = await Guild.find({ 'donators.id': userDatabase.id })
       let totalCost = 0
       guildsDatabase.forEach(guildDatabase => {
@@ -178,7 +232,7 @@ module.exports.checkPatreonLoop = async () => {
           totalCost = totalCost + donator.getTier(guildDatabaseDonator.tier).cost
         }
       })
-      if(totalCost > userPatreon.cents) {
+      if(totalCost > donator.translateAmount(userPatreon, userDatabase)) {
         // Problem detected
         if(userDatabase.donator.transition) {
           // Already detected, check state and cancel perks if too long ago
@@ -189,7 +243,7 @@ module.exports.checkPatreonLoop = async () => {
               embed: {
                 color: colors.red,
                 title: `${emojis.xmark} **Problem detected**`,
-                description: 'Hey there, we recently detected a problem with your Patreon pledge. It looks like your pledge does not contain enough slots for all activated servers. ' +
+                description: 'Hey there, we recently detected a problem with your Patreon pledge. It looks like your is not enough to cover the costs for all activated servers. ' +
                     'Please fix this issue asap. You can increase your pledge or disable/change servers. If you want to see all activated servers, ' +
                     `you can use the command \`${config.settings.prefix}premium list\` to do so. Please note, the commands need to be executed on a server and not via DMs.\n` +
                     'If you think this is an error, please contact our **[support](https://discord.gg/eBFu8HF)**.'
@@ -232,7 +286,7 @@ module.exports.checkPatreonLoop = async () => {
             embed: {
               color: colors.red,
               title: `${emojis.xmark} **Problem detected**`,
-              description: 'Hey there, we recently detected a problem with your Patreon pledge. It looks like your pledge does not contain enough slots for all activated servers. ' +
+              description: 'Hey there, we recently detected a problem with your Patreon pledge. It looks like your is not enough to cover the costs for all activated servers. ' +
                   'Please fix this issue asap. You can increase your pledge or disable/change servers. If you want to see all activated servers, ' +
                   `you can use the command \`${config.settings.prefix}premium list\` to do so. Please note, the commands need to be executed on a server and not via DMs.\n` +
                   'If you think this is an error, please contact our **[support](https://discord.gg/eBFu8HF)**.'
@@ -240,7 +294,7 @@ module.exports.checkPatreonLoop = async () => {
           }
           if(userDiscord) userDiscord.send('', options).catch(() => {})
           console.log(`Patreon checks problem detected message sent to ${userDatabase.id}`)
-          userDatabase.donator.transition.amount = userPatreon.cents
+          userDatabase.donator.transition.amount = donator.translateAmount(userPatreon, userDatabase)
           userDatabase.donator.transition.detected = Date.now()
           userDatabase.donator.transition.informed = true
           userDatabase.save()
