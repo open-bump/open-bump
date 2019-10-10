@@ -23,7 +23,6 @@ module.exports.channel = (input, guild) => {
   return 'NO_RESULTS'
 }
 
-// TODO: Continue here
 module.exports.user = (input, guild) => {
   let id = ''.replaceAll(input, /[^0-9]/, '')
   if(guild && guild.members.has(id)) return guild.members.get(id).user

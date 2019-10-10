@@ -93,6 +93,47 @@ function registerCommand(path, name, alias) {
   }
 }
 
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+  if(newMember.guild.id === config.discord.server) {
+    let booster = false
+    newMember.roles.forEach(role => {
+      if(role.id === config.discord.boosterRole) booster = true
+    })
+    let userDatabase = await common.getUserDatabase(newMember.user.id)
+    if(booster) {
+      if(!userDatabase.nitroBooster) {
+        userDatabase.nitroBooster = true
+        userDatabase.save()
+        let options = {
+          embed: {
+            color: colors.green,
+            title: `${emojis.check} **Boost power enabled!**`,
+            description: 'Hey there, we just saw you boosted our server Open Advertisements. That\'s awesome, thank you so much! ' +
+                `As a thank you, you get a free bonus of $5.00 that allows you to use premium of this bot.\n` +
+                `To start using it, please check out the command \`${config.settings.prefix}premium\`. It will tell you how you can use your bonus.`
+          }
+        }
+        newMember.user.send('', options).catch(() => {})
+      }
+    } else {
+      if(userDatabase.nitroBooster) {
+        userDatabase.nitroBooster = false
+        userDatabase.save()
+        let options = {
+          embed: {
+            color: colors.red,
+            title: `${emojis.xmark} **Boost power disabled**`,
+            description: 'Hey there, we just saw you removed your boost from Open Advertisements. ' +
+                `Because of that, you lost your free $5.00 bonus. That's sad!\n` +
+                `You may receive further messages from this bot in case your new balance isn't enough to cover the costs for all activated servers.`
+          }
+        }
+        newMember.user.send('', options).catch(() => {})
+      }
+    }
+  }
+})
+
 client.on('message', async msg => {
   command.received(msg)
   try {

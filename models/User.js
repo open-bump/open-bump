@@ -35,6 +35,10 @@ const UserSchema = new mongoose.Schema({
       required: true,
       default: []
     }
+  },
+  nitroBooster: {
+    type: Boolean,
+    required: false
   }
 })
 
