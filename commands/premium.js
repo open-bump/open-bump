@@ -53,7 +53,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
     let fields = []
     if(hasPremium) fields.push({
       name: `${emojis.bell} **You are a donator!**`,
-      value: `It looks like you already are a donator. View your activations using the command \`${prefix}premium list\``,
+      value: `It looks like you already are a donator. View your activations using the command \`${prefix}premium view\``,
       inline: false
     })
     let options = {
@@ -62,12 +62,12 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         title: `${emojis.star} **Premium**`,
         description: `Premium allows you to use additional features and commands. You can buy Premium from Patreon by using the link below:\n` +
             `[https://patreon.com/Looat](https://www.patreon.com/Looat)\n\n` +
-            `If you want to see a list of all available tiers, please use the command \`${prefix}premium tiers\`.`,
+            `To see a list of all available tiers, please use the command \`${prefix}premium list\`.`,
         fields: fields
       }
     }
     channel.send('', options)
-  } else if (args.length === 1 && args[0] === 'tiers') {
+  } else if (args.length === 1 && args[0] === 'list') {
     let fields = [];
     Object.keys(donator.tiers).forEach(key => {
       let tier = donator.tiers[key]
@@ -110,7 +110,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
     }
     channel.send('', options)
   } else if (args.length === 1) {
-    if(args[0] === 'list') {
+    if(args[0] === 'view') {
       let guildsDatabase = await Guild.find({ 'donators.id': author.id })
       let fields = []
       await common.processArray(guildsDatabase, guildDatabase => {
@@ -169,12 +169,14 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
           embed: {
             color: colors.green,
             title: `${emojis.check} **Activated Servers:**`,
-            description: `No servers activated yet. Use \`${prefix}premium activate\` to activate premium for a server.`
+            description: `**Total Pledge:** ${dollars}\n` +
+                `**Already Used:** $${(used / 100).toFixed(2)}\n\n` +
+                `No servers activated yet. Use \`${prefix}premium activate\` to activate premium for a server.`
           }
         }
         channel.send('', options)
       }
-    } else if(args[0] === 'activate') {
+    } else if(args[0] === 'activate' || args[0] === 'add') {
       if(userPatreon.cents > used) {
         let options = {
           embed: {
@@ -194,13 +196,13 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
             title: `${emojis.check} **You have Premium**`,
             description: `**Total Pledge:** ${dollars}\n` +
                 `**Already Used:** $${(used / 100).toFixed(2)}\n\n` +
-                `All entitled tiers are currently in use by other servers. To list them, please use \`${prefix}premium list\``
+                `All entitled tiers are currently in use by other servers. To view them, please use \`${prefix}premium view\``
                 `In case you want to remove a guild from your premium slots, you can use the command \`${prefix}premium deactivate [guild]\` to do so.`
           }
         }
         channel.send('', options)
       }
-    } else if (args[0] === 'deactivate') {
+    } else if (args[0] === 'deactivate' || args[0] === 'remove') {
       errors.errorSyntax(msg, prefix, 'premium deactivate <guildId>')
     } else {
       errors.errorSyntax(msg, prefix, module.exports.syntax)
@@ -220,7 +222,11 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         }
       })
       if(tierTier) {
-        if(left >= tierTier.cost) {
+        let thisLeft = left
+        guildDatabase.donators.forEach(guildDatabaseDonator => {
+          if(guildDatabaseDonator.id === author.id) thisLeft = thisLeft + donator.getTier(guildDatabaseDonator.tier).cost
+        })
+        if(thisLeft >= tierTier.cost) {
           let options = {
             embed: {
               color: colors.blue,
@@ -250,7 +256,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
             embed: {
               color: colors.green,
               title: `${emojis.check} **Premium activated successfully**`,
-              description: `You now have enabled \`${tierTier.name}\` for ${guild.name}. Check out \`${prefix}premium list\` to see which servers are currently activated.`
+              description: `You now have enabled \`${tierTier.name}\` for ${guild.name}. Check out \`${prefix}premium view\` to see which servers are currently activated.`
             }
           }
           message.edit('', options)
@@ -311,7 +317,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
             embed: {
               color: colors.green,
               title: `${emojis.check} **Premium deactivated successfully**`,
-              description: `You now have disabled \`${donator.getTier(targetGuildDatabaseDonator.tier).name}\` for ${targetGuildDatabase.name ? targetGuildDatabase.name : targetGuildDatabase.id}. Check out \`${prefix}premium list\` to see which servers are currently activated.`
+              description: `You now have disabled \`${donator.getTier(targetGuildDatabaseDonator.tier).name}\` for ${targetGuildDatabase.name ? targetGuildDatabase.name : targetGuildDatabase.id}. Check out \`${prefix}premium view\` to see which servers are currently activated.`
             }
           }
           message.edit('', options)
@@ -325,7 +331,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
             color: colors.red,
             title: `${emojis.xmark} **Guild could not be found!**`,
             description: 'Please enter a valid guild ID. If you don\'t know how to get a guild\'s ID, ' +
-                `you can use the command \`${prefix}premium list\` to list all activated guilds and their ID.`
+                `you can use the command \`${prefix}premium view\` to view all activated guilds and their ID.`
           }
         }
         channel.send('', options)
@@ -335,5 +341,5 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 }
 
 module.exports.name = 'premium'
-module.exports.description = 'Use this command to activate your premium.'
-module.exports.syntax = 'premium [tiers|list|activate|deactivate] [tier...|guildId]'
+module.exports.description = 'Use this command to activate and manage your premium.'
+module.exports.syntax = 'premium [list|view|activate|deactivate] [tier...|guildId]'
