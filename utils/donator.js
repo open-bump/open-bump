@@ -1,3 +1,6 @@
+const emojis = require('./emojis')
+const config = require('../config')
+
 module.exports.tiers = {
   /*bumpchannel: {
     cooldown: 45,
@@ -23,14 +26,14 @@ module.exports.tiers = {
   },
   fast_boxer: { // $5
     features: ['AUTOBUMP', 'PREFIX'],
-    cooldown: 30,
+    cooldown: 15,
     cost: 500,
     name: 'Fast Boxer',
     id: 104
   },
   super_wumpus: { // $7
     features: ['COLOR', 'BANNER', 'PREFIX', 'FEATURED', 'AUTOBUMP'],
-    cooldown: 30,
+    cooldown: 15,
     cost: 700,
     name: 'Super Wumpus',
     id: 105
@@ -54,6 +57,50 @@ module.exports.translateFeatures = (guildDatabase) => {
 
 module.exports.translateCooldown = (guildDatabase) => {
   let cooldown = 60 // <-- Default Cooldown
+  if(guildDatabase.feed) {
+    const main = require('../bot')
+    if(main.client.guilds.has(guildDatabase.id)) {
+      let guild = main.client.guilds.get(guildDatabase.id)
+      if(guild.channels.has(guildDatabase.feed)) {
+        let channel = guild.channels.get(guildDatabase.feed)
+        if(channel.permissionsFor(guild.me).has(['SEND_MESSAGES', 'VIEW_CHANNEL', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'])) {
+          cooldown = 45
+        } else {
+          let owner = guild.owner
+          if(owner) {
+            let options = {
+              embed: {
+                color: colors.red,
+                title: `${emojis.xmark} **Bump channel error**`,
+                description: 'Hey there, it looks like Open Bump doesn\'t have access to your bump channel anymore. ' +
+                    `To fix this issue, please set the bump channel again using \`${config.settings.preifx}setchannel\`.`
+              }
+            }
+            owner.send('', options).catch(() => {})
+          }
+          guildDatabase.feed = undefined
+          guildDatabase.save()
+        }
+      } else {
+        let owner = guild.owner
+        if(owner) {
+          let options = {
+            embed: {
+              color: colors.red,
+              title: `${emojis.xmark} **Bump channel error**`,
+              description: 'Hey there, it looks like your bump channel has been removed. ' +
+                  `To fix this issue, please set the bump channel again using \`${config.settings.preifx}setchannel\`.`
+            }
+          }
+          owner.send('', options).catch(() => {})
+        }
+        guildDatabase.feed = undefined
+        guildDatabase.save()
+      }
+    } else {
+      cooldown = 45
+    }
+  }
   guildDatabase.donators.forEach(donator => {
     let tier = module.exports.getTier(donator.tier)
     if(tier) {
@@ -62,7 +109,7 @@ module.exports.translateCooldown = (guildDatabase) => {
       }
     }
   })
-  return cooldown*60*1000
+  return 1000*60*cooldown
 }
 
 module.exports.getTier = (tierInput) => {

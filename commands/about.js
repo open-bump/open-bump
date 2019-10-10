@@ -21,6 +21,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 }
 
 module.exports.name = 'about'
-module.exports.aliases = ['invite']
+module.exports.aliases = ['invite', 'support']
 module.exports.description = 'This command shows information about this bot.'
 module.exports.syntax = 'about'
