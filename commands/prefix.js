@@ -1,14 +1,15 @@
 const main = require('../bot')
 const colors = require('../utils/colors')
 const errors = require('../utils/errors')
+const emojis = require('../utils/emojis')
 const Guild = require('../models/Guild')
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel
   let options = {
     embed: {
-      color: colors.green,
-      title: '**Prefix**',
+      color: colors.blue,
+      title: `${emojis.information} **Prefix**`,
       description: `__**Current Prefix:**__ ${prefix}`
     }
   }

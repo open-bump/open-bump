@@ -163,8 +163,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       } else {
         let options = {
           embed: {
-            color: colors.green,
-            title: `${emojis.check} **Activated Servers:**`,
+            color: colors.blue,
+            title: `${emojis.information} **Activated Servers:**`,
             description: `**Total Balance:** ${dollars}\n` +
                 `**Already Used:** $${(used / 100).toFixed(2)}\n\n` +
                 `No servers activated yet. Use \`${prefix}premium activate\` to activate premium for a server.`
@@ -176,8 +176,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       if(donator.translateAmount(userPatreon, userDatabase) > used) {
         let options = {
           embed: {
-            color: colors.green,
-            title: `${emojis.check} **You have Premium**`,
+            color: colors.blue,
+            title: `${emojis.information} **You have Premium**`,
             description: `**Total Balance:** ${dollars}\n` +
                 `**Already Used:** $${(used / 100).toFixed(2)}\n\n` +
                 `You still have $${(left / 100).toFixed(2)} left. To apply a premium tier to this server, use the command \`${prefix}premium activate <tier>\`.\n` +
@@ -188,8 +188,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       } else {
         let options = {
           embed: {
-            color: colors.green,
-            title: `${emojis.check} **You have Premium**`,
+            color: colors.blue,
+            title: `${emojis.information} **You have Premium**`,
             description: `**Total Balance:** ${dollars}\n` +
                 `**Already Used:** $${(used / 100).toFixed(2)}\n\n` +
                 `All entitled tiers are currently in use by other servers. To view them, please use \`${prefix}premium view\``

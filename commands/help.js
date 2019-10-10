@@ -38,7 +38,7 @@ module.exports.run = (msg, invoke, args, prefix, guildDatabase) => {
     })
     let options = {
       embed: {
-        color: colors.green,
+        color: colors.blue,
         title: emojis.information + ' **Help**',
         fields: fields
       }
@@ -64,8 +64,8 @@ module.exports.run = (msg, invoke, args, prefix, guildDatabase) => {
       if(command.description) description.push(`**Description:**\n${command.description}`)
       let options = {
         embed: {
-          color: colors.green,
-          title: prefix + command.name,
+          color: colors.blue,
+          title: `${emojis.blue} **${prefix + command.name}**`,
           description: description.join('\n')
         }
       }

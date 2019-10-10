@@ -21,6 +21,7 @@ module.exports = {
   streaming: '<:streaming:547114192646176793>',
   invisible: '<:invisible:546621324131565574>',
   loading: '<a:loading:547809249552760842>',
+  loadingGreen: '<a:loading:631962121256566795>',
   check: '<:check:621063206235930634>',
   xmark: '<:xmark:621063205854380086>',
   neutral: '<:neutral:621063802028294155>', // same as neutralGray, deprecated
@@ -31,5 +32,5 @@ module.exports = {
   unitedServer: '<:UnitedServer:622845429435858955>',
   earlySupporter: '<:EarlySupporter:622852038031835137>',
   affiliatedServer: '<:AffiliatedServer:622857526924279848>',
-  bumpChannel: 'BUMP_CHANNEL'
+  bumpChannel: 'BUMP_CHANNEL' // TODO: Bump Channel Emote
 }

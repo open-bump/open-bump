@@ -36,7 +36,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         let options = {
           embed: {
             color: colors.green,
-            title: '**Prefix has been changed**',
+            title: `${emojis.check} **Prefix has been changed**`,
             description: `__**New Prefix:**__ ${newPrefix}`,
             fields: notices
           }

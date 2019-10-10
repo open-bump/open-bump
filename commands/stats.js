@@ -17,8 +17,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
     let totalUsers = (await main.client.shard.fetchClientValues('users.size')).reduce((prev, guildCount) => prev + guildCount, 0)
     let options = {
       embed: {
-        color: colors.green,
-        title: emojis.information + ' **Open Bump Stats**',
+        color: colors.blue,
+        title: `${emojis.information} **Open Bump Stats**`,
         fields: [
           {
             name: '**Local Stats**',
@@ -47,8 +47,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         let shardUsers = (await main.client.shard.broadcastEval(`this.shard.id === ${input} ? this.users.size : 0`)).reduce((prev, guildCount) => prev + guildCount, 0)
         let options = {
           embed: {
-            color: colors.green,
-            title: emojis.information + ' **Open Bump Stats**',
+            color: colors.blue,
+            title: `${emojis.information} **Open Bump Stats**`,
             fields: [
               {
                 name: '**Shard Stats**',
@@ -66,8 +66,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         if(!guild) throw new Error()
         let options = {
           embed: {
-            color: colors.green,
-            title: emojis.information + ' **Open Bump Stats**',
+            color: colors.blue,
+            title: `${emojis.information} **Open Bump Stats**`,
             fields: [
               {
                 name: '**Guild Stats**',

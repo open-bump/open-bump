@@ -12,6 +12,8 @@ const common = require('./utils/common')
 const donator = require('./utils/donator')
 const lyne = require('./utils/lyne')
 const patreon = require('./patreon')
+const moment = require('moment')
+const ms = require('ms')
 const command = require('./command')
 
 module.exports.client = client
@@ -107,9 +109,9 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
         let options = {
           embed: {
             color: colors.green,
-            title: `${emojis.check} **Boost power enabled!**`,
+            title: `${emojis.check} **Boost power enabled**`,
             description: 'Hey there, we just saw you boosted our server Open Advertisements. That\'s awesome, thank you so much! ' +
-                `As a thank you, you get a free bonus of $5.00 that allows you to use premium of this bot.\n` +
+                `As a thank you, you get a free bonus of $5.00 that allows you to use the premium version of this bot.\n` +
                 `To start using it, please check out the command \`${config.settings.prefix}premium\`. It will tell you how you can use your bonus.`
           }
         }
@@ -138,12 +140,44 @@ client.on('message', async msg => {
   command.received(msg)
   try {
     let author = msg.author;
-    if(author.id === '481810078031282176') {
+    if(author.id === '481810078031282176' || config.discord.owners.includes(author.id)) {
       // ServerMate
       let content = msg.content
       if(content.toLowerCase() === ('Asking Open Bump to bump this server').toLowerCase()) {
         let channel = msg.channel
-        channel.send('This feature is not yet supported!')
+        let guild = msg.guild
+        if(channel.permissionsFor(guild.me).has(['ADD_REACTIONS'])) {
+          let reaction = await msg.react(common.getEmojiId(emojis.loadingGreen))
+          let guildDatabase = (await Guild.findOrCreate({ id: guild.id }, { id: guild.id, name: guild.name, name_lower: guild.name.toLowerCase() })).doc
+          let cooldown = donator.translateCooldown(guildDatabase)
+          let nextBump = moment(guildDatabase.lastBump.time.valueOf() + cooldown)
+          if(donator.translateFeatures(guildDatabase).includes('AUTOBUMP') && guildDatabase.autoBump) {
+            let remaining = ms(nextBump.valueOf() - moment().valueOf(), { long: true })
+            await msg.react(common.getEmojiId(emojis.thumbsdown))
+            await channel.send(`Bump request denied, you have autobump enabled.`).catch(() => {})
+            await reaction.remove()
+            return;
+          }
+          if(guildDatabase.lastBump && guildDatabase.lastBump.time) {
+            let cooldown = donator.translateCooldown(guildDatabase)
+            let nextBump = moment(guildDatabase.lastBump.time.valueOf() + cooldown)
+            if(nextBump.isAfter(moment())) {
+              let remaining = ms(nextBump.valueOf() - moment().valueOf(), { long: true })
+              await msg.react(common.getEmojiId(emojis.thumbsdown))
+              await channel.send(`Bump request denied, there is a cooldown left: ${remaining}.`).catch(() => {})
+              await reaction.remove()
+              return;
+            }
+          }
+          guildDatabase.lastBump = {}
+          guildDatabase.lastBump.user = author.id
+          guildDatabase.lastBump.time = Date.now()
+          await guildDatabase.save()
+          let options = await bump.getPreviewEmbed(guild, guildDatabase)
+          await bump.bumpToAllShards(options)
+          await reaction.remove()
+          msg.react(common.getEmojiId(emojis.thumbsup))
+        }
       }
     }
   } catch (err) {
