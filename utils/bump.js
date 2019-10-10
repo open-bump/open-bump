@@ -3,6 +3,7 @@ const emojis = require('./emojis')
 const ms = require('ms')
 const common = require('./common')
 const Guild = require('../models/Guild')
+const donator = require('../utils/donator')
 
 module.exports.bumpToAllShards = async (options) => {
   return common.sharding.bumpToAllShards(options)
@@ -82,7 +83,7 @@ module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
   invite = 'https://discord.gg/' + invite.code
 
   // Color
-  let color = guildDatabase.bump.color && guildDatabase.bump.color >= 1 && guildDatabase.features.includes('COLOR') ? guildDatabase.bump.color : colors.openbump
+  let color = guildDatabase.bump.color && guildDatabase.bump.color >= 1 && donator.translateFeatures(guildDatabase).includes('COLOR') ? guildDatabase.bump.color : colors.openbump
 
   // Region
   let regions = await guild.fetchVoiceRegions()
@@ -90,15 +91,15 @@ module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
   regions.forEach(regionIndex => region = regionIndex.id === guild.region ? regionIndex.name : region)
 
   // Banner
-  let banner = guildDatabase.features.includes('BANNER') && guildDatabase.bump.banner ? guildDatabase.bump.banner : undefined
+  let banner = donator.translateFeatures(guildDatabase).includes('BANNER') && guildDatabase.bump.banner ? guildDatabase.bump.banner : undefined
 
   // Featured
   let badges = ""
-  if(guildDatabase.features.includes('EARLY_SUPPORTER')) badges = badges + emojis.earlySupporter + " "
-  if(guildDatabase.features.includes('FEATURED')) badges = badges + emojis.featured + " "
-  if(guildDatabase.features.includes('BUMP_CHANNEL')) badges = badges + emojis.bumpChannel + " "
-  if(guildDatabase.features.includes('UNITED_SERVER')) badges = badges + emojis.unitedServer + " "
-  if(guildDatabase.features.includes('AFFILIATED')) badges = badges + emojis.affiliatedServer + " "
+  if(donator.translateFeatures(guildDatabase).includes('EARLY_SUPPORTER')) badges = badges + emojis.earlySupporter + " "
+  if(donator.translateFeatures(guildDatabase).includes('FEATURED')) badges = badges + emojis.featured + " "
+  if(donator.translateFeatures(guildDatabase).includes('BUMP_CHANNEL')) badges = badges + emojis.bumpChannel + " "
+  if(donator.translateFeatures(guildDatabase).includes('UNITED_SERVER')) badges = badges + emojis.unitedServer + " "
+  if(donator.translateFeatures(guildDatabase).includes('AFFILIATED')) badges = badges + emojis.affiliatedServer + " "
 
   if(badges != "") badges = " | " + badges
 

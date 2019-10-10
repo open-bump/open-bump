@@ -13,18 +13,18 @@ const UserSchema = new mongoose.Schema({
       default: 0
     },
     transition: {
-      to: {
+      amount: {
         type: Number,
         required: false
       },
-      detection: {
+      detected: {
         type: Date,
         required: false
+      },
+      informed: {
+        type: Boolean,
+        required: false
       }
-    },
-    patreonId: {
-      type: String,
-      required: false
     },
     assigned: {
       // {
