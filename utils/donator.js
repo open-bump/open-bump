@@ -37,8 +37,32 @@ module.exports.tiers = {
   }
 }
 
-module.exports.translateGuild = (guildDatabase) => {
-  let tiers = []
+module.exports.translateFeatures = (guildDatabase) => {
+  let features = guildDatabase.features.slice()
+  guildDatabase.donators.forEach(donator => {
+    let tier = module.exports.getTier(donator.tier)
+    if(tier) {
+      if(tier.features) {
+        tier.features.forEach(feature => {
+          if(!features.includes(feature)) features.push(feature)
+        })
+      }
+    }
+  })
+  return features
+}
+
+module.exports.getAutoBumpDuration = (guildDatabase) => {
+  let cooldown = 60 // <-- Default Cooldown
+  guildDatabase.donators.forEach(donator => {
+    let tier = module.exports.getTier(donator.tier)
+    if(tier) {
+      if(tier.cooldown) {
+        if(tier.cooldown < cooldown) cooldown = tier.cooldown
+      }
+    }
+  })
+  return cooldown
 }
 
 module.exports.getTier = (tierInput) => {

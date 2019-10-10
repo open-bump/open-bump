@@ -15,7 +15,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel
   let author = msg.author
 
-  let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${author.id}?fetch=true&token=${config.server.token}`).then(res => res.json());
+  let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${author.id}?fetch=true&token=${config.server.token}`).then(res => res.json())
   let hasPremium = userPatreon.cents > 0;
   let dollars = `$${(userPatreon.cents / 100).toFixed(2)}`
   let servers = 0
@@ -69,43 +69,77 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
     let options = {
       embed: {
         color: colors.red,
-        title: `${emojis.lockKey} **Premium required**`,
-        description: `Premium allows you to use additional features and commands. You can buy Premium from Patreon by using the link below:\n` +
-            `[https://patreon.com/Looat](https://www.patreon.com/Looat)`,
-        fields: fields
+        title: `${emojis.xmark} **No Premium Activated**`,
+        description: 'It looks like you don\'t have premium.\n' +
+            'This may be because you are not subscribed to our **[Patreon](https://www.patreon.com/Looat)** yet or it could be a server error.\n' +
+            'If you believe this is a server error, please try again in 5 minutes and contact **[support](https://discord.gg/eBFu8HF)** if it still doesn\'t work.',
+        fields: [
+          {
+            name: '**Important Notice**',
+            value: 'You need to link your Discord account to your patreon account.\n' +
+                'To do so, please open the link below, login to your Patreon account and click on "connect". Then enter your Discord credentials to connect Discord to Patreon.\n' +
+                'After that, please use this command again.\n' +
+                '**Link: [https://patreon.com/settings/apps](https://www.patreon.com/settings/apps)**'
+          }
+        ]
       }
     }
     channel.send('', options)
   } else if (args.length === 1) {
     if(args[0] === 'list') {
       let guildsDatabase = await Guild.find({ 'donators.id': author.id })
-      let donatorGuildDatabase = guildDatabase.donators.filter(donator => donator.id === author.id)[0]
       let fields = []
-      if(donatorGuildDatabase) {
-        let tierString = donatorGuildDatabase.tier
-        let tier
-        Object.keys(donator.tiers).forEach(key => {
-          let tierTemp = donator.tiers[key]
-          if(tierTemp.id === tierString) tier = tierTemp
-        })
-
-        if(tier) {
-          fields.push({
-            name: `**${guildDatabase.name ? `${guildDatabase.name} | ${guildDatabase.id}` : guildDatabase.id}**`,
-            value: `**${tier.name}:** $${(tier.cost / 100).toFixed(2)}`,
-            inline: false
+      await common.processArray(guildsDatabase, guildDatabase => {
+        let donatorGuildDatabase = guildDatabase.donators.filter(donator => donator.id === author.id)[0]
+        if(donatorGuildDatabase) {
+          let tierString = donatorGuildDatabase.tier
+          let tier
+          Object.keys(donator.tiers).forEach(key => {
+            let tierTemp = donator.tiers[key]
+            if(tierTemp.id === tierString) tier = tierTemp
           })
-        }
-      }
-      if(fields.length >= 1) {
-        let options = {
-          embed: {
-            color: colors.green,
-            title: `${emojis.check} **Activated Servers:**`,
-            fields: fields
+
+          if(tier) {
+            fields.push({
+              name: `**${guildDatabase.name ? `${guildDatabase.name} | ${guildDatabase.id}` : guildDatabase.id}**`,
+              value: `**${tier.name}:** $${(tier.cost / 100).toFixed(2)}`,
+              inline: false
+            })
           }
         }
-        channel.send('', options)
+      })
+      if(fields.length >= 1) {
+        if(used <= userPatreon.cents) {
+          let options = {
+            embed: {
+              color: colors.blue,
+              title: `${emojis.information} **Activated Servers:**`,
+              description: `**Total Pledge:** ${dollars}\n` +
+                  `**Already Used:** $${(used / 100).toFixed(2)}`,
+              fields: fields
+            }
+          }
+          channel.send('', options)
+        } else {
+          fields.push({
+            name: `${emojis.importantNotice} **Payment problem**`,
+            value: 'Your current pledge doesn\'t have enough space for all your activations.\n' +
+                'Please fix this issue asap by updating your pledge or your activating servers.\n' +
+                'If you ignore this message, your subscriptions may will stop working soon.\n\n' +
+                `**Current Pledge:** $${(userPatreon.cents / 100).toFixed(2)}\n` +
+                `**Required Pledge:** $${(used / 100).toFixed(2)}`
+          })
+          let options = {
+            embed: {
+              color: colors.orange,
+              title: `${emojis.information} **Activated Servers:**`,
+              description: `**Total Pledge:** ${dollars}\n` +
+                  `**Already Used:** $${(used / 100).toFixed(2)}`,
+              fields: fields
+            }
+          }
+          channel.send('', options)
+        }
       } else {
         let options = {
           embed: {
@@ -117,49 +151,27 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         channel.send('', options)
       }
     } else if(args[0] === 'activate') {
-      if(hasPremium) {
-        if(userPatreon.cents > used) {
-          let options = {
-            embed: {
-              color: colors.green,
-              title: `${emojis.check} **You have Premium**`,
-              description: `**Total Pledge:** ${dollars}\n` +
-                  `**Already Used:** $${(used / 100).toFixed(2)}\n\n` +
-                  `You still have $${(left / 100).toFixed(2)} left. To apply a premium tier to this server, use the command \`${prefix}premium activate <tier>\`.\n` +
-                  `In case you want to remove a guild from your premium slots, you can use the command \`${prefix}premium deactivate [guild]\` to do so.`
-            }
+      if(userPatreon.cents > used) {
+        let options = {
+          embed: {
+            color: colors.green,
+            title: `${emojis.check} **You have Premium**`,
+            description: `**Total Pledge:** ${dollars}\n` +
+                `**Already Used:** $${(used / 100).toFixed(2)}\n\n` +
+                `You still have $${(left / 100).toFixed(2)} left. To apply a premium tier to this server, use the command \`${prefix}premium activate <tier>\`.\n` +
+                `In case you want to remove a guild from your premium slots, you can use the command \`${prefix}premium deactivate [guild]\` to do so.`
           }
-          channel.send('', options)
-        } else {
-          let options = {
-            embed: {
-              color: colors.green,
-              title: `${emojis.check} **You have Premium**`,
-              description: `**Total Pledge:** ${dollars}\n` +
-                  `**Already Used:** $${(used / 100).toFixed(2)}\n\n` +
-                  `All entitled tiers are currently in use by other servers. To list them, please use \`${prefix}premium list\``
-                  `In case you want to remove a guild from your premium slots, you can use the command \`${prefix}premium deactivate [guild]\` to do so.`
-            }
-          }
-          channel.send('', options)
         }
+        channel.send('', options)
       } else {
         let options = {
           embed: {
-            color: colors.red,
-            title: `${emojis.xmark} **No Premium Activated**`,
-            description: 'It looks like you don\'t have premium.\n' +
-                'This may be because you are not subscribed to our **[Patreon](https://www.patreon.com/Looat)** yet or it could be a server error.\n' +
-                'If you believe this is a server error, please try again in 5 minutes and contact **[support](https://discord.gg/eBFu8HF)** if it still doesn\'t work.',
-            fields: [
-              {
-                name: '**Important Notice**',
-                value: 'You need to link your Discord account to your patreon account.\n' +
-                    'To do so, please open the link below, login to your Patreon account and click on "connect". Then enter your Discord credentials to connect Discord to Patreon.\n' +
-                    'After that, please use this command again.\n' +
-                    '**Link: [https://patreon.com/settings/apps](https://www.patreon.com/settings/apps)**'
-              }
-            ]
+            color: colors.green,
+            title: `${emojis.check} **You have Premium**`,
+            description: `**Total Pledge:** ${dollars}\n` +
+                `**Already Used:** $${(used / 100).toFixed(2)}\n\n` +
+                `All entitled tiers are currently in use by other servers. To list them, please use \`${prefix}premium list\``
+                `In case you want to remove a guild from your premium slots, you can use the command \`${prefix}premium deactivate [guild]\` to do so.`
           }
         }
         channel.send('', options)
@@ -184,10 +196,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         }
       })
       if(tierTier) {
-        if(left > tierTier.cost) {
-          console.log(guildDatabase)
-          console.log(userDatabase)
-
+        if(left >= tierTier.cost) {
           let options = {
             embed: {
               color: colors.blue,
@@ -212,9 +221,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 
           await guildDatabase.save()
           await userDatabase.save()
-
-          console.log(guildDatabase)
-          console.log(userDatabase)
 
           options = {
             embed: {
@@ -276,9 +282,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 
           await targetGuildDatabase.save()
           await userDatabase.save()
-
-          console.log(targetGuildDatabaseDonator.tier)
-          console.log(donator.getTier(targetGuildDatabaseDonator.tier))
 
           options = {
             embed: {

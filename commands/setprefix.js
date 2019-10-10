@@ -3,6 +3,7 @@ const colors = require('../utils/colors')
 const errors = require('../utils/errors')
 const emojis = require('../utils/emojis')
 const Guild = require('../models/Guild')
+const donator = require('../utils/donator')
 
 const common = [
   '!',
@@ -13,7 +14,7 @@ const common = [
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel
   let notices = []
-  if(guildDatabase.features.includes('PREFIX')) {
+  if(donator.translateFeatures(guildDatabase).includes('PREFIX')) {
     let member = msg.member
     if(!member.hasPermission('MANAGE_GUILD', true, true, true)) return errors.errorPermissions(msg, 'Manage Server')
     if(args.length >= 1) {

@@ -3,6 +3,7 @@ const colors = require('../utils/colors')
 const emojis = require('../utils/emojis')
 const errors = require('../utils/errors')
 const common = require('../utils/common')
+const donator = require('../utils/donator')
 
 module.exports.run = (msg, invoke, args, prefix, guildDatabase) => {
   if(args.length === 0) {
@@ -48,10 +49,10 @@ module.exports.run = (msg, invoke, args, prefix, guildDatabase) => {
       if(command.restrictions) {
         if(command.restrictions.forEach) {
           command.restrictions.forEach(restriction => {
-            if(!guildDatabase.features.includes(restriction)) unlocked = false
+            if(!donator.translateFeatures(guildDatabase).includes(restriction)) unlocked = false
           })
         } else {
-          if(!guildDatabase.features.includes(command.restrictions)) unlocked = false
+          if(!donator.translateFeatures(guildDatabase).includes(command.restrictions)) unlocked = false
         }
       }
       let description = []
@@ -77,7 +78,7 @@ module.exports.run = (msg, invoke, args, prefix, guildDatabase) => {
 
 function commandUnlocked(guildDatabase, command) {
   if(!command.restrictions) return true
-  return common.includesAll(guildDatabase.features, command.restrictions ? command.restrictions : [])
+  return common.includesAll(donator.translateFeatures(guildDatabase), command.restrictions ? command.restrictions : [])
 }
 
 module.exports.name = 'help'

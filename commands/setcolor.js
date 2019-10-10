@@ -2,10 +2,11 @@ const main = require('../bot')
 const colors = require('../utils/colors')
 const errors = require('../utils/errors')
 const Guild = require('../models/Guild')
+const donator = require('../utils/donator')
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel
-  if(guildDatabase.features.includes('COLOR')) {
+  if(donator.translateFeatures(guildDatabase).includes('COLOR')) {
     let member = msg.member
     if(!member.hasPermission('MANAGE_GUILD', true, true, true)) return errors.errorPermissions(msg, 'Manage Server')
     if(args.length === 1) {

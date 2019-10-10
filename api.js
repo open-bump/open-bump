@@ -14,6 +14,7 @@ router.get('/patreon/user/:user', async (req, res) => {
     if(req.query.fetch) await patreon.refresh()
     let userPatreon = await patreon.getPatreonUser(req.params.user)
     if(userPatreon) {
+      //userPatreon.cents = 700 // <-- to test stuff
       res.json(userPatreon)
     } else {
       res.status(404)
