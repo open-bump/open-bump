@@ -10,7 +10,7 @@ const package = require('../package')
 const moment = require('moment')
 const mongoose = require('mongoose')
 
-module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
+module.exports.run = async (msg, invoke, args, prefix, guildDatabase, argtions) => {
   let channel = msg.channel
   let author = msg.author
   if(args.length === 0) {
@@ -24,7 +24,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       embed: {
         color: colors.blue,
         title: `${emojis.information} **Your Applications**`,
-        description: appsString.length <= 2048 ? appsString : `**List:** ${await lyne(appsString)}`
+        description: (appsString.length <= 2048 && !argtions.includes('-lyne')) ? appsString : `**List:** ${await lyne(appsString)}`
       }
     }
     channel.send('', options)
@@ -40,7 +40,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
               `**Tag:** ${appDatabase.tag}\n` +
               `**Owner:** ${await main.client.fetchUser(appDatabase.owner) ? (await main.client.fetchUser(appDatabase.owner)).tag : appDatabase.owner}\n` +
               `**Created:** ${moment(appDatabase.created).format('L')}\n` +
-              `**Bot link:** ${appDatabase.bot && await main.client.fetchUser(appDatabase.bot) ? (await main.client.fetchUser(appDatabase.bot)).tag : 'No bot linked'}`
+              `**Bot link:** ${appDatabase.bot && await main.client.fetchUser(appDatabase.bot) ? (await main.client.fetchUser(appDatabase.bot)).tag : 'No bot linked'}\n` +
+              `**Scopes:** ${appDatabase.scopes.length > 0 ? appDatabase.scopes.join(' ') : 'No scopes granted'}`
         }
       }
       channel.send('', options)
@@ -188,6 +189,36 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
           } else {
             errors.error(msg, 'You are not allowed to use this command.')
           }
+        } else if(args.length === 3 && args[1] === 'grant') {
+          if(config.discord.owners.includes(author.id)) {
+            if(!appDatabase.scopes.includes(args[2].toLowerCase())) appDatabase.scopes.push(args[2].toLowerCase())
+            await appDatabase.save()
+            let options = {
+              embed: {
+                color: colors.green,
+                title: `${emojis.check} **Scope granted**`,
+                description: `${appDatabase.tag} now has access to \`${args[2].toLowerCase()}\`.`
+              }
+            }
+            channel.send('', options)
+          } else {
+            errors.error(msg, 'You are not allowed to use this command.')
+          }
+        } else if(args.length === 3 && args[1] === 'deny') {
+          if(config.discord.owners.includes(author.id)) {
+            if(appDatabase.scopes.includes(args[2].toLowerCase())) common.removeValue(appDatabase.scopes, args[2].toLowerCase())
+            await appDatabase.save()
+            let options = {
+              embed: {
+                color: colors.green,
+                title: `${emojis.check} **Scope denied**`,
+                description: `${appDatabase.tag} lost access to \`${args[2].toLowerCase()}\`.`
+              }
+            }
+            channel.send('', options)
+          } else {
+            errors.error(msg, 'You are not allowed to use this command.')
+          }
         } else {
           errors.errorSyntax(msg, prefix, module.exports.syntax)
         }
@@ -203,4 +234,4 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 module.exports.name = 'application'
 module.exports.aliases = ['applications', 'app', 'apps']
 module.exports.description = 'This command allows you to manage your applications.'
-module.exports.syntax = 'application [name|id|create] [showtoken|resettoken|setbot|setowner|delete] [botid|reset|ownerid]'
+module.exports.syntax = 'application [name|id|create] [showtoken|resettoken|setbot|setowner|grant|deny|delete] [botid|reset|ownerid|feature]'
