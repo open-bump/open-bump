@@ -54,7 +54,7 @@ client.require = (path) => {
 }
 
 // Config
-const config = require('./config')
+const config = require('./config') // TODO: Set correct Nitro booster role
 module.exports.config = config
 
 // Discord
