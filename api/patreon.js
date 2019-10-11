@@ -1,14 +1,25 @@
 const express = require('express')
 const router = express.Router()
-const config = require('./config')
-const patreon = require('./patreon')
-const common = require('./utils/common')
-const Application = require('./models/Application')
+const config = require('../config')
+const patreon = require('../patreon')
+const common = require('../utils/common')
+const Application = require('../models/Application')
 
 module.exports.router = router
 
-router.use('/patreon', require('./api/patreon').router)
-router.use('/bump', require('./api/bump').router)
+router.get('/user/:user', checkAccess, async (req, res) => {
+  if(!req.application.scopes.includes('patreon')) return blockScopeMissing(res, 'patreon')
+
+  if(req.query.fetch) await patreon.refresh()
+  let userPatreon = await patreon.getPatreonUser(req.params.user)
+  if(userPatreon) {
+    //userPatreon.cents = 700 // <-- to test stuff
+    res.json(userPatreon)
+  } else {
+    res.status(404)
+    res.json({ status: 404, message: 'That user could not be found' })
+  }
+})
 
 async function blockScopeMissing(res, scope) {
   res.status(403)
