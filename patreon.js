@@ -215,12 +215,20 @@ module.exports.checkPatreonLoop = async () => {
   }
 
   try {
-    let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/undefined?fetch=true&token=${config.server.token}`).then(res => res.json())
+    let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/undefined?fetch=true`, {
+      headers: {
+        authorization: `Bearer ${config.server.token}`
+      }
+    }).then(res => res.json())
     console.log('Patreon refetched')
 
     let usersDatabase = await User.find({ 'donator.amount': { $gt: 0 } })
     await common.processArray(usersDatabase, async userDatabase => {
-      let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${userDatabase.id}?token=${config.server.token}`).then(res => res.json())
+      let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${userDatabase.id}`, {
+        headers: {
+          authorization: `Bearer ${config.server.token}`
+        }
+      }).then(res => res.json())
       if(userDatabase.donator.amount <= userPatreon) userDatabase.donator.amount = donator.translateAmount(userPatreon, userDatabase)
       let guildsDatabase = await Guild.find({ 'donators.id': userDatabase.id })
       let totalCost = 0

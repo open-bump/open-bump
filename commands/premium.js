@@ -17,7 +17,11 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let author = msg.author
 
   let userDatabase = await common.getUserDatabase(author.id)
-  let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${author.id}?fetch=true&token=${config.server.token}`).then(res => res.json())
+  let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${author.id}?fetch=true`, {
+    headers: {
+      authorization: `Bearer ${config.server.token}`
+    }
+  }).then(res => res.json())
   let dollars = `$${(donator.translateAmount(userPatreon, userDatabase) / 100).toFixed(2)}`
   let servers = 0
   let used
