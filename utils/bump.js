@@ -6,8 +6,8 @@ const common = require('./common')
 const Guild = require('../models/Guild')
 const donator = require('../utils/donator')
 
-module.exports.bumpToAllShards = async (options) => {
-  return common.sharding.bumpToAllShards(options)
+module.exports.bumpToAllShards = async (options, index) => {
+  return common.sharding.bumpToAllShards(options, index)
 }
 
 module.exports.bumpToThisShard = (channels, options) => {

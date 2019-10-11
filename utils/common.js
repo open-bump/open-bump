@@ -24,16 +24,24 @@ module.exports.sharding.getGuildShardId = (guildId) => {
   return ~~((typeof guildId === 'number' ? guildId : parseInt(guildId)) / 4194304 % main.client.shard.count)
 }
 
-module.exports.sharding.getGuild = async (guildId) => {
-  const main = require('../bot')
-  let shardId = module.exports.sharding.getGuildShardId(guildId)
-  let guilds = (await main.client.shard.broadcastEval(`this.shard.id === ${shardId} ? this.guilds.get('${guildId}') : null`))
-  if(guilds.length >= 1) return guilds[0]
-  return null
+module.exports.sharding.getGuild = async (guildId, index) => {
+  if(index) {
+    const main = require('../index')
+    let shardId = module.exports.sharding.getGuildShardId(guildId, true)
+    let guilds = (await main.manager.broadcastEval(`this.shard.id === ${shardId} ? this.guilds.get('${guildId}') : null`))
+    if(guilds.length >= 1) return guilds[0]
+    return null
+  } else {
+    const main = require('../bot')
+    let shardId = module.exports.sharding.getGuildShardId(guildId)
+    let guilds = (await main.client.shard.broadcastEval(`this.shard.id === ${shardId} ? this.guilds.get('${guildId}') : null`))
+    if(guilds.length >= 1) return guilds[0]
+    return null
+  }
 }
 
-module.exports.sharding.bumpToAllShards = async (options) => {
-  const main = require('../bot')
+module.exports.sharding.bumpToAllShards = async (options, index) => {
+  const main = index ? require('../index') : require('../bot')
   const guildsDatabase = await Guild.find({
     $and: [
       { feed: { $exists: true } },
@@ -46,7 +54,28 @@ module.exports.sharding.bumpToAllShards = async (options) => {
     args.push({guild: guildDatabase.id, channel: guildDatabase.feed})
   })
 
-  return (await main.client.shard.broadcastEval(`this.require('./utils/common').sharding.bumpToThisShard(${JSON.stringify(args)}, ${JSON.stringify(options)})`)).reduce((prev, guildCount) => prev + guildCount, 0)
+  return (await (index ? main.manager : main.client.shard).broadcastEval(`this.require('./utils/common').sharding.bumpToThisShard(${JSON.stringify(args)}, ${JSON.stringify(options)})`)).reduce((prev, guildCount) => prev + guildCount, 0)
+}
+
+module.exports.sharding.fetchUserFromIndex = async (id) => {
+  const main = require('../index')
+  let users = await main.manager.broadcastEval(`(function(thisp){` +
+    `let user = thisp.users.has('${id}') ? thisp.users.get('${id}') : null;` +
+    `if(user) {` +
+    `return {` +
+    `id: user.id,` +
+    `username: user.username,` +
+    `tag: user.tag,` +
+    `discriminator: user.username,` +
+    `avatar: user.avatar,` +
+    `displayAvatarURL: user.displayAvatarURL,` +
+    `}` +
+    `}` +
+    `return null;` +
+  `})(this)`)
+  let user = null
+  users.forEach(userDiscord => { if(userDiscord) user = userDiscord })
+  return user
 }
 
 module.exports.sharding.bumpToThisShard = (channels, options) => {
