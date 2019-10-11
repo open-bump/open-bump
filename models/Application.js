@@ -32,7 +32,7 @@ const ApplicationSchema = new mongoose.Schema({
     required: true,
     default: Date.now
   },
-  features: {
+  scopes: {
     type: Array,
     required: true,
     default: []

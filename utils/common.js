@@ -95,3 +95,11 @@ module.exports.toObjectId = input => {
   }
   return false
 }
+
+module.exports.removeValue = (array, value) => {
+  let index = array.indexOf(value)
+  if (index > -1) {
+    array.splice(index, 1)
+  }
+  return array
+}
