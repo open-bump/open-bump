@@ -1,6 +1,8 @@
 const main = require('../bot')
 const colors = require('../utils/colors')
+const emojis = require('../utils/emojis')
 const errors = require('../utils/errors')
+const common = require('../utils/common')
 const links = require('../utils/links')
 const Guild = require('../models/Guild')
 
@@ -12,27 +14,45 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
     if(!(args[0] === 'reset' || args[0] === 'default')) {
       let newChannel = args[0]
 
-      let channel = links.channel(newChannel, msg.guild)
+      let targetChannel = links.channel(newChannel, msg.guild)
 
-      if(typeof channel === 'object') {
-        guildDatabase.feed = channel.id
+      if(typeof targetChannel === 'object') {
+        let issues = common.getBumpChannelIssues(targetChannel)
 
-        await guildDatabase.save()
+        if(issues.length === 0) {
+          guildDatabase.feed = targetChannel.id
 
-        let options = {
-          embed: {
-            color: colors.green,
-            title: '**Channel has been changed**',
-            description: `__**New Channel:**__ ${channel}`
+          await guildDatabase.save()
+
+          let options = {
+            embed: {
+              color: colors.green,
+              title: '**Channel has been changed**',
+              description: `__**New Channel:**__ ${targetChannel}`
+            }
           }
+          msg.channel.send('', options)
+        } else {
+          let issuesFormatted = []
+          issues.forEach(issue => issuesFormatted.push(`- ${issue}`))
+          let options = {
+            embed: {
+              color: colors.red,
+              title: `${emojis.xmark} Permission Errors`,
+              description: `**Please fix these issues for ${targetChannel}:**\n` +
+                  issuesFormatted.join('\n')
+            }
+          }
+          channel.send('', options)
         }
-        msg.channel.send('', options)
-      } else {
-        if(channel === 'TOO_MANY_RESULTS') {
+      }  else {
+        if(targetChannel === 'TOO_MANY_RESULTS') {
           errors.error(msg, 'Too many matching channels found!')
-        } else if(channel === 'NO_RESULTS') {
+        } else if(targetChannel === 'NO_RESULTS') {
           errors.error(msg, 'Channel not found!')
         } else {
+          console.log('Unknown error while looking for channel!')
+          console.log(targetChannel)
           errors.error(msg, 'Unknown error while looking for channel!')
         }
       }

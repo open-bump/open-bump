@@ -151,9 +151,7 @@ client.on('message', async msg => {
           let reaction = await msg.react(common.getEmojiId(emojis.loadingGreen))
           let guildDatabase = (await Guild.findOrCreate({ id: guild.id }, { id: guild.id, name: guild.name, name_lower: guild.name.toLowerCase() })).doc
           let cooldown = donator.translateCooldown(guildDatabase)
-          let nextBump = moment(guildDatabase.lastBump.time.valueOf() + cooldown)
           if(donator.translateFeatures(guildDatabase).includes('AUTOBUMP') && guildDatabase.autoBump) {
-            let remaining = ms(nextBump.valueOf() - moment().valueOf(), { long: true })
             await msg.react(common.getEmojiId(emojis.thumbsdown))
             await channel.send(`Bump request denied, you have autobump enabled.`).catch(() => {})
             await reaction.remove()
@@ -170,14 +168,20 @@ client.on('message', async msg => {
               return;
             }
           }
+          if(await bump.isReady(guild, guildDatabase) !== true) {
+            await msg.react(common.getEmojiId(emojis.thumbsdown))
+            await channel.send(`Bump request denied, your guild has not finished setup. Use \`ob!bump\` for more information.`).catch(() => {})
+            await reaction.remove()
+            return;
+          }
           guildDatabase.lastBump = {}
           guildDatabase.lastBump.user = author.id
           guildDatabase.lastBump.time = Date.now()
           await guildDatabase.save()
           let options = await bump.getPreviewEmbed(guild, guildDatabase)
           await bump.bumpToAllShards(options)
+          await msg.react(common.getEmojiId(emojis.thumbsup))
           await reaction.remove()
-          msg.react(common.getEmojiId(emojis.thumbsup))
         }
       }
     }
