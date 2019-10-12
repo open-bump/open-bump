@@ -11,19 +11,15 @@ const slowDown = require('express-slow-down')
 module.exports.router = router
 
 const indexRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes window
-  max: 225, // start blocking after 5 requests
+  windowMs: 5 * 60 * 1000, // 5 minutes window
+  max: 75, // start blocking after 75 requests
   message: "You are being ratelimitted! Try again later."
 });
 
 const indexSpeedLimiter = slowDown({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  delayAfter: 150, // allow 150 requests per 15 minutes, then...
-  delayMs: 100 // begin adding 500ms of delay per request above 100:
-  // request # 101 is delayed by  500ms
-  // request # 102 is delayed by 1000ms
-  // request # 103 is delayed by 1500ms
-  // etc.
+  windowMs: 1 * 60 * 1000, // 1 minute
+  delayAfter: 10, // allow 10 requests per 1 minute, then...
+  delayMs: 500 // begin adding 500ms of delay per request above 100:
 });
 
 router.post('/', indexRateLimiter, indexSpeedLimiter, checkAccess, async (req, res) => {

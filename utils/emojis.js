@@ -33,5 +33,5 @@ module.exports = {
   unitedServer: '<:UnitedServer:622845429435858955>',
   earlySupporter: '<:EarlySupporter:622852038031835137>',
   affiliatedServer: '<:AffiliatedServer:622857526924279848>',
-  bumpChannel: 'BUMP_CHANNEL' // TODO: Bump Channel Emote
+  bumpChannel: '<:BumpChannel:632703590632390686>'
 }
