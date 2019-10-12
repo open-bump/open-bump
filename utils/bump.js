@@ -1,10 +1,13 @@
 const colors = require('./colors')
 const emojis = require('./emojis')
+const config = require('../config')
 const ms = require('ms')
 const moment = require('moment')
 const common = require('./common')
 const Guild = require('../models/Guild')
 const donator = require('../utils/donator')
+
+let justRemoved = {}
 
 module.exports.bumpToAllShards = async (options, index) => {
   return common.sharding.bumpToAllShards(options, index)
@@ -18,19 +21,62 @@ module.exports.bumpToThisShard = (channels, options) => {
     const client = main.client
     let guildId = channels.guild
     let channelId = channels.channel
-    if(common.sharding.getGuildShardId(guildId) === main.client.shard.id) {
+    if(common.sharding.getGuildShardId(guildId) === main.client.shard.id && main.client.guilds.has(guildId)) {
       let guild = main.client.guilds.get(guildId)
       if(guild) {
         let channel = guild.channels.get(channelId)
         if(channel) {
-          if(channel.permissionsFor(guild.me).has(['SEND_MESSAGES', 'VIEW_CHANNEL', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'])) {
+          let issues = common.getBumpChannelIssues(channel)
+          let issuesFormatted = []
+          issues.forEach(issue => issuesFormatted.push(`- ${issue}`))
+          if(issues.length === 0) {
             channel.send('', options).catch(() => console.log(`Unknown error occured while trying to bump ${guild.id}!`))
             amount++
           } else {
-            console.log(`Guild ${guild.id} has set a bump channel but the bot doesn't have enough permissions to use it!`)
+            if(!justRemoved[guild.id]) {
+              justRemoved[guild.id] = true
+              setTimeout(() => justRemoved[guild.id] = undefined, 1000*30)
+              console.log(`Guild ${guild.name} (${guild.id}) has set a bump channel but there are permission errors!`)
+              Guild.findOrCreate({ id: guild.id }, { id: guild.id, name: guild.name, name_lower: guild.name.toLowerCase() }).then(guildDatabase => {
+                guildDatabase = guildDatabase.doc
+                guildDatabase.feed = undefined
+                guildDatabase.save()
+              })
+              let options = {
+                embed: {
+                  color: colors.red,
+                  title: `${emojis.xmark} **Permission Errors**`,
+                  description: 'Hey there, we tried to bump to your bump channel. However, we had some issues.',
+                  fields: [{
+                    name: '**Issues**',
+                    value: `**Please fix these issues for ${channel} and set the bump channel again:**\n` +
+                        issuesFormatted.join('\n')
+                  }]
+                }
+              }
+              guild.owner.user.send('', options).catch(() => {})
+            }
           }
         } else {
-          console.log(`Guild ${guild.id} has set a bump channel but it's missing!`)
+          if(!justRemoved[guild.id]) {
+            justRemoved[guild.id] = true
+            setTimeout(() => justRemoved[guild.id] = undefined, 1000*30)
+            console.log(`Guild ${guild.name} (${guild.id}) has set a bump channel but it's missing!`)
+            Guild.findOrCreate({ id: guild.id }, { id: guild.id, name: guild.name, name_lower: guild.name.toLowerCase() }).then(guildDatabase => {
+              guildDatabase = guildDatabase.doc
+              guildDatabase.feed = undefined
+              guildDatabase.save()
+            })
+            let options = {
+              embed: {
+                color: colors.red,
+                title: `${emojis.xmark} **Channel not found**`,
+                description: 'Hey there, we tried to bump to your bump channel. However, we were not able to find the channel you\'ve set.\n' +
+                    `Please fix this issue by setting a new bump channel using \`${config.settings.prefix}setchannel <channel>\`.`
+              }
+            }
+            guild.owner.user.send('', options).catch(() => {})
+          }
         }
       }
     }
@@ -44,9 +90,13 @@ module.exports.bumpToAllShardsIfCorrectShard = async (guildId) => {
   if(!main.client.guilds.has(guildId)) return
   let guild = main.client.guilds.get(guildId)
   let guildDatabase = await Guild.findOne({ id: guildId })
-  options = await module.exports.getPreviewEmbed(guild, guildDatabase)
-  let amount = await module.exports.bumpToAllShards(options)
-  return amount
+  try {
+    options = await module.exports.getPreviewEmbed(guild, guildDatabase)
+    let amount = await module.exports.bumpToAllShards(options)
+    return amount
+  } catch (error) {
+    return 0
+  }
 }
 
 module.exports.autoBumpLoop = async () => {
@@ -87,14 +137,20 @@ module.exports.autoBumpLoop = async () => {
   setTimeout(() => module.exports.autoBumpLoop(), 1000*60*main.client.shard.count)
 }
 
+module.exports.isReady = async (guild, guildDatabase) => {
+  let missing = []
+  if(!guild) throw new Error('MissingArgument: guild')
+  if(!guildDatabase) guildDatabase = (await Guild.findOrCreate({ id: guild.id })).doc
+  if(!guildDatabase.bump) return ['Description', 'Invite']
+  if(!guildDatabase.bump.description) missing.push('Description')
+  if(!guildDatabase.bump.invite) missing.push('Invite')
+  return missing.length === 0 ? true : missing
+}
+
 module.exports.getPreviewEmbed = async (guild, guildDatabase) => {
   const main = require('../bot')
   const client = main.client
-  if(!guild) throw new Error('MissingArgument: guild')
-  if(!guildDatabase) guildDatabase = (await Guild.findOrCreate({ id: guild.id })).doc
-  if(!guildDatabase.bump) throw new Error('GuildNotReady: Description and more is missing!')
-  if(!guildDatabase.bump.description) throw new Error('GuildNotReady: Description is missing!')
-  if(!guildDatabase.bump.invite) throw new Error('GuildNotReady: Invite is missing!')
+  if(await module.exports.isReady(guild, guildDatabase) !== true) throw new Error('BumpError: Guild not ready')
 
   // Stats
   let total = 0

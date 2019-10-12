@@ -32,6 +32,9 @@ router.post('/', indexRateLimiter, indexSpeedLimiter, checkAccess, async (req, r
 
     if(!req.body.embed) return error(res, 400, 'Bad Request')
     let botDiscord = req.application.bot ? await common.sharding.fetchUserFromIndex(req.application.bot) : null
+
+    if(typeof req.body.embed === 'string') req.body.embed = JSON.parse(req.body.embed)
+
     let embed = req.body.embed
     if(typeof embed !== 'object') {
       return error(res, 400, 'Invalid parameter `embed`')

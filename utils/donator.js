@@ -1,4 +1,5 @@
 const emojis = require('./emojis')
+const colors = require('./colors')
 const config = require('../config')
 
 module.exports.tiers = {
@@ -79,7 +80,7 @@ module.exports.translateCooldown = (guildDatabase) => {
                 color: colors.red,
                 title: `${emojis.xmark} **Bump channel error**`,
                 description: 'Hey there, it looks like Open Bump doesn\'t have access to your bump channel anymore. ' +
-                    `To fix this issue, please set the bump channel again using \`${config.settings.preifx}setchannel\`.`
+                    `To fix this issue, please set the bump channel again using \`${config.settings.prefix}setchannel\`.`
               }
             }
             owner.send('', options).catch(() => {})
@@ -95,7 +96,7 @@ module.exports.translateCooldown = (guildDatabase) => {
               color: colors.red,
               title: `${emojis.xmark} **Bump channel error**`,
               description: 'Hey there, it looks like your bump channel has been removed. ' +
-                  `To fix this issue, please set the bump channel again using \`${config.settings.preifx}setchannel\`.`
+                  `To fix this issue, please set the bump channel again using \`${config.settings.prefix}setchannel\`.`
             }
           }
           owner.send('', options).catch(() => {})

@@ -1,6 +1,7 @@
 const main = require('./bot')
 const config = require('./config')
 const donator = require('./utils/donator')
+const colors = require('./utils/colors')
 const lyne = require('./utils/lyne')
 const Guild = require('./models/Guild')
 const User = require('./models/User')

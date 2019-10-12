@@ -132,3 +132,37 @@ module.exports.removeValue = (array, value) => {
   }
   return array
 }
+
+module.exports.niceList = (array) => {
+  if(array.length === 0) return 'nothing'
+  if(array.length === 1) return array[0]
+  let last = array.pop()
+  return array.join(', ') + ' and ' + last
+}
+
+module.exports.getBumpChannelIssues = (channel) => {
+  if(!channel) return ['Internal Error']
+
+  let guild = channel.guild
+
+  let issues = []
+
+  if(!channel.permissionsFor(guild.me).has('SEND_MESSAGES')) issues.push(`Please grant \`${guild.me.user.tag}\` the permission \`Send Messages\`.`)
+  if(!channel.permissionsFor(guild.me).has('VIEW_CHANNEL')) issues.push(`Please grant \`${guild.me.user.tag}\` the permission \`Read Messages\`.`)
+  if(!channel.permissionsFor(guild.me).has('EMBED_LINKS')) issues.push(`Please grant \`${guild.me.user.tag}\` the permission \`Embed Links\`.`)
+  if(!channel.permissionsFor(guild.me).has('USE_EXTERNAL_EMOJIS')) issues.push(`Please grant \`${guild.me.user.tag}\` the permission \`Use External Emojis\`.`)
+
+  Array.from(channel.permissionOverwrites.values()).forEach(permissionOverwrite => {
+    if(permissionOverwrite.id === guild.id) {
+      // everyone role
+      if(!permissionOverwrite.allowed.has('VIEW_CHANNEL')) issues.push(`Please grant \`@everyone\` the permission \`Read Messages\`.`)
+      if(!permissionOverwrite.allowed.has('READ_MESSAGE_HISTORY')) issues.push(`Please grant \`@everyone\` the permission \`Read Message History\`.`)
+    } else {
+      // other role
+      if(permissionOverwrite.denied.has('VIEW_CHANNEL')) issues.push(`Please grant \`@${guild.roles.get(permissionOverwrite.id).name}\` the permission \`Read Messages\`.`)
+      if(permissionOverwrite.denied.has('READ_MESSAGE_HISTORY')) issues.push(`Please grant \`@${guild.roles.get(permissionOverwrite.id).name}\` the permission \`Read Message History\`.`)
+    }
+  })
+
+  return issues
+}
