@@ -171,3 +171,17 @@ module.exports.getBumpChannelIssues = (channel) => {
 
   return issues
 }
+
+module.exports.setConsolePrefix = prefix => {
+  let originalConsoleLog = console.log
+  console.log = (input) => {
+      args = []
+      args.push('[' + prefix + ']')
+      // Note: arguments is part of the prototype
+      // for( let i = 0; i < arguments.length; i++ ) {
+      //     args.push( arguments[i] )
+      // }
+      args.push(input)
+      originalConsoleLog.apply( console, args )
+  }
+}

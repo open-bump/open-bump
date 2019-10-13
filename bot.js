@@ -18,6 +18,8 @@ const command = require('./command')
 
 module.exports.client = client
 
+common.setConsolePrefix(`Shard #${client.shard.id}`)
+
 // Prototype Changes (not recommended, but the most effective)
 String.prototype.replaceAll = (str, search, replacement) => {
   return str && str.replace ? str.replace(new RegExp(search, 'g'), replacement) : str
