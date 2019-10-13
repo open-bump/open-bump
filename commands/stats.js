@@ -43,8 +43,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       let input = parseInt(args[0])
       if(input < common.id.min) {
         if(input < 0 || input >= main.client.shard.count) throw new Error()
-        let shardServers = (await main.client.shard.broadcastEval(`this.shard.id === ${input} ? this.guilds.size : 0`)).reduce((prev, guildCount) => prev + guildCount, 0)
-        let shardUsers = (await main.client.shard.broadcastEval(`this.shard.id === ${input} ? this.users.size : 0`)).reduce((prev, guildCount) => prev + guildCount, 0)
+        let shardServers = (await main.client.shard.broadcastEval(`this.shard.id === '${args[0]}' ? this.guilds.size : 0`)).reduce((prev, guildCount) => prev + guildCount, 0)
+        let shardUsers = (await main.client.shard.broadcastEval(`this.shard.id === '${args[0]}' ? this.users.size : 0`)).reduce((prev, guildCount) => prev + guildCount, 0)
         let options = {
           embed: {
             color: colors.blue,
@@ -62,7 +62,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
         }
         msg.channel.send('', options)
       } else {
-        let guild = await common.sharding.getGuild(input)
+        let guild = await common.sharding.getGuild(args[0])
         if(!guild) throw new Error()
         let options = {
           embed: {

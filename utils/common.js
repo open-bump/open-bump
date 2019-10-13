@@ -27,16 +27,16 @@ module.exports.sharding.getGuildShardId = (guildId) => {
 module.exports.sharding.getGuild = async (guildId, index) => {
   if(index) {
     const main = require('../index')
-    let shardId = module.exports.sharding.getGuildShardId(guildId, true)
-    let guilds = (await main.manager.broadcastEval(`this.shard.id === ${shardId} ? this.guilds.get('${guildId}') : null`))
-    if(guilds.length >= 1) return guilds[0]
-    return null
+    let guilds = (await main.manager.broadcastEval(`this.guilds.has('${guildId}') ? this.guilds.get('${guildId}') : null`))
+    let guild = null
+    guilds.forEach(guildI => { if(guildI) { guild = guildI } })
+    return guild
   } else {
     const main = require('../bot')
-    let shardId = module.exports.sharding.getGuildShardId(guildId)
-    let guilds = (await main.client.shard.broadcastEval(`this.shard.id === ${shardId} ? this.guilds.get('${guildId}') : null`))
-    if(guilds.length >= 1) return guilds[0]
-    return null
+    let guilds = (await main.client.shard.broadcastEval(`this.guilds.has('${guildId}') ? this.guilds.get('${guildId}') : null`))
+    let guild = null
+    guilds.forEach(guildI => { if(guildI) { guild = guildI } })
+    return guild
   }
 }
 
