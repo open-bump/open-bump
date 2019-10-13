@@ -82,9 +82,14 @@ module.exports.sharding.bumpToThisShard = (channels, options) => {
   return bump.bumpToThisShard(channels, options)
 }
 
-module.exports.getUserDatabase = async (user) => {
-  const userDatabase = (await User.findOrCreate({ id: user })).doc
+module.exports.getUserDatabase = async (userId) => {
+  const userDatabase = (await User.findOrCreate({ id: userId })).doc
   return userDatabase
+}
+
+module.exports.getGuildDatabase = async (guild) => {
+  let guildDatabase = (await Guild.findOrCreate({ id: guild.id }, { id: guild.id, name: guild.name, name_lower: guild.name.toLowerCase() })).doc
+  return guildDatabase
 }
 
 module.exports.processArray = async (t, fun/*, thisp */) => {

@@ -149,7 +149,7 @@ client.on('message', async msg => {
         let guild = msg.guild
         if(channel.permissionsFor(guild.me).has(['ADD_REACTIONS'])) {
           let reaction = await msg.react(common.getEmojiId(emojis.loadingGreen))
-          let guildDatabase = (await Guild.findOrCreate({ id: guild.id }, { id: guild.id, name: guild.name, name_lower: guild.name.toLowerCase() })).doc
+          let guildDatabase = await common.getGuildDatabase(guild)
           let cooldown = donator.translateCooldown(guildDatabase)
           if(donator.translateFeatures(guildDatabase).includes('AUTOBUMP') && guildDatabase.autoBump) {
             await msg.react(common.getEmojiId(emojis.thumbsdown))

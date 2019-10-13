@@ -164,50 +164,8 @@ module.exports.checkPatreonLoop = async () => {
 
   try {
     if(main.client.guilds.has(config.discord.server)) {
-      let boosters = [];
       let guild = main.client.guilds.get(config.discord.server)
-      let role = guild.roles.get(config.discord.boosterRole)
-      role.members.forEach(member => boosters.push(member.user.id))
-      role.members.forEach(async member => {
-        let userDatabase = await common.getUserDatabase(member.user.id)
-        if(!userDatabase.nitroBooster) {
-          userDatabase.nitroBooster = true
-          userDatabase.save()
-          let options = {
-            embed: {
-              color: colors.green,
-              title: `${emojis.check} **Boost power enabled**`,
-              description: 'Hey there, we just saw you boosted our server Open Advertisements. That\'s awesome, thank you so much! ' +
-                  `As a thank you, you get a free bonus of $5.00 that allows you to use the premium version of this bot.\n` +
-                  `To start using it, please check out the command \`${config.settings.prefix}premium\`. It will tell you how you can use your bonus.`
-            }
-          }
-          // TODO: Send to all users, remove if statement
-          if(config.discord.owners.includes(member.user.id)) member.user.send('', options).catch(() => {})
-        }
-      })
-
-      let boostersDatabase = await User.find({ nitroBooster: true })
-      boostersDatabase.forEach(async boosterDatabase => {
-        if(!boosters.includes(boosterDatabase.id)) {
-          let boosterDiscord = main.client.fetchUser(boosterDatabase.id)
-          boosterDatabase.nitroBooster = false
-          boosterDatabase.save()
-          if(boosterDiscord) {
-            let options = {
-              embed: {
-                color: colors.red,
-                title: `${emojis.xmark} **Boost power disabled**`,
-                description: 'Hey there, we just saw you removed your boost from Open Advertisements. ' +
-                    `Because of that, you lost your free $5.00 bonus. That's sad!\n` +
-                    `You may receive further messages from this bot in case your new balance isn't enough to cover the costs for all activated servers.`
-              }
-            }
-            // TODO: Send to all users, remove if statement
-            if(config.discord.owners.includes(boosterDiscord.id)) boosterDiscord.send('', options).catch(() => {})
-          }
-        }
-      })
+      refreshNitroBoosters(guild)
     }
   } catch (error) {
     console.log('Error while checking for Nitro Boosters:')
@@ -229,6 +187,15 @@ module.exports.checkPatreonLoop = async () => {
           authorization: `Bearer ${config.server.token}`
         }
       }).then(res => res.json())
+        try {
+          if(main.client.guilds.has(config.discord.server)) {
+            let guild = main.client.guilds.get(config.discord.server)
+            refreshPatreonRoles(guild, userDatabase, userPatreon)
+          }
+        } catch (error) {
+          console.log('Error while checking patreon roles')
+          console.log(error)
+        }
       if(userDatabase.donator.amount <= userPatreon) userDatabase.donator.amount = donator.translateAmount(userPatreon, userDatabase)
       let guildsDatabase = await Guild.find({ 'donators.id': userDatabase.id })
       let totalCost = 0
@@ -332,4 +299,94 @@ module.exports.checkPatreonLoop = async () => {
   }
 
   setTimeout(() => module.exports.checkPatreonLoop(), 1000*60*main.client.shard.count)
+}
+
+async function refreshPatreonRoles(guild, userDatabase, userPatreon) {
+  if(!guild.members.has(userDatabase.id)) return
+  let member = guild.members.get(userDatabase.id)
+
+  // Roles
+  let premiumRoles = config.discord.premiumRoles
+
+  let premiumRole = null
+  premiumRoles.forEach(thisPremiumRole => {
+    if(thisPremiumRole.cost <= userPatreon.cents) {
+      if(!premiumRole) premiumRole = thisPremiumRole
+      else if(premiumRole.cost < thisPremiumRole.cost) premiumRole = thisPremiumRole
+    }
+  })
+
+  premiumRoles.forEach(thisPremiumRole => {
+    if(premiumRole && thisPremiumRole.id === premiumRole.id) member.addRole(thisPremiumRole.id).catch(() => {})
+    else member.removeRole(thisPremiumRole.id).catch(() => {})
+  })
+}
+
+async function refreshNitroBoosters(guild) {
+  // Nitro Boosters
+  let boosters = [];
+
+  let role = guild.roles.get(config.discord.boosterRole)
+  role.members.forEach(member => boosters.push(member.user.id))
+  role.members.forEach(async member => {
+    let userDatabase = await common.getUserDatabase(member.user.id)
+    if(!userDatabase.nitroBooster) {
+      userDatabase.nitroBooster = true
+      userDatabase.save()
+      let options = {
+        embed: {
+          color: colors.green,
+          title: `${emojis.check} **Boost power enabled**`,
+          description: 'Hey there, we just saw you boosted our server Open Advertisements. That\'s awesome, thank you so much! ' +
+              `As a thank you, you get a free bonus of $5.00 that allows you to use the premium version of this bot.\n` +
+              `To start using it, please check out the command \`${config.settings.prefix}premium\`. It will tell you how you can use your bonus.`
+        }
+      }
+      // TODO: Send to all users, remove if statement
+      if(config.discord.owners.includes(member.user.id)) member.user.send('', options).catch(() => {})
+    }
+  })
+
+  let boostersDatabase = await User.find({ nitroBooster: true })
+  boostersDatabase.forEach(async boosterDatabase => {
+    if(!boosters.includes(boosterDatabase.id)) {
+      let boosterDiscord = main.client.fetchUser(boosterDatabase.id)
+      boosterDatabase.nitroBooster = false
+      boosterDatabase.save()
+      if(boosterDiscord) {
+        let options = {
+          embed: {
+            color: colors.red,
+            title: `${emojis.xmark} **Boost power disabled**`,
+            description: 'Hey there, we just saw you removed your boost from Open Advertisements. ' +
+                `Because of that, you lost your free $5.00 bonus. That's sad!\n` +
+                `You may receive further messages from this bot in case your new balance isn't enough to cover the costs for all activated servers.`
+          }
+        }
+        // TODO: Send to all users, remove if statement
+        if(config.discord.owners.includes(boosterDiscord.id)) boosterDiscord.send('', options).catch(() => {})
+      }
+    }
+  })
+
+  // Roles
+  let premiumRoles = config.discord.premiumRoles
+
+  premiumRoles.forEach(thisPremiumRole => {
+    if(guild.roles.has(thisPremiumRole.id)) {
+      let role = guild.roles.get(thisPremiumRole.id)
+      role.members.forEach(async member => {
+        let user = member.user
+        let userDatabase = await common.getUserDatabase(user.id)
+
+        let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${userDatabase.id}`, {
+          headers: {
+            authorization: `Bearer ${config.server.token}`
+          }
+        }).then(res => res.json())
+
+        refreshPatreonRoles(guild, userDatabase, userPatreon)
+      })
+    }
+  })
 }

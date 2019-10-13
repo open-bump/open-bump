@@ -2,6 +2,7 @@ const main = require('./bot')
 const config = require('./config')
 const donator = require('./utils/donator')
 const colors = require('./utils/colors')
+const common = require('./utils/common')
 const lyne = require('./utils/lyne')
 const Guild = require('./models/Guild')
 const User = require('./models/User')
@@ -19,7 +20,7 @@ module.exports.received = async (msg) => {
     if(!guild) return;
 
     /* Fetch or Create important Guild Information, e.g. Prefix and Features */
-    const guildDatabase = (await Guild.findOrCreate({ id: guild.id }, { id: guild.id, name: guild.name, name_lower: guild.name.toLowerCase() })).doc
+    const guildDatabase = await common.getGuildDatabase(guild)
 
     if(guildDatabase.name !== guild.name) {
       guildDatabase.name = guild.name
