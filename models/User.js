@@ -12,6 +12,11 @@ const UserSchema = new mongoose.Schema({
       required: true,
       default: 0
     },
+    bonus: {
+      type: Number,
+      required: true,
+      default: 0
+    },
     transition: {
       amount: {
         type: Number,
