@@ -153,7 +153,7 @@ module.exports.niceList = (array) => {
   return array.join(', ') + ' and ' + last
 }
 
-module.exports.getBumpChannelIssues = (channel) => {
+module.exports.getBumpChannelIssues = (channel, guildDatabase) => {
   if(!channel) return ['Internal Error']
 
   let guild = channel.guild
@@ -165,15 +165,18 @@ module.exports.getBumpChannelIssues = (channel) => {
   if(!channel.permissionsFor(guild.me).has('EMBED_LINKS')) issues.push(`Please grant \`${guild.me.user.tag}\` the permission \`Embed Links\`.`)
   if(!channel.permissionsFor(guild.me).has('USE_EXTERNAL_EMOJIS')) issues.push(`Please grant \`${guild.me.user.tag}\` the permission \`Use External Emojis\`.`)
 
+  if(guildDatabase && guildDatabase.features.includes('RESTRICTED_CHANNEL')) return issues
+
   Array.from(channel.permissionOverwrites.values()).forEach(permissionOverwrite => {
+    if(permissionOverwrite.type !== 'role') return
     if(permissionOverwrite.id === guild.id) {
       // everyone role
       if(!permissionOverwrite.allowed.has('VIEW_CHANNEL')) issues.push(`Please grant \`@everyone\` the permission \`Read Messages\`.`)
       if(!permissionOverwrite.allowed.has('READ_MESSAGE_HISTORY')) issues.push(`Please grant \`@everyone\` the permission \`Read Message History\`.`)
     } else {
       // other role
-      if(permissionOverwrite.denied.has('VIEW_CHANNEL')) issues.push(`Please grant \`@${guild.roles.get(permissionOverwrite.id).name}\` the permission \`Read Messages\`.`)
-      if(permissionOverwrite.denied.has('READ_MESSAGE_HISTORY')) issues.push(`Please grant \`@${guild.roles.get(permissionOverwrite.id).name}\` the permission \`Read Message History\`.`)
+      if(permissionOverwrite.denied.has('VIEW_CHANNEL')) issues.push(`Please grant \`@${guild.roles.get(permissionOverwrite.id) ? guild.roles.get(permissionOverwrite.id).name : permissionOverwrite.id}\` the permission \`Read Messages\`.`)
+      if(permissionOverwrite.denied.has('READ_MESSAGE_HISTORY')) issues.push(`Please grant \`@${guild.roles.get(permissionOverwrite.id) ? guild.roles.get(permissionOverwrite.id).name : permissionOverwrite.id}\` the permission \`Read Message History\`.`)
     }
   })
 
