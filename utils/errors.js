@@ -24,7 +24,7 @@ module.exports.errorSyntax = (msg, prefix, syntax) => {
 }
 
 module.exports.errorMissingFeature = (msg, feature) => {
-  module.exports.error(msg, `${emojis.lockKey} **Premium Feature**`, 'This is a premium command. Check out our store at [https://openbump.com/#premium](https://openbump.com/#premium) to see all available features.')
+  module.exports.error(msg, `${emojis.lockKey} **Premium Feature**`, 'This is a premium command. Check out our Patreon at [https://patreon.com/Looat](https://www.patreon.com/Looat) to see all available features.')
 }
 
 module.exports.error = (msg, title, description) => {

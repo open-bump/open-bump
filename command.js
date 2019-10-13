@@ -2,6 +2,7 @@ const main = require('./bot')
 const config = require('./config')
 const donator = require('./utils/donator')
 const colors = require('./utils/colors')
+const emojis = require('./utils/emojis')
 const common = require('./utils/common')
 const lyne = require('./utils/lyne')
 const Guild = require('./models/Guild')
@@ -17,7 +18,7 @@ module.exports.received = async (msg) => {
 
     const guild = msg.guild
 
-    if(!guild) return;
+    if(!guild) return
 
     /* Fetch or Create important Guild Information, e.g. Prefix and Features */
     const guildDatabase = await common.getGuildDatabase(guild)
@@ -42,7 +43,7 @@ module.exports.received = async (msg) => {
                   'If you want to stay updated, please join [Open Advertisements](https://discord.gg/eBFu8HF). There you\'ll get the latest news about Open Bump.'
             }
           }
-          msg.channel.send('', options)
+          msg.channel.send('', options).catch(() => {})
         }
         return
       }
@@ -75,6 +76,25 @@ module.exports.received = async (msg) => {
     const prefix = (var1 ? var1 : (var2 ? var2 : var3)).trim()
 
     if(used) {
+      // Check permissions
+      if(!msg.channel.permissionsFor(guild.me).has(['VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS'])) {
+        console.log(`${author.tag} tried to execute a command on ${guild.name} in #${msg.channel.name}, but the bot doesn't have enough permissions to respond.`)
+        let options = {
+          embed: {
+            color: colors.red,
+            title: `${emojis.xmark} **Bot Permission Error**`,
+            description: `Hey there, it looks like you tried to use a command on **${guild.name}** in ${msg.channel}. ` +
+                `However, an error occured when I tried to reply to your command - I am missing permissions. ` +
+                `Please report this error to an administrator on the server.\n` +
+                `\n` +
+                `**Required permissions:**\n` +
+                `Read Messages, Send Messages and Embed Links`
+          }
+        }
+        return author.send('', options).catch(() => {})
+      }
+
+      // Executing command
       let invoke = cont.substr(used.length).split(' ')[0],
           args   = cont.substr(used.length + invoke.length + 1).match(/(".*?"|[^"\r\v ]+)+(?=\s*|\s*$)/g)
 
