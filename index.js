@@ -3,6 +3,9 @@ const config = require('./config')
 const server = require('./server')
 const patreon = require('./patreon')
 const mongoose = require('mongoose')
+const common = require('./utils/common')
+
+common.setConsolePrefix('Managing')
 
 const manager = new ShardingManager('./bot.js', { token: config.discord.token })
 module.exports.manager = manager
