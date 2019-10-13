@@ -49,7 +49,7 @@ module.exports.bumpToThisShard = (channels, options) => {
                   description: 'Hey there, we tried to bump to your bump channel. However, we had some issues.',
                   fields: [{
                     name: '**Issues**',
-                    value: `**Please fix these issues for ${channel} and set the bump channel again:**\n` +
+                    value: `**Please fix these issues for ${channel} and set the bump channel again (\`${config.settings.prefix}setchannel <channel>\`):**\n` +
                         issuesFormatted.join('\n')
                   }]
                 }
@@ -122,6 +122,7 @@ module.exports.autoBumpLoop = async () => {
 
         guildDatabase.lastBump.user = main.client.user.id
         guildDatabase.lastBump.time = Date.now()
+        guildDatabase.bumps = guildDatabase.bumps + 1
 
         guildDatabase.save()
       } else {

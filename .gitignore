@@ -90,3 +90,9 @@ typings/
 package-lock.json
 .gitignore
 .ftpconfig
+beta-config.json
+live-config.json
+
+start.sh
+start.sh.save
+data

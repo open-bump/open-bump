@@ -230,8 +230,8 @@ module.exports.checkPatreonLoop = async () => {
           }
           if(!userDatabase.donator.transition.detected) userDatabase.donator.transition.detected = Date.now()
 
-          if((userDatabase.donator.transition.detected.valueOf() + 1000*60*5) <= (Date.now().valueOf())) { // 5 minutes // TEST ONLY
-          // TODO: if((userDatabase.donator.transition.detected.valueOf() + 1000*60*60*24*3) <= (Date.now().valueOf())) { // 3 days
+          // TEST ONLY // if((userDatabase.donator.transition.detected.valueOf() + 1000*60*5) <= (Date.now().valueOf())) { // 5 minutes // TEST ONLY
+          if((userDatabase.donator.transition.detected.valueOf() + 1000*60*60*24*3) <= (Date.now().valueOf())) { // 3 days
             // Too long ago, no change, premium cancelling
             console.log(`User ${userDatabase.id} didn't pay for too long and now gets his premium deactivated.`)
             let userDiscord = await main.client.fetchUser(userDatabase.id)

@@ -88,8 +88,16 @@ module.exports.getUserDatabase = async (userId) => {
 }
 
 module.exports.getGuildDatabase = async (guild) => {
-  let guildDatabase = (await Guild.findOrCreate({ id: guild.id }, { id: guild.id, name: guild.name, name_lower: guild.name.toLowerCase() })).doc
-  return guildDatabase
+  if(guild.id && guild.name) {
+    let guildDatabase = (await Guild.findOrCreate({ id: guild.id }, { id: guild.id, name: guild.name, name_lower: guild.name.toLowerCase() })).doc
+    return guildDatabase
+  } else if (guild.id) {
+    let guildDatabase = (await Guild.findOrCreate({ id: guild.id }, { id: guild.id })).doc
+    return guildDatabase
+  } else {
+    let guildDatabase = (await Guild.findOrCreate({ id: guild }, { id: guild })).doc
+    return guildDatabase
+  }
 }
 
 module.exports.processArray = async (t, fun/*, thisp */) => {

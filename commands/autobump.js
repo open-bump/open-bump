@@ -61,5 +61,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 }
 
 module.exports.name = 'autobump'
+module.exports.restrictions = ['AUTOBUMP']
 module.exports.description = 'Use this command to enable or disable autobump your server.'
 module.exports.syntax = 'autobump [on|off]'

@@ -90,6 +90,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
     guildDatabase.lastBump = {}
     guildDatabase.lastBump.user = author.id
     guildDatabase.lastBump.time = Date.now()
+    guildDatabase.bumps = guildDatabase.bumps + 1
     guildDatabase.save()
   } else {
     let lastBumpUser = guildDatabase.lastBump && guildDatabase.lastBump.time && guildDatabase.lastBump.user ? await main.client.fetchUser(guildDatabase.lastBump.user) : null

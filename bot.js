@@ -56,7 +56,7 @@ client.require = (path) => {
 }
 
 // Config
-const config = require('./config') // TODO: Set correct Nitro booster role
+const config = require('./config')
 module.exports.config = config
 
 // Discord
@@ -64,6 +64,12 @@ client.once('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`)
   setTimeout(() => bump.autoBumpLoop(), 1000*30 + client.shard.id*1000*60)
   setTimeout(() => patreon.checkPatreonLoop(), 1000*60 + client.shard.id*1000*60)
+
+  let setActivity = () => {
+    client.user.setActivity(`${config.settings.prefix}help | ${config.settings.prefix}invite`, { type: 'LISTENING' })
+  }
+  setActivity()
+  setInterval(setActivity, 1000*60)
 })
 
 // Commands
@@ -179,6 +185,7 @@ client.on('message', async msg => {
           guildDatabase.lastBump = {}
           guildDatabase.lastBump.user = author.id
           guildDatabase.lastBump.time = Date.now()
+          guildDatabase.bumps = guildDatabase.bumps + 1
           await guildDatabase.save()
           let options = await bump.getPreviewEmbed(guild, guildDatabase)
           await bump.bumpToAllShards(options)

@@ -11,6 +11,7 @@ module.exports.run = (msg, invoke, args, prefix, guildDatabase) => {
     showcase.push(main.commands.get('help'))
     showcase.push(main.commands.get('preview'))
     showcase.push(main.commands.get('bump'))
+    showcase.push(main.commands.get('autobump'))
     showcase.push(main.commands.get('setdescription'))
     showcase.push(main.commands.get('setinvite'))
     showcase.push(main.commands.get('setchannel'))
@@ -31,7 +32,7 @@ module.exports.run = (msg, invoke, args, prefix, guildDatabase) => {
       } else {
         fields.push({
           name: `**${prefix + (cmd.syntax ? cmd.syntax : cmd.name)}**`,
-          value: '*This is a premium command. Check out our store at [https://openbump.com/#premium](https://openbump.com/#premium) to see all available features.*',
+          value: '*This is a premium command. Check out our Patreon at [https://patreon.com/Looat](https://www.patreon.com/Looat) to see all available features.*',
           inline: false
         })
       }
