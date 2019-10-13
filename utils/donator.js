@@ -43,6 +43,7 @@ module.exports.tiers = {
 
 module.exports.translateAmount = (userPatreon, userDatabase) => {
   let amount = userPatreon.cents
+  if(userDatabase.donator.bonus) amount = amount + userDatabase.donator.bonus
   if(userDatabase.nitroBooster) amount = amount + 500
   return amount
 }
