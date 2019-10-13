@@ -176,12 +176,24 @@ module.exports.setConsolePrefix = prefix => {
   let originalConsoleLog = console.log
   console.log = (input) => {
       args = []
-      args.push('[' + prefix + ']')
+      args.push('[INFO ' + prefix + ']')
       // Note: arguments is part of the prototype
       // for( let i = 0; i < arguments.length; i++ ) {
       //     args.push( arguments[i] )
       // }
       args.push(input)
       originalConsoleLog.apply( console, args )
+  }
+
+  let originalConsoleError = console.error
+  console.error = (input) => {
+      args = []
+      args.push('[FAIL ' + prefix + ']')
+      // Note: arguments is part of the prototype
+      // for( let i = 0; i < arguments.length; i++ ) {
+      //     args.push( arguments[i] )
+      // }
+      args.push(input)
+      originalConsoleError.apply( console, args )
   }
 }
