@@ -17,7 +17,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       let targetChannel = links.channel(newChannel, msg.guild)
 
       if(typeof targetChannel === 'object') {
-        let issues = common.getBumpChannelIssues(targetChannel)
+        let issues = common.getBumpChannelIssues(targetChannel, guildDatabase)
 
         if(issues.length === 0) {
           guildDatabase.feed = targetChannel.id

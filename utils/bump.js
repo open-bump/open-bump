@@ -16,11 +16,11 @@ module.exports.bumpToAllShards = async (options, index) => {
 module.exports.bumpToThisShard = (channels, options) => {
   let amount = 0
 
-  channels.forEach(channels => {
+  channels.forEach(channel => {
     const main = require('../bot')
     const client = main.client
-    let guildId = channels.guild
-    let channelId = channels.channel
+    let guildId = channel.guild
+    let channelId = channel.channel
     if(common.sharding.getGuildShardId(guildId) === main.client.shard.id && main.client.guilds.has(guildId)) {
       let guild = main.client.guilds.get(guildId)
       if(guild) {
@@ -29,32 +29,38 @@ module.exports.bumpToThisShard = (channels, options) => {
           let issues = common.getBumpChannelIssues(channel)
           let issuesFormatted = []
           issues.forEach(issue => issuesFormatted.push(`- ${issue}`))
+          amount++
           if(issues.length === 0) {
             channel.send('', options).catch(() => console.log(`Unknown error occured while trying to bump ${guild.id}!`))
-            amount++
           } else {
             if(!justRemoved[guild.id]) {
               justRemoved[guild.id] = true
               setTimeout(() => justRemoved[guild.id] = undefined, 1000*30)
-              console.log(`Guild ${guild.name} (${guild.id}) has set a bump channel but there are permission errors!`)
               Guild.findOrCreate({ id: guild.id }, { id: guild.id, name: guild.name, name_lower: guild.name.toLowerCase() }).then(guildDatabase => {
-                guildDatabase = guildDatabase.doc
-                guildDatabase.feed = undefined
-                guildDatabase.save()
-              })
-              let options = {
-                embed: {
-                  color: colors.red,
-                  title: `${emojis.xmark} **Permission Errors**`,
-                  description: 'Hey there, we tried to bump to your bump channel. However, we had some issues.',
-                  fields: [{
-                    name: '**Issues**',
-                    value: `**Please fix these issues for ${channel} and set the bump channel again (\`${config.settings.prefix}setchannel <channel>\`):**\n` +
-                        issuesFormatted.join('\n')
-                  }]
+                issues = common.getBumpChannelIssues(channel, guildDatabase.doc)
+                if(issues.length === 0) {
+                  channel.send('', options).catch(() => console.log(`Unknown error occured while trying to bump ${guild.id}!`))
+                } else {
+                  guildDatabase = guildDatabase.doc
+                  guildDatabase.feed = undefined
+                  guildDatabase.save()
+
+                  console.log(`Guild ${guild.name} (${guild.id}) has set a bump channel but there are permission errors!`)
+                  let options = {
+                    embed: {
+                      color: colors.red,
+                      title: `${emojis.xmark} **Permission Errors**`,
+                      description: 'Hey there, we tried to bump to your bump channel. However, we had some issues.',
+                      fields: [{
+                        name: '**Issues**',
+                        value: `**Please fix these issues for ${channel} and set the bump channel again (\`${config.settings.prefix}setchannel <channel>\`):**\n` +
+                            issuesFormatted.join('\n')
+                      }]
+                    }
+                  }
+                  guild.owner.user.send('', options).catch(() => {})
                 }
-              }
-              guild.owner.user.send('', options).catch(() => {})
+              })
             }
           }
         } else {
