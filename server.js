@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
-const port = 3000
 const config = require('./config')
+const port = config.server.port
 
 module.exports.run = async () => {
   try {
