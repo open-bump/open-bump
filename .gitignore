@@ -96,3 +96,8 @@ live-config.json
 start.sh
 start.sh.save
 data
+
+.ftpconfig.open
+.ftpconfig.cold
+config.json.open
+config.json.cold
