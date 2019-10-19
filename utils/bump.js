@@ -31,7 +31,11 @@ module.exports.bumpToThisShard = (channels, options) => {
           issues.forEach(issue => issuesFormatted.push(`- ${issue}`))
           amount++
           if(issues.length === 0) {
-            channel.send('', options).catch(() => console.log(`Unknown error occured while trying to bump ${guild.id}!`))
+            try {
+              channel.send('', options).catch(() => console.log(`Unknown error occured while trying to bump ${guild.id}!`))
+            } catch (err) {
+              console.log(`Unknown hard error occured while trying to bump ${guild.id}!`)
+            }
           } else {
             if(!justRemoved[guild.id]) {
               justRemoved[guild.id] = true
