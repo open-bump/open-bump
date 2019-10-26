@@ -15,6 +15,7 @@ const patreon = require('./patreon')
 const moment = require('moment')
 const ms = require('ms')
 const command = require('./command')
+const topgg = require('./utils/topgg')
 
 module.exports.client = client
 
@@ -70,6 +71,7 @@ client.once('ready', () => {
   }
   setActivity()
   setInterval(setActivity, 1000*60)
+  topgg.init()
 })
 
 // Commands
