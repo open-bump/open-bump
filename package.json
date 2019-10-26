@@ -17,6 +17,7 @@
   },
   "homepage": "https://openbump.com/",
   "dependencies": {
+    "dblapi.js": "^2.3.0",
     "discord.js": "^11.5.1",
     "express": "^4.17.1",
     "express-rate-limit": "^5.0.0",
