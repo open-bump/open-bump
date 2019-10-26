@@ -7,6 +7,7 @@ const donator = require('../utils/donator')
 const common = require('../utils/common')
 const moment = require('moment')
 const ms = require('ms')
+const topgg = require('../utils/topgg')
 const Guild = require('../models/Guild')
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
@@ -15,26 +16,49 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let author = msg.author
 
   if(!donator.translateFeatures(guildDatabase).includes('AUTOBUMP') || !guildDatabase.autoBump) {
+    let voted = false
+
     if(guildDatabase.lastBump && guildDatabase.lastBump.time) {
       let cooldown = donator.translateCooldown(guildDatabase)
+
+      if(await topgg.dbl.hasVoted(author.id)) {
+        voted = true
+        cooldown = cooldown - 1000*60*15;
+        if(cooldown < 1000*60*15) cooldown = 1000*60*15;
+      }
+
       let nextBump = moment(guildDatabase.lastBump.time.valueOf() + cooldown)
       if(nextBump.isAfter(moment())) {
         let fields = []
         if(cooldown === 1000*60*60) {
           if(!guildDatabase.lastBump || Math.floor(Math.random() * 3) === 0) {
-          fields.push({
-            name: `${emojis.bell} **Suggestion: Bump Channel**`,
-            value: 'You don\'t want to wait 1 hour until you can bump? Set your guild a bump channel!\n' +
-                `To set a bump channel, please use the \`${prefix}setchannel <channel>\` command.`,
-            inline: false
-          })
+            fields.push({
+              name: `${emojis.bell} **Suggestion: Bump Channel**`,
+              value: `You don\'t want to wait ${ms(cooldown, { long: true })} until you can bump? Set your guild a bump channel!\n` +
+                  `To set a bump channel, please use the \`${prefix}setchannel <channel>\` command.`,
+              inline: false
+            })
+          } else if(!voted) {
+            fields.push({
+              name: `${emojis.bell} **Suggestion: Vote**`,
+              value: `You don\'t want to wait ${ms(cooldown, { long: true })} until you can bump? Vote for our bot!\n` +
+                  `You can vote at [https://top.gg/bot/546999467887427604/vote](https://top.gg/bot/546999467887427604/vote). It will decrease your cooldown by 15 minutes for 24 hours.`,
+              inline: false
+            })
           }
         } else if(cooldown === 1000*60*45) {
           if(!guildDatabase.lastBump || Math.floor(Math.random() * 3) === 0) {
             fields.push({
               name: `${emojis.bell} **Suggestion: Premium**`,
-              value: 'You don\'t want to wait 45 minutes until you can bump? [Upgrade to premium](https://www.patreon.com/Looat) or [boost Open Advertisements](https://discord.gg/eBFu8HF)!\n' +
+              value: `You don\'t want to wait ${ms(cooldown, { long: true })} until you can bump? [Upgrade to premium](https://www.patreon.com/Looat) or [boost Open Advertisements](https://discord.gg/eBFu8HF)!\n` +
                   `To view more information about premium, please use the \`${prefix}premium\` command.`,
+              inline: false
+            })
+          } else if(!voted) {
+            fields.push({
+              name: `${emojis.bell} **Suggestion: Vote**`,
+              value: `You don\'t want to wait ${ms(cooldown, { long: true })} until you can bump? Vote for our bot!\n` +
+                  `You can vote at [https://top.gg/bot/546999467887427604/vote](https://top.gg/bot/546999467887427604/vote). It will decrease your cooldown by 15 minutes for one hour.`,
               inline: false
             })
           }
