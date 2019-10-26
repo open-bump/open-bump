@@ -4,6 +4,8 @@ const Discord = require("discord.js")
 const client = main.client
 const DBL = require("dblapi.js")
 
+module.exports.dbl = null;
+
 module.exports.init = () => {
   console.log('Starting topgg...')
   module.exports.dbl = new DBL(config.topgg.token)
