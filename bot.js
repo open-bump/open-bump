@@ -96,6 +96,7 @@ registerCommand('./commands/setdescription')
 registerCommand('./commands/setinvite')
 registerCommand('./commands/setprefix')
 registerCommand('./commands/stats')
+registerCommand('./commands/vote')
 
 function registerCommand(path, name, alias) {
   let command = require(path)
