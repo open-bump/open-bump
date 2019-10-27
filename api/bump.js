@@ -1,6 +1,9 @@
+const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
+module.exports.environment = environment;
+const config = require(`../config.${environment}.json`)
+
 const express = require('express')
 const router = express.Router()
-const config = require('../config')
 const patreon = require('../patreon')
 const common = require('../utils/common')
 const bump = require('../utils/bump')

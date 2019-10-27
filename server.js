@@ -1,6 +1,9 @@
+const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
+module.exports.environment = environment;
+const config = require(`./config.${environment}.json`)
+
 const express = require('express')
 const app = express()
-const config = require('./config')
 const port = config.server.port
 
 module.exports.run = async () => {

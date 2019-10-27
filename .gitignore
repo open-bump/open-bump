@@ -101,3 +101,6 @@ data
 .ftpconfig.cold
 config.json.open
 config.json.cold
+
+
+config*json
