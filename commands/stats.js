@@ -1,3 +1,6 @@
+const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
+module.exports.environment = environment
+
 const main = require('../bot')
 const colors = require('../utils/colors')
 const errors = require('../utils/errors')
@@ -31,7 +34,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
             name: '**Global Stats**',
             value: `**Shards:** ${main.client.shard.count} Shard${main.client.shard.count !== 1 ? 's' : ''}\n` +
                 `**Servers:** ${totalServers}\n` +
-                `**Users:** ${totalUsers}`,
+                `**Users:** ${totalUsers}\n` +
+                `**Environment:** ${environment}`,
             inline: false
           }
         ]
