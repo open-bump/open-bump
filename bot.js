@@ -1,6 +1,6 @@
 // Imports
 const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
-module.exports.environment = environment;
+module.exports.environment = environment
 
 const Discord = require('discord.js')
 const Guild = require('./models/Guild')

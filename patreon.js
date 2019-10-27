@@ -1,5 +1,5 @@
 const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
-module.exports.environment = environment;
+module.exports.environment = environment
 
 const fetch = require('node-fetch')
 const FormData = require('form-data')
@@ -125,7 +125,7 @@ async function fetchAccessToken() {
   accessToken = res.access_token
   client = patreonAPI(accessToken)
   config.patreon.refreshToken = refreshToken
-  fs.writeFileSync("./config.json", JSON.stringify(config, null, 2))
+  fs.writeFileSync(`./config.${environment}.json`, JSON.stringify(config, null, 2))
 
   setTimeout(() => fetchAccessToken(), 1000*60*60*24)  // Refresh it every day to make sure it stays fresh
 }
