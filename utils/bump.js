@@ -57,7 +57,7 @@ module.exports.bumpToThisShard = (channels, options) => {
                     embed: {
                       color: colors.red,
                       title: `${emojis.xmark} **Permission Errors**`,
-                      description: 'Hey there, we tried to bump to your bump channel. However, we had some issues.',
+                      description: `Hey there, we tried to bump to your bump channel on your server ${guild.name}. However, we had some issues.`,
                       fields: [{
                         name: '**Issues**',
                         value: `**Please fix these issues for ${channel} and set the bump channel again (\`${config.settings.prefix}setchannel <channel>\`):**\n` +
@@ -84,7 +84,7 @@ module.exports.bumpToThisShard = (channels, options) => {
               embed: {
                 color: colors.red,
                 title: `${emojis.xmark} **Channel not found**`,
-                description: 'Hey there, we tried to bump to your bump channel. However, we were not able to find the channel you\'ve set.\n' +
+                description: `Hey there, we tried to bump to your bump channel on your server ${guild.name}. However, we were not able to find the channel you've set.\n` +
                     `Please fix this issue by setting a new bump channel using \`${config.settings.prefix}setchannel <channel>\`.`
               }
             }
@@ -99,16 +99,41 @@ module.exports.bumpToThisShard = (channels, options) => {
 }
 
 module.exports.bumpToAllShardsIfCorrectShard = async (guildId) => {
+  const filter = require('../utils/filter')
   const main = require('../bot')
   if(!main.client.guilds.has(guildId)) return
-  let guild = main.client.guilds.get(guildId)
-  let guildDatabase = await Guild.findOne({ id: guildId })
   try {
-    options = await module.exports.getPreviewEmbed(guild, guildDatabase)
-    let amount = await module.exports.bumpToAllShards(options)
-    return amount
+    let guild = main.client.guilds.get(guildId)
+    let guildDatabase = await Guild.findOne({ id: guild.id })
+    if(guild && guildDatabase) {
+      let requireSave = await filter.filterGuild(guild, guildDatabase)
+
+      if(!guildDatabase.icon.granted) {
+        if(!guildDatabase.icon.informed) {
+          console.log(`Guild ${guild.name} (${guild.id}) tried to bump, but it was blocked due our nsfw policy!`)
+          let options = {
+            embed: {
+              color: colors.red,
+              title: `${emojis.xmark} **Explicit content filter**`,
+              description: `Hey there, we tried to bump your server ${guild.name} but it looks like your guild icon contains explicit content. Please try another image. In case you had autobump enabled, it is now paused until this issue has been fixed.\n` +
+                  `If you believe this is an error, please contact our [Support](https://discord.gg/eBFu8HF).`
+            }
+          }
+          guild.owner.user.send('', options).catch(() => {})
+          guildDatabase.icon.informed = true
+          await guildDatabase.save()
+        }
+        return
+      }
+
+      if(requireSave) await guildDatabase.save()
+
+      options = await module.exports.getPreviewEmbed(guild, guildDatabase)
+      let amount = await module.exports.bumpToAllShards(options)
+      return amount
+    }
   } catch (error) {
-    return 0
+    return 0;
   }
 }
 

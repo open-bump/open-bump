@@ -23,6 +23,10 @@ const GuildSchema = new mongoose.Schema({
       type: Boolean,
       required: true,
       default: false
+    },
+    informed: {
+      type: Boolean,
+      default: false
     }
   },
   bump: {

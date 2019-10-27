@@ -20,7 +20,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let author = msg.author
 
   let userDatabase = await common.getUserDatabase(author.id)
-  let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${author.id}?fetch=true`, {
+  let userPatreon = await fetch(`http://localhost:${config.server.port}/api/patreon/user/${author.id}?fetch=true`, {
     headers: {
       authorization: `Bearer ${config.server.token}`
     }

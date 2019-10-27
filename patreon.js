@@ -56,20 +56,25 @@ module.exports.init = async () => {
 }
 
 module.exports.refresh = async () => {
-  let members = await getCampaignMembers()
-  if(members) {
-    let users = []
-    await common.processArray(members.included, async user => {
-      if(user) users[user.id] = user
-    })
-    await common.processArray(members.data, async member => {
-      let userId = member.relationships.user.data.id
-      let user = users[userId]
-      if(member) {
-        if(user) member.user = user
-        cache.campaign.members.index[member.id] = member
-      }
-    })
+  try {
+    let members = await getCampaignMembers()
+    if(members) {
+      let users = []
+      await common.processArray(members.included, async user => {
+        if(user) users[user.id] = user
+      })
+      await common.processArray(members.data, async member => {
+        let userId = member.relationships.user.data.id
+        let user = users[userId]
+        if(member) {
+          if(user) member.user = user
+          cache.campaign.members.index[member.id] = member
+        }
+      })
+    }
+  } catch (err) {
+    console.log(`Catched error while refreshing patreon!`)
+    console.log(err)
   }
 }
 
@@ -176,7 +181,7 @@ module.exports.checkPatreonLoop = async () => {
   }
 
   try {
-    let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/undefined?fetch=true`, {
+    let userPatreon = await fetch(`http://localhost:${config.server.port}/api/patreon/user/undefined?fetch=true`, {
       headers: {
         authorization: `Bearer ${config.server.token}`
       }
@@ -185,7 +190,7 @@ module.exports.checkPatreonLoop = async () => {
 
     let usersDatabase = await User.find({ 'donator.amount': { $gt: 0 } })
     await common.processArray(usersDatabase, async userDatabase => {
-      let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${userDatabase.id}`, {
+      let userPatreon = await fetch(`http://localhost:${config.server.port}/api/patreon/user/${userDatabase.id}`, {
         headers: {
           authorization: `Bearer ${config.server.token}`
         }
@@ -380,7 +385,7 @@ async function refreshNitroBoosters(guild) {
         let user = member.user
         let userDatabase = await common.getUserDatabase(user.id)
 
-        let userPatreon = await fetch(`http://localhost:3000/api/patreon/user/${userDatabase.id}`, {
+        let userPatreon = await fetch(`http://localhost:${config.server.port}/api/patreon/user/${userDatabase.id}`, {
           headers: {
             authorization: `Bearer ${config.server.token}`
           }
