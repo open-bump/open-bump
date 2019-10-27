@@ -1,4 +1,7 @@
 // Imports
+const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
+module.exports.environment = environment;
+
 const Discord = require('discord.js')
 const Guild = require('./models/Guild')
 const User = require('./models/User')
@@ -57,21 +60,21 @@ client.require = (path) => {
 }
 
 // Config
-const config = require('./config')
+const config = require(`./config.${environment}`)
 module.exports.config = config
 
 // Discord
 client.once('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`)
   setTimeout(() => bump.autoBumpLoop(), 1000*30 + client.shard.id*1000*60)
-  setTimeout(() => patreon.checkPatreonLoop(), 1000*60 + client.shard.id*1000*60)
+  if(config.patreon.enabled) setTimeout(() => patreon.checkPatreonLoop(), 1000*60 + client.shard.id*1000*60)
 
   let setActivity = () => {
     client.user.setActivity(`${config.settings.prefix}help | ${config.settings.prefix}invite`, { type: 'LISTENING' })
   }
   setActivity()
   setInterval(setActivity, 1000*60)
-  topgg.init()
+  if(config.topgg.enabled) topgg.init()
 })
 
 // Commands
@@ -212,3 +215,5 @@ mongoose.connect(''.replaceAll(config.database.mongoURI, '%database%', config.da
   console.log('Database successfully connected!')
   client.login(config.discord.token)
 }).catch(err => { console.log('Error while connecting to database!'); console.log(err) })
+
+console.log(process.argv);
