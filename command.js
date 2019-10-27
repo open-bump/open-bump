@@ -1,5 +1,8 @@
+const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
+module.exports.environment = environment;
+const config = require(`./config.${environment}.json`)
+
 const main = require('./bot')
-const config = require('./config')
 const donator = require('./utils/donator')
 const colors = require('./utils/colors')
 const emojis = require('./utils/emojis')

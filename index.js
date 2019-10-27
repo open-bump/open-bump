@@ -1,6 +1,6 @@
 const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
 module.exports.environment = environment;
-const config = require(`./config.${environment}`)
+const config = require(`./config.${environment}.json`)
 
 // Imports
 const { ShardingManager } = require('discord.js')
@@ -8,6 +8,8 @@ const server = require('./server')
 const patreon = require('./patreon')
 const mongoose = require('mongoose')
 const common = require('./utils/common')
+
+console.log(`Starting Open Bump with environment ${environment}...`);
 
 common.setConsolePrefix('Managing')
 

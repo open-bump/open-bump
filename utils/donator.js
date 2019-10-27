@@ -1,6 +1,9 @@
+const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
+module.exports.environment = environment;
+const config = require(`../config.${environment}.json`)
+
 const emojis = require('./emojis')
 const colors = require('./colors')
-const config = require('../config')
 
 module.exports.tiers = {
   /*bumpchannel: {

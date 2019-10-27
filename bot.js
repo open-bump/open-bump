@@ -60,7 +60,7 @@ client.require = (path) => {
 }
 
 // Config
-const config = require(`./config.${environment}`)
+const config = require(`./config.${environment}.json`)
 module.exports.config = config
 
 // Discord
@@ -215,5 +215,3 @@ mongoose.connect(''.replaceAll(config.database.mongoURI, '%database%', config.da
   console.log('Database successfully connected!')
   client.login(config.discord.token)
 }).catch(err => { console.log('Error while connecting to database!'); console.log(err) })
-
-console.log(process.argv);

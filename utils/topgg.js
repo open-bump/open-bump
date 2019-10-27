@@ -1,4 +1,7 @@
-const config = require('../config')
+const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
+module.exports.environment = environment;
+const config = require(`../config.${environment}.json`)
+
 const main = require('../bot')
 const Discord = require("discord.js")
 const client = main.client
