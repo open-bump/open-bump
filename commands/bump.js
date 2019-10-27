@@ -21,7 +21,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
     if(guildDatabase.lastBump && guildDatabase.lastBump.time) {
       let cooldown = donator.translateCooldown(guildDatabase)
 
-      if(await topgg.dbl.hasVoted(author.id)) {
+      if(topgg.dbl && await topgg.dbl.hasVoted(author.id)) {
         voted = true
         cooldown = cooldown - 1000*60*15;
         if(cooldown < 1000*60*15) cooldown = 1000*60*15;
