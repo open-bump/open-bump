@@ -101,6 +101,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       }
     }
     let message = await channel.send('', options)
+    
     options = await bump.getPreviewEmbed(guild, guildDatabase)
     let amount = await bump.bumpToAllShards(options)
     options = {

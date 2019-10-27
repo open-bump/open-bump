@@ -1,8 +1,10 @@
 const main = require('../bot')
 const colors = require('../utils/colors')
+const emojis = require('../utils/emojis')
 const errors = require('../utils/errors')
 const Guild = require('../models/Guild')
 const donator = require('../utils/donator')
+const filter = require('../utils/filter')
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
   let channel = msg.channel
@@ -13,21 +15,44 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       if(!(args[0] === 'reset' || args[0] === 'default')) {
         let newBanner = args.join(" ")
 
-          if (/\.(png|jpg|jpeg|webp|gif)$/.test(newBanner)) {
-          guildDatabase.bump.banner = newBanner
-          await guildDatabase.save()
+        if (/\.(png|jpg|jpeg|webp|gif)$/.test(newBanner)) {
 
           let options = {
             embed: {
-              color: colors.green,
-              title: '**Banner has been changed**',
-              description: `__**New Banner:**__ ${newBanner}`,
-              image: {
-                url: newBanner
-              }
+              color: colors.blue,
+              title: emojis.loading + ' **We are checking your image for explicit content...**'
             }
           }
-          msg.channel.send('', options)
+          let message = await channel.send('', options)
+
+          let url = await filter.full(newBanner);
+
+          if(url) {
+            guildDatabase.bump.banner = url
+            await guildDatabase.save()
+
+            let options = {
+              embed: {
+                color: colors.green,
+                title: `${emojis.check} **Banner has been changed**`,
+                description: `__**New Banner:**__ *Image below*`,
+                image: {
+                  url: newBanner
+                }
+              }
+            }
+            message.edit('', options)
+          } else {
+            let options = {
+              embed: {
+                color: colors.red,
+                title: `${emojis.xmark} **Error while saving banner!**`,
+                description: `It looks like your banner contains explicit content. Please try another image.\n` +
+                    `If you believe this is an error, please contact our [Support](https://discord.gg/eBFu8HF).`
+              }
+            }
+            message.edit('', options)
+          }
         } else {
           errors.error(msg, 'We only accept images of the types `.png`, `.jpg` and `.gif`. Please try again with another link.')
         }
