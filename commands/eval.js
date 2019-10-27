@@ -5,6 +5,7 @@ const errors = require('../utils/errors')
 const common = require('../utils/common')
 const bump = require('../utils/bump')
 const lyne = require('../utils/lyne')
+const Discord = require('discord.js')
 
 module.exports.run = async (msg, invoke, args, prefix, guildDatabase, argtions) => {
   let author = msg.author // eval arg
