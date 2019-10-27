@@ -1,5 +1,9 @@
+const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
+module.exports.environment = environment;
+const config = require(`./config.${environment}`)
+
+// Imports
 const { ShardingManager } = require('discord.js')
-const config = require('./config')
 const server = require('./server')
 const patreon = require('./patreon')
 const mongoose = require('mongoose')
@@ -7,7 +11,7 @@ const common = require('./utils/common')
 
 common.setConsolePrefix('Managing')
 
-const manager = new ShardingManager('./bot.js', { token: config.discord.token })
+const manager = new ShardingManager('./bot.js', { token: config.discord.token, shardArgs: [environment] })
 module.exports.manager = manager
 
 // Prototype Changes (not recommended, but the most effective)
@@ -27,6 +31,6 @@ mongoose.connect(''.replaceAll(config.database.mongoURI, '%database%', config.da
 }).then(() => {
   console.log('Database on index successfully connected!')
 
-  patreon.run()
-  server.run()
+  if(config.patreon.enabled) patreon.run()
+  if(config.server.enabled) server.run()
 }).catch(err => { console.log('Error while connecting to database!'); console.log(err) })
