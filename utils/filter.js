@@ -62,7 +62,7 @@ module.exports.filterGuild = async (guild, guildDatabase) => {
     guildDatabase.icon.hash = guild.icon
     guildDatabase.icon.granted = false
 
-    let url = await module.exports.full(guild.iconURL, true);
+    let url = await module.exports.full(guild.iconURL, true)
 
     if(url) guildDatabase.icon.granted = true
 

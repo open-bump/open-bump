@@ -35,9 +35,9 @@ module.exports.received = async (msg) => {
       requireSave = true
     }
 
-    requireSave = (requireSave || filter.filterGuild(guild, guildDatabase))
+    requireSave = (requireSave || await filter.filterGuild(guild, guildDatabase))
 
-    if(requireSave) guildDatabase.save()
+    if(requireSave) await guildDatabase.save()
 
     if(config.discord.closedBeta) {
       if(!donator.translateFeatures(guildDatabase).includes('EARLY_ACCESS') && !config.discord.owners.includes(author.id)) {
@@ -104,7 +104,11 @@ module.exports.received = async (msg) => {
         return author.send('', options).catch(() => {})
       }
 
-      if(!guildDatabase.icon.granted) {
+      // Executing command
+      let invoke = cont.substr(used.length).split(' ')[0],
+          args   = cont.substr(used.length + invoke.length + 1).match(/(".*?"|[^"\r\v ]+)+(?=\s*|\s*$)/g)
+
+      if(!guildDatabase.icon.granted && invoke !== 'eval') {
         let options = {
           embed: {
             color: colors.red,
@@ -115,10 +119,6 @@ module.exports.received = async (msg) => {
         }
         return msg.channel.send('', options)
       }
-
-      // Executing command
-      let invoke = cont.substr(used.length).split(' ')[0],
-          args   = cont.substr(used.length + invoke.length + 1).match(/(".*?"|[^"\r\v ]+)+(?=\s*|\s*$)/g)
 
       if(!args) args = []
 
