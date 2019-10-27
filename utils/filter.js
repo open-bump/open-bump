@@ -46,3 +46,27 @@ module.exports.clone = async (url) => {
   }
   return url;
 }
+
+module.exports.filterGuild = async (guild, guildDatabase) => {
+  let requireSave = false
+  if(!guild.icon) {
+    if(!guildDatabase.icon || !guildDatabase.icon.granted) {
+      guildDatabase.icon = {
+        granted: true,
+        hash: guild.icon
+      }
+      requireSave: true
+    }
+  } else if(!guildDatabase.icon || !guildDatabase.icon.hash || guildDatabase.icon.hash !== guild.icon) {
+    guildDatabase.icon = {};
+    guildDatabase.icon.hash = guild.icon
+    guildDatabase.icon.granted = false
+
+    let url = await module.exports.full(guild.iconURL, true);
+
+    if(url) guildDatabase.icon.granted = true
+
+    requireSave = true
+  }
+  return requireSave
+}
