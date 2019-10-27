@@ -14,6 +14,17 @@ const GuildSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  icon: {
+    hash: {
+      type: String,
+      required: false
+    },
+    granted: {
+      type: Boolean,
+      required: true,
+      default: false
+    }
+  },
   bump: {
     description: {
       type: String,

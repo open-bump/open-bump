@@ -8,6 +8,7 @@ const colors = require('./utils/colors')
 const emojis = require('./utils/emojis')
 const common = require('./utils/common')
 const lyne = require('./utils/lyne')
+const filter = require('./utils/filter')
 const Guild = require('./models/Guild')
 const User = require('./models/User')
 
@@ -26,11 +27,17 @@ module.exports.received = async (msg) => {
     /* Fetch or Create important Guild Information, e.g. Prefix and Features */
     const guildDatabase = await common.getGuildDatabase(guild)
 
+    let requireSave = false;
+
     if(guildDatabase.name !== guild.name) {
       guildDatabase.name = guild.name
       guildDatabase.name_lower = guild.name.toLowerCase()
-      guildDatabase.save()
+      requireSave = true
     }
+
+    requireSave = (requireSave || filter.filterGuild(guild, guildDatabase))
+
+    if(requireSave) guildDatabase.save()
 
     if(config.discord.closedBeta) {
       if(!donator.translateFeatures(guildDatabase).includes('EARLY_ACCESS') && !config.discord.owners.includes(author.id)) {
@@ -95,6 +102,18 @@ module.exports.received = async (msg) => {
           }
         }
         return author.send('', options).catch(() => {})
+      }
+
+      if(!guildDatabase.icon.granted) {
+        let options = {
+          embed: {
+            color: colors.red,
+            title: `${emojis.xmark} **Error while executing command!**`,
+            description: `It looks like your guild icon contains explicit content. Please try another image.\n` +
+                `If you believe this is an error, please contact our [Support](https://discord.gg/eBFu8HF).`
+          }
+        }
+        return msg.channel.send('', options)
       }
 
       // Executing command
