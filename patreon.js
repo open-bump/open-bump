@@ -247,7 +247,7 @@ module.exports.checkPatreonLoop = async () => {
               embed: {
                 color: colors.red,
                 title: `${emojis.xmark} **Premium deactivated**`,
-                description: 'Hey there, this is a notice that you premium has been deactivated. This happened because we weren\'t able to check your pledge for 3 days.\n' +
+                description: 'Hey there, this is a notice that your premium has been deactivated. This happened because we weren\'t able to check your pledge for 3 days.\n' +
                     'All your premium activations have been disabled. If you think this is an error, please contact our **[support](https://discord.gg/eBFu8HF)**.'
               }
             }
