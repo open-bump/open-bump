@@ -82,7 +82,7 @@ module.exports.getPatreonUser = (discordId) => {
   let membersReturn = []
   Object.keys(cache.campaign.members.index).forEach(id => {
     let memberPatreon = cache.campaign.members.index[id]
-    let discordConnection = memberPatreon.user.attributes.social_connections.discord
+    let discordConnection = memberPatreon.user.attributes && memberPatreon.user.attributes.social_connections ? memberPatreon.user.attributes.social_connections.discord : null
     if(discordConnection) {
       let discordConnectionId = discordConnection.user_id
       if(discordConnectionId && discordConnectionId === discordId) membersReturn.push(memberPatreon)
