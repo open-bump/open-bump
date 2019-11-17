@@ -97,11 +97,11 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
     let options = {
       embed: {
         color: colors.blue,
-        title: emojis.loading + ' **Your server is beeing bumped...**'
+        title: emojis.loading + ' **Your server is being bumped...**'
       }
     }
     let message = await channel.send('', options)
-    
+
     options = await bump.getPreviewEmbed(guild, guildDatabase)
     let amount = await bump.bumpToAllShards(options)
     options = {
