@@ -111,6 +111,7 @@ module.exports.getGuildDatabase = async (guild) => {
 }
 
 module.exports.processArray = async (t, fun/*, thisp */) => {
+  if(!t || !t.length) return;
   let length = t.length >>> 0
   let thisp = arguments[2]
   for (let i = 0; i < length; i++) {
