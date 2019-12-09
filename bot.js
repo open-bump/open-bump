@@ -194,7 +194,7 @@ client.on('message', async msg => {
           guildDatabase.bumps = guildDatabase.bumps + 1
           await guildDatabase.save()
           let options = await bump.getPreviewEmbed(guild, guildDatabase)
-          await bump.bumpToAllShards(options)
+          await bump.bumpToAllShards(options, false, donator.isDonator(guildDatabase))
           await msg.react(common.getEmojiId(emojis.thumbsup))
           await reaction.remove()
         }
