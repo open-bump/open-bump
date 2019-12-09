@@ -152,5 +152,6 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 }
 
 module.exports.name = 'bump'
+module.exports.aliases = ['pbump']
 module.exports.description = 'Use this command to bump your server.'
 module.exports.syntax = 'bump'
