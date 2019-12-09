@@ -17,11 +17,12 @@ module.exports.bumpToAllShards = async (options, index) => {
 }
 
 module.exports.bumpToThisShard = (channels, options) => {
+  const main = require('../bot')
+  const client = main.client
+
   let amount = 0
 
   channels.forEach(channel => {
-    const main = require('../bot')
-    const client = main.client
     let guildId = channel.guild
     let channelId = channel.channel
     if(common.sharding.getGuildShardId(guildId) === main.client.shard.id && main.client.guilds.has(guildId)) {
