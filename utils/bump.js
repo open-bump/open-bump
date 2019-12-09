@@ -12,8 +12,8 @@ const donator = require('../utils/donator')
 
 let justRemoved = {}
 
-module.exports.bumpToAllShards = async (options, index) => {
-  return common.sharding.bumpToAllShards(options, index)
+module.exports.bumpToAllShards = async (options, index, premium) => {
+  return common.sharding.bumpToAllShards(options, index, premium)
 }
 
 module.exports.bumpToThisShard = (channels, options) => {
@@ -130,7 +130,7 @@ module.exports.bumpToAllShardsIfCorrectShard = async (guildId) => {
       if(requireSave) await guildDatabase.save()
 
       options = await module.exports.getPreviewEmbed(guild, guildDatabase)
-      let amount = await module.exports.bumpToAllShards(options)
+      let amount = await module.exports.bumpToAllShards(options, false, true)
       return amount
     }
   } catch (error) {

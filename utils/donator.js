@@ -69,6 +69,10 @@ module.exports.translateFeatures = (guildDatabase) => {
   return features
 }
 
+module.exports.isDonator = (guildDatabase) => {
+  return guildDatabase.donators.length >= 1;
+}
+
 module.exports.translateCooldown = (guildDatabase) => {
   let cooldown = 60 // <-- Default Cooldown
   if(guildDatabase.feed) {
