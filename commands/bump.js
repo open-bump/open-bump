@@ -113,8 +113,8 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       if(Math.floor(Math.random() * 3) === 0) {
         suggestions.push({
           name: `${emojis.bell} **Suggestion: Cross-Shard-Bumping (Premium)**`,
-          value: `Did you know that because of sharding your server only gets bumped to a part of the other servers?\n` +
-              `If you want to bump your server to all shards, please check out our [Patreon](https://patreon.com/Looat).`,
+          value: `Did you know that because of sharding your server only gets bumped to a part of the other servers? ` +
+              `If you want to bump your server to all shards and all servers, please check out our [Patreon](https://patreon.com/Looat).`,
           inline: false
         })
       }
