@@ -105,7 +105,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
     options = await bump.getPreviewEmbed(guild, guildDatabase)
     let amount = await bump.bumpToAllShards(options, false, donator.isDonator(guildDatabase))
     let suggestions = [];
-    if (!donator.isDonator(guildDatabase)) {
+    if (!donator.isDonator(guildDatabase) && !config.shareShards) {
       if(Math.floor(Math.random() * 3) === 0) {
         suggestions.push({
           name: `${emojis.bell} **Suggestion: Premium**`,
