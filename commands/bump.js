@@ -104,11 +104,23 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
 
     options = await bump.getPreviewEmbed(guild, guildDatabase)
     let amount = await bump.bumpToAllShards(options, false, donator.isDonator(guildDatabase))
+    let suggestions = [];
+    if (!donator.isDonator(guildDatabase)) {
+      if(Math.floor(Math.random() * 3) === 0) {
+        suggestions.push({
+          name: `${emojis.bell} **Suggestion: Premium**`,
+          value: `Did you know that because of sharding your server only gets bumped to a part of the other servers?\n` +
+              `If you want to bump your server to all shards, please check out our [Patreon](https://patreon.com/Looat).`,
+          inline: false
+        })
+      }
+    }
     options = {
       embed: {
         color: colors.green,
         title: emojis.check + ' **Success**',
-        description: `Your server has been bumped to \`${amount} Servers\`. It may take some time until your bump is shown in every server with a bump channel.`
+        description: `Your server has been bumped to \`${amount} Servers\`. It may take some time until your bump is shown in every server with a bump channel.`,
+        fields: suggestions
       }
     }
     message.edit('', options)
