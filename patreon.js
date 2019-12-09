@@ -331,6 +331,8 @@ async function refreshPatreonRoles(guild, userDatabase, userPatreon) {
 }
 
 async function refreshNitroBoosters(guild) {
+  const main = require('./bot')
+
   // Nitro Boosters
   let boosters = [];
 
