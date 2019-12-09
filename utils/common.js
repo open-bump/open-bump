@@ -1,3 +1,7 @@
+const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
+module.exports.environment = environment
+const config = require(`../config.${environment}.json`)
+
 const bump = require('./bump')
 const Guild = require('../models/Guild')
 const User = require('../models/User')
@@ -40,7 +44,7 @@ module.exports.sharding.getGuild = async (guildId, index) => {
   }
 }
 
-module.exports.sharding.bumpToAllShards = async (options, index) => {
+module.exports.sharding.bumpToAllShards = async (options, index, premium) => {
   const main = index ? require('../index') : require('../bot')
   const guildsDatabase = await Guild.find({
     $and: [
@@ -54,7 +58,13 @@ module.exports.sharding.bumpToAllShards = async (options, index) => {
     args.push({guild: guildDatabase.id, channel: guildDatabase.feed})
   })
 
-  return (await (index ? main.manager : main.client.shard).broadcastEval(`this.require('./utils/common').sharding.bumpToThisShard(${JSON.stringify(args)}, ${JSON.stringify(options)})`)).reduce((prev, guildCount) => prev + guildCount, 0)
+  let amount = 0;
+  if (config.discord.shareShards || index || premium)
+    amount =  (await (index ? main.manager : main.client.shard).broadcastEval(`this.require('./utils/common').sharding.bumpToThisShard(${JSON.stringify(args)}, ${JSON.stringify(options)})`)).reduce((prev, guildCount) => prev + guildCount, 0)
+  else {
+    amount = await module.exports.sharding.bumpToThisShard(args, options);
+  }
+  return amount;
 }
 
 module.exports.sharding.fetchUserFromIndex = async (id) => {
