@@ -5,7 +5,13 @@ module.exports.environment = environment
 const Discord = require('discord.js')
 const Guild = require('./models/Guild')
 const User = require('./models/User')
-const client = new Discord.Client()
+const client = new Discord.Client({
+  messageCacheMaxSize: 5,
+  messageCacheLifetime: 5,
+  messageSweepInterval: 60,
+  retryLimit: 10,
+  disabledEvents: ['TYPING_START']
+})
 const mongoose = require('mongoose')
 const fetch = require('node-fetch')
 const colors = require('./utils/colors')
