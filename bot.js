@@ -167,7 +167,7 @@ client.on('message', async msg => {
       if(content.toLowerCase() === ('Asking Open Bump to bump this server').toLowerCase()) {
         let channel = msg.channel
         let guild = msg.guild
-        if(channel.permissionsFor(guild.me).has(['ADD_REACTIONS'])) {
+        if(channel.permissionsFor(guild.me).has(['ADD_REACTIONS', 'USE_EXTERNAL_EMOJIS'])) {
           let reaction = await msg.react(common.getEmojiId(emojis.loadingGreen))
           let guildDatabase = await common.getGuildDatabase(guild)
           let cooldown = donator.translateCooldown(guildDatabase)
