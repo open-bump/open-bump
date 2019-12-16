@@ -325,8 +325,8 @@ async function refreshPatreonRoles(guild, userDatabase, userPatreon) {
   })
 
   premiumRoles.forEach(thisPremiumRole => {
-    if(premiumRole && thisPremiumRole.id === premiumRole.id) member.addRole(thisPremiumRole.id).catch(() => {})
-    else member.removeRole(thisPremiumRole.id).catch(() => {})
+    if(premiumRole && thisPremiumRole.id === premiumRole.id) member.addRole(thisPremiumRole.id).catch(err => {console.log('Error while trying to add premium role to member', err)})
+    else member.removeRole(thisPremiumRole.id).catch(err => {console.log('Error while trying to remove premium role to member', err)})
   })
 }
 
