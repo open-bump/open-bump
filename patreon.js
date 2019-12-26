@@ -158,6 +158,8 @@ async function getCampaignMembers() {
     if(res.included) res.included.forEach(v => included.push(v));
     if(res.links && res.links.next) {
       next = res.links.next;
+    } else {
+      next = false;
     }
   }
   return {
