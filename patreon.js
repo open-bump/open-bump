@@ -145,12 +145,25 @@ async function getCampaign() {
 }
 
 async function getCampaignMembers() {
-  let res = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/${config.patreon.campaign}/members?fields%5Bmember%5D=full_name,email,patron_status,currently_entitled_amount_cents&include=user&fields%5Buser%5D=full_name,social_connections`, {
-    headers: {
-      'Authorization': 'Bearer ' + accessToken
+  let data = [];
+  let included = [];
+  let next = true;
+  while(next) {
+    let res = await fetch(typeof next === 'string' ? next : `https://www.patreon.com/api/oauth2/v2/campaigns/${config.patreon.campaign}/members?fields%5Bmember%5D=full_name,email,patron_status,currently_entitled_amount_cents&include=user&fields%5Buser%5D=full_name,social_connections`, {
+      headers: {
+        'Authorization': 'Bearer ' + accessToken
+      }
+    }).then(res => res.json());
+    if(res.data) res.data.forEach(v => data.push(v));
+    if(res.included) res.included.forEach(v => included.push(v));
+    if(res.links && res.links.next) {
+      next = res.links.next;
     }
-  }).then(res => res.json())
-  return res
+  }
+  return {
+    data,
+    included
+  }
 }
 
 async function getMember(id) {
