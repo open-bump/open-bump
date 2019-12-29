@@ -91,7 +91,7 @@ module.exports.getPatreonUser = (discordId) => {
   let cents = 0;
   let pledges = [];
   membersReturn.forEach(memberReturn => {
-    console.log(memberReturn);
+    console.log(memberReturn.relationships);
     cents = cents + memberReturn.attributes.currently_entitled_amount_cents
     pledges.push({
       email: memberReturn.attributes.email,
