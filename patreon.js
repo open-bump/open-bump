@@ -91,6 +91,9 @@ module.exports.getPatreonUser = (discordId) => {
   let cents = 0;
   let pledges = [];
   membersReturn.forEach(memberReturn => {
+    console.log(memberReturn);
+    console.log(memberReturn.relationships);
+    console.log(memberReturn.attributes);
     cents = cents + memberReturn.attributes.currently_entitled_amount_cents
     pledges.push({
       email: memberReturn.attributes.email,
@@ -149,7 +152,7 @@ async function getCampaignMembers() {
   let included = [];
   let next = true;
   while(next) {
-    let res = await fetch(typeof next === 'string' ? next : `https://www.patreon.com/api/oauth2/v2/campaigns/${config.patreon.campaign}/members?fields%5Bmember%5D=full_name,email,patron_status,currently_entitled_amount_cents&include=user&fields%5Buser%5D=full_name,social_connections`, {
+    let res = await fetch(typeof next === 'string' ? next : `https://www.patreon.com/api/oauth2/v2/campaigns/${config.patreon.campaign}/members?fields%5Bmember%5D=full_name,email,patron_status,currently_entitled_amount_cents,currently_entitled_tiers&include=user&fields%5Buser%5D=full_name,social_connections`, {
       headers: {
         'Authorization': 'Bearer ' + accessToken
       }
@@ -162,6 +165,7 @@ async function getCampaignMembers() {
       next = false;
     }
   }
+  console.log(data);
   return {
     data,
     included
