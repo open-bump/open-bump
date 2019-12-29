@@ -92,6 +92,13 @@ module.exports.getPatreonUser = (discordId) => {
   let pledges = [];
   membersReturn.forEach(memberReturn => {
     console.log(memberReturn.relationships.currently_entitled_tiers);
+    try {
+      memberReturn.relationships.currently_entitled_tiers.data.forEach(tier => {
+        if(tier.id === '4389527') { // Sponsor
+          cents = cents - 3000;
+        }
+      });
+    } catch (err) {}
     cents = cents + memberReturn.attributes.currently_entitled_amount_cents
     pledges.push({
       email: memberReturn.attributes.email,
