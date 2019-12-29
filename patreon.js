@@ -92,8 +92,6 @@ module.exports.getPatreonUser = (discordId) => {
   let pledges = [];
   membersReturn.forEach(memberReturn => {
     console.log(memberReturn);
-    console.log(memberReturn.relationships);
-    console.log(memberReturn.attributes);
     cents = cents + memberReturn.attributes.currently_entitled_amount_cents
     pledges.push({
       email: memberReturn.attributes.email,
@@ -157,7 +155,6 @@ async function getCampaignMembers() {
         'Authorization': 'Bearer ' + accessToken
       }
     }).then(res => res.json());
-    console.log(res);
     if(res.data) res.data.forEach(v => data.push(v));
     if(res.included) res.included.forEach(v => included.push(v));
     if(res.links && res.links.next) {
@@ -166,7 +163,6 @@ async function getCampaignMembers() {
       next = false;
     }
   }
-  console.log(data);
   return {
     data,
     included
