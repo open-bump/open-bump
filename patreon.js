@@ -91,7 +91,6 @@ module.exports.getPatreonUser = (discordId) => {
   let cents = 0;
   let pledges = [];
   membersReturn.forEach(memberReturn => {
-    console.log(memberReturn.relationships.currently_entitled_tiers);
     try {
       memberReturn.relationships.currently_entitled_tiers.data.forEach(tier => {
         if(tier.id === '4389527') { // Sponsor
