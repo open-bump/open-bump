@@ -157,6 +157,7 @@ async function getCampaignMembers() {
         'Authorization': 'Bearer ' + accessToken
       }
     }).then(res => res.json());
+    console.log(res);
     if(res.data) res.data.forEach(v => data.push(v));
     if(res.included) res.included.forEach(v => included.push(v));
     if(res.links && res.links.next) {
