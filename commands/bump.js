@@ -54,7 +54,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
           if(!guildDatabase.lastBump || Math.floor(Math.random() * 3) === 0) {
             fields.push({
               name: `${emojis.bell} **Suggestion: Premium**`,
-              value: `You don\'t want to wait ${ms(cooldown, { long: true })} until you can bump? [Upgrade to premium](https://www.patreon.com/Looat)!\n` +
+              value: `You don\'t want to wait ${ms(cooldown, { long: true })} until you can bump? [Upgrade to premium](https://www.patreon.com/Looat) or [boost Open Advertisements](https://discord.gg/eBFu8HF)!\n` +
                   `To view more information about premium, please use the \`${prefix}premium\` command.`,
               inline: false
             })
