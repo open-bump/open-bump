@@ -85,12 +85,14 @@ client.once('ready', () => {
 
 // Error
 client.on('error', error => {
-  console.log('Event "error" thrown:', error);
+  console.log('Event "error" thrown:');
+  console.log(error);
 });
 
 // Debug
 client.on('debug', info => {
-  console.log('Event "debug" thrown:', info);
+  console.log('Event "debug" thrown:');
+  console.log(info);
 })
 
 // Commands
