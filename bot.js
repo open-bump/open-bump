@@ -83,6 +83,16 @@ client.once('ready', () => {
   if(config.topgg.enabled) topgg.init()
 })
 
+// Error
+client.on('error', error => {
+  console.log('Event "error" thrown:', error);
+});
+
+// Debug
+client.on('debug', info => {
+  console.log('Event "debug" thrown:', debug);
+})
+
 // Commands
 const commands = new Discord.Collection()
 module.exports.commands = commands
