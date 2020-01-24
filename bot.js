@@ -90,7 +90,7 @@ client.on('error', error => {
 
 // Debug
 client.on('debug', info => {
-  console.log('Event "debug" thrown:', debug);
+  console.log('Event "debug" thrown:', info);
 })
 
 // Commands
