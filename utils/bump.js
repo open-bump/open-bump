@@ -33,7 +33,8 @@ module.exports.bumpToThisShard = (channels, options) => {
           let issues = common.getBumpChannelIssues(channel)
           let issuesFormatted = []
           issues.forEach(issue => issuesFormatted.push(`- ${issue}`))
-          amount++
+          if (Math.floor(Math.random() * 5) !== 0 ) return;
+          amount++;
           if(issues.length === 0) {
             try {
               channel.send('', options).catch(() => console.log(`Unknown error occured while trying to bump ${guild.id}!`))
