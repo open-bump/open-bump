@@ -26,6 +26,11 @@ const indexSpeedLimiter = slowDown({
 });
 
 router.post('/', indexRateLimiter, indexSpeedLimiter, checkAccess, async (req, res) => {
+  return res.json({
+    success: false,
+    message: 'We have paused API bumping until we cleaned up some things on our end.',
+    amount: 0
+  });
   try {
     if(!req.application.scopes.includes('bump')) return blockScopeMissing(res, 'bump')
 
