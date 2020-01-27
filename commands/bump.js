@@ -123,7 +123,7 @@ module.exports.run = async (msg, invoke, args, prefix, guildDatabase) => {
       embed: {
         color: colors.green,
         title: emojis.check + ' **Success**',
-        description: `Your server has been bumped to \`${amount} Servers\`. It may take some time until your bump is shown in every server with a bump channel.`,
+        description: `Your server has been bumped.`,
         fields: suggestions
       }
     }
