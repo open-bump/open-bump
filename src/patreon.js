@@ -1,6 +1,3 @@
-const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
-module.exports.environment = environment
-
 const fetch = require('node-fetch')
 const FormData = require('form-data')
 const fs = require('fs')
@@ -10,7 +7,7 @@ const common = require('./utils/common')
 const donator = require('./utils/donator')
 const colors = require('./utils/colors')
 const emojis = require('./utils/emojis')
-const config = JSON.parse(fs.readFileSync(`./config.${environment}.json`, 'utf8'))
+const config = require('./configManager');
 const CLIENT_ID = config.patreon.clientId
 const CLIENT_SECRET = config.patreon.clientSecret
 const REFRESH_TOKEN = config.patreon.refreshToken
