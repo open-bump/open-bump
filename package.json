@@ -29,5 +29,8 @@
     "ms": "^2.1.2",
     "node-fetch": "^2.6.0",
     "patreon": "^0.4.1"
+  },
+  "devDependencies": {
+    "tsc": "^1.20150623.0"
   }
 }
