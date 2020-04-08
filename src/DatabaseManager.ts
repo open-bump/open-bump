@@ -11,7 +11,8 @@ export default class DatabaseManager {
 
     this.sequelize = new Sequelize({
       ...config.database,
-      models: [modelDir]
+      models: [modelDir],
+      logging: false
     });
   }
 
