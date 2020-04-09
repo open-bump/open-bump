@@ -16,6 +16,9 @@ interface IConfig extends config.IConfig {
   discord: {
     token: string;
   };
+  settings: {
+    prefix: string;
+  };
 }
 
 export default config as IConfig;

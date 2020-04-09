@@ -1,7 +1,8 @@
+import parser from "discord-command-parser";
 import Discord from "discord.js";
 import Command from "./Command";
-import parser from "discord-command-parser";
 import HelpCommand from "./commands/HelpCommand";
+import config from "./config";
 
 export default class CommandManager {
   private commands: { [name: string]: Command } = {};
@@ -11,7 +12,14 @@ export default class CommandManager {
   }
 
   public async run(message: Discord.Message) {
-    // TODO: Handle command
+    if (!message.author || message.author.bot || !message.guild) return;
+    const parsed = parser.parse(message, config.settings.prefix, {});
+    if (parsed.success) {
+      const command = this.getCommand(parsed.command);
+      if (!command) return;
+
+      await command.run(parsed);
+    }
   }
 
   private registerCommands() {
@@ -20,5 +28,14 @@ export default class CommandManager {
 
   private registerCommand(command: Command) {
     this.commands[command.name.toLowerCase()] = command;
+  }
+
+  public getCommand(name: string) {
+    let command: Command | undefined = this.commands[name.toLowerCase()];
+    if (command) return command;
+    command = Object.values(this.commands).find((command) =>
+      command.aliases?.includes(name.toLowerCase())
+    );
+    return command;
   }
 }
