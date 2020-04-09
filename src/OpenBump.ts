@@ -5,7 +5,9 @@ import EventManager from "./EventManager";
 import DatabaseManager from "./DatabaseManager";
 
 export default class OpenBump {
-  public static directory = __dirname;
+  public static instance: OpenBump;
+
+  public directory = __dirname;
 
   public client: Discord.Client;
   public commandManager: CommandManager;
@@ -13,11 +15,13 @@ export default class OpenBump {
   public databaseManager: DatabaseManager;
 
   constructor() {
+    OpenBump.instance = this;
+
     this.client = new Discord.Client();
 
     this.commandManager = new CommandManager();
     this.eventManager = new EventManager(this);
-    this.databaseManager = new DatabaseManager();
+    this.databaseManager = new DatabaseManager(this);
 
     this.init();
   }
