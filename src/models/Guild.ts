@@ -10,7 +10,8 @@ import {
   Model,
   PrimaryKey,
   Table,
-  AfterCreate
+  AfterCreate,
+  HasOne
 } from "sequelize-typescript";
 import { Transaction } from "sequelize/types";
 import BumpData from "./BumpData";
@@ -47,12 +48,8 @@ export default class Guild extends Model<Guild> {
   @HasMany(() => GuildFeature)
   features!: Array<GuildFeature>;
 
-  @ForeignKey(() => BumpData)
-  @Column
-  bumpDataId!: string;
-
-  @BelongsTo(() => BumpData)
-  bumpData!: BumpData;
+  @HasOne(() => BumpData)
+  bumpData!: BumpData
 
   @Column(DataType.BOOLEAN)
   autobump!: boolean;

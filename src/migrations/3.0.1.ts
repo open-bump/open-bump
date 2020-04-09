@@ -20,7 +20,6 @@ const migration: MigrationJS = {
           },
           name: datatypes.STRING,
           feed: datatypes.STRING(20),
-          bumpDataId: datatypes.UUID,
           autobump: datatypes.BOOLEAN,
           lastBumpedBy: datatypes.STRING(20),
           lastBumpedAt: datatypes.DATE,
@@ -104,6 +103,7 @@ const migration: MigrationJS = {
             allowNull: false,
             type: datatypes.UUID
           },
+          guildId: datatypes.STRING(20),
           description: DataType.TEXT,
           invite: DataType.STRING,
           banner: DataType.STRING,
@@ -122,12 +122,12 @@ const migration: MigrationJS = {
         { transaction, charset: "utf8mb4" }
       );
 
-      // Add Foreign Key From "Guild" To "BumpData"
-      await queryInterface.addConstraint("Guild", ["bumpDataId"], {
+      // Add Foreign Key From "BumpData" To "Guild"
+      await queryInterface.addConstraint("BumpData", ["guildId"], {
         type: "foreign key",
-        name: "Guild_bumpDataId_BumpData_fk",
+        name: "BumpData_guildId_Guild_fk",
         references: {
-          table: "BumpData",
+          table: "Guild",
           field: "id"
         },
         onUpdate: "CASCADE",
@@ -146,11 +146,6 @@ const migration: MigrationJS = {
       const queryInterface = connection.getQueryInterface();
 
       /* Delete "BumpData" Table */
-      await queryInterface.removeConstraint(
-        "Guild",
-        "Guild_bumpData_BumpData_fk",
-        { transaction }
-      );
       await queryInterface.dropTable("BumpData", { transaction });
 
       /* Delete "GuildFeature" Table */
