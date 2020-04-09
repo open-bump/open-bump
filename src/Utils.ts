@@ -1,4 +1,6 @@
+import Discord from "discord.js";
 import path from "path";
+import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
 
 export default class Utils {
@@ -43,5 +45,39 @@ export default class Utils {
       ));
     } catch (error) {}
     throw new Error(`Can't load package.json!`);
+  }
+
+  public static async ensureGuild(guild: Discord.Guild): Promise<Guild> {
+    const databaseManager = OpenBump.instance.databaseManager;
+    const transaction = await databaseManager.sequelize.transaction();
+    try {
+      const existingGuild = await Guild.findOne({
+        where: { id: guild.id },
+        transaction
+      });
+      if (existingGuild) {
+        existingGuild.name = guild.name;
+        if (existingGuild.changed()) await existingGuild.save({ transaction });
+        await transaction.commit();
+        return existingGuild;
+      } else {
+        const newGuild = await Guild.create(
+          {
+            id: guild.id,
+            name: guild.name
+          },
+          { transaction }
+        );
+        await transaction.commit();
+        const finalGuild = await Guild.findOne({
+          where: { id: guild.id }
+        });
+        return finalGuild || newGuild; // Use "finalGuild" with more data; and as fallback "newGuild"
+      }
+    } catch (error) {
+      console.error(`Error while ensuring guild, rolling back...`);
+      await transaction.rollback();
+      throw error;
+    }
   }
 }

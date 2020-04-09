@@ -1,5 +1,7 @@
 import {
   AllowNull,
+  BeforeCreate,
+  BelongsTo,
   Column,
   DataType,
   Default,
@@ -10,6 +12,7 @@ import {
   Table,
   AfterCreate
 } from "sequelize-typescript";
+import { Transaction } from "sequelize/types";
 import BumpData from "./BumpData";
 import GuildFeature from "./GuildFeature";
 
@@ -21,12 +24,15 @@ import GuildFeature from "./GuildFeature";
         model: GuildFeature,
         as: "features"
       },
-      BumpData
+      {
+        model: BumpData,
+        as: "bumpData"
+      }
     ]
   }
 })
 export default class Guild extends Model<Guild> {
-// Discord Snowflake
+  // Discord Snowflake
   @PrimaryKey
   @AllowNull(false)
   @Column(DataType.STRING(20))
@@ -42,6 +48,10 @@ export default class Guild extends Model<Guild> {
   features!: Array<GuildFeature>;
 
   @ForeignKey(() => BumpData)
+  @Column
+  bumpDataId!: string;
+
+  @BelongsTo(() => BumpData)
   bumpData!: BumpData;
 
   @Column(DataType.BOOLEAN)
@@ -59,7 +69,11 @@ export default class Guild extends Model<Guild> {
   totalBumps!: number;
 
   @AfterCreate
-  static async afterCreateHook(instance: Guild, _propertyName: string) {
-    await instance.$set("bumpData", await BumpData.create());
+  public static async afterCreateHook(
+    entity: Guild,
+    { transaction }: { transaction?: Transaction }
+  ) {
+    const bumpData = await BumpData.create({ transaction });
+    await entity.$set("bumpData", bumpData, { transaction });
   }
 }

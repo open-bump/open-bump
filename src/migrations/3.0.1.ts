@@ -20,7 +20,7 @@ const migration: MigrationJS = {
           },
           name: datatypes.STRING,
           feed: datatypes.STRING(20),
-          bumpData: datatypes.UUID,
+          bumpDataId: datatypes.UUID,
           autobump: datatypes.BOOLEAN,
           lastBumpedBy: datatypes.STRING(20),
           lastBumpedAt: datatypes.DATE,
@@ -34,7 +34,7 @@ const migration: MigrationJS = {
             allowNull: false,
             type: datatypes.DATE
           },
-          modifiedAt: {
+          updatedAt: {
             defaultValue: connection.Sequelize.literal("CURRENT_TIMESTAMP"),
             allowNull: false,
             type: datatypes.DATE
@@ -66,7 +66,7 @@ const migration: MigrationJS = {
             allowNull: false,
             type: datatypes.DATE
           },
-          modifiedAt: {
+          updatedAt: {
             defaultValue: connection.Sequelize.literal("CURRENT_TIMESTAMP"),
             allowNull: false,
             type: datatypes.DATE
@@ -113,7 +113,7 @@ const migration: MigrationJS = {
             allowNull: false,
             type: datatypes.DATE
           },
-          modifiedAt: {
+          updatedAt: {
             defaultValue: connection.Sequelize.literal("CURRENT_TIMESTAMP"),
             allowNull: false,
             type: datatypes.DATE
@@ -123,9 +123,9 @@ const migration: MigrationJS = {
       );
 
       // Add Foreign Key From "Guild" To "BumpData"
-      await queryInterface.addConstraint("Guild", ["bumpData"], {
+      await queryInterface.addConstraint("Guild", ["bumpDataId"], {
         type: "foreign key",
-        name: "Guild_bumpData_BumpData_fk",
+        name: "Guild_bumpDataId_BumpData_fk",
         references: {
           table: "BumpData",
           field: "id"

@@ -39,8 +39,11 @@
     "sqlite3": "^4.1.1"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.30",
     "@types/config": "0.0.36",
+    "@types/node": "^13.11.1",
     "@types/semver": "^7.1.0",
+    "@types/validator": "^13.0.0",
     "tsc": "^1.20150623.0"
   }
 }
