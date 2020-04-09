@@ -3,10 +3,12 @@ import {
   Column,
   DataType,
   Default,
+  HasOne,
   Model,
   PrimaryKey,
   Table
 } from "sequelize-typescript";
+import Guild from "./Guild";
 
 @Table({
   tableName: "BumpData"
@@ -17,6 +19,9 @@ export default class BumpData extends Model<BumpData> {
   @AllowNull(false)
   @Column(DataType.UUID)
   id!: string;
+
+  @HasOne(() => Guild, "bumpDataId")
+  guild!: Guild;
 
   @Column(DataType.TEXT)
   description!: string;

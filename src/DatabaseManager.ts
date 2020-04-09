@@ -7,7 +7,7 @@ import OpenBump from "./OpenBump";
 import Utils from "./Utils";
 
 export default class DatabaseManager {
-  private sequelize: Sequelize;
+  public sequelize: Sequelize;
   private migrationAdapter: MigrationAdapter;
   private migrator: Migrator;
 
