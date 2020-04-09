@@ -1,12 +1,13 @@
-import {
-  compare as semVerCompare,
-  valid as semVerValid,
-  cmp as semVerCmp
-} from "semver";
-import { MigrationAdapter } from "./MigrationAdapter";
-import { readdirSync, Dirent } from "fs";
+import { Dirent, readdirSync } from "fs";
 import path from "path";
+import {
+  cmp as semVerCmp,
+  compare as semVerCompare,
+  valid as semVerValid
+} from "semver";
+import { DataType, Sequelize } from "sequelize-typescript";
 import Utils from "../../Utils";
+import { MigrationAdapter } from "./MigrationAdapter";
 
 export interface Migration {
   version: string;
@@ -16,8 +17,8 @@ export interface Migration {
 
 export interface MigrationJS {
   version: string;
-  up: (connection: any) => Promise<void>;
-  down: (connection: any) => Promise<void>;
+  up: (connection: Sequelize, datatypes: typeof DataType) => Promise<void>;
+  down: (connection: Sequelize, datatypes: typeof DataType) => Promise<void>;
 }
 
 export interface MigrationOptions {
@@ -202,7 +203,7 @@ export class Migrator {
         const func: Function = eval(migration[op]);
 
         try {
-          await func.call(void 0, connection);
+          await func.call(void 0, connection, DataType);
           console.log(
             `Migration Script ${migration.version} ('${op}') executed successfully.`
           );

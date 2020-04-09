@@ -18,7 +18,7 @@ export default class BumpData extends Model<BumpData> {
   @Column(DataType.UUID)
   id!: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.TEXT)
   description!: string;
 
   @Column(DataType.STRING)

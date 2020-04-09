@@ -26,10 +26,10 @@ import GuildFeature from "./GuildFeature";
   }
 })
 export default class Guild extends Model<Guild> {
+// Discord Snowflake
   @PrimaryKey
-  @Default(DataType.UUIDV4)
   @AllowNull(false)
-  @Column(DataType.UUID)
+  @Column(DataType.STRING(20))
   id!: string;
 
   @Column(DataType.STRING)
@@ -60,6 +60,6 @@ export default class Guild extends Model<Guild> {
 
   @AfterCreate
   static async afterCreateHook(instance: Guild, _propertyName: string) {
-      await instance.$set('bumpData', await BumpData.create());
+    await instance.$set("bumpData", await BumpData.create());
   }
 }

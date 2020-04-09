@@ -1,8 +1,6 @@
-import { Sequelize, DataType } from "sequelize-typescript";
-
-import { SequelizeOptions } from "sequelize-typescript";
-import { Migration } from "./Migrator";
 import { Op } from "sequelize";
+import { DataType, Sequelize } from "sequelize-typescript";
+import { Migration } from "./Migrator";
 
 export class MigrationAdapter {
   private static STORAGE_TABLE_NAME = "MigrationData";
@@ -25,19 +23,23 @@ export class MigrationAdapter {
     const tables = await qi.showAllTables();
 
     if (!tables.includes(MigrationAdapter.STORAGE_TABLE_NAME)) {
-      await qi.createTable(MigrationAdapter.STORAGE_TABLE_NAME, {
-        version: { type: DataType.STRING, primaryKey: true },
-        up: {
-          type: DataType.TEXT
+      await qi.createTable(
+        MigrationAdapter.STORAGE_TABLE_NAME,
+        {
+          version: { type: DataType.STRING(100), primaryKey: true },
+          up: {
+            type: DataType.TEXT
+          },
+          down: {
+            type: DataType.TEXT
+          },
+          inserted: {
+            type: DataType.DATE,
+            defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
+          }
         },
-        down: {
-          type: DataType.TEXT
-        },
-        inserted: {
-          type: DataType.DATE,
-          defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
-        }
-      });
+        { charset: "utf8mb4" }
+      );
     }
   }
 
