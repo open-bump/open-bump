@@ -39,6 +39,6 @@ export default class GuildFeature extends Model<GuildFeature> {
 
   @GuildFeatureIndex
   @AllowNull(false)
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(100))
   feature!: string;
 }
