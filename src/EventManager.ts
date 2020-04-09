@@ -1,6 +1,7 @@
-import OpenBump from "./OpenBump";
 import Event from "./Event";
+import MessageEvent from "./events/MessageEvent";
 import ReadyEvent from "./events/ReadyEvent";
+import OpenBump from "./OpenBump";
 
 export default class EventManager {
   constructor(private instance: OpenBump) {
@@ -9,6 +10,7 @@ export default class EventManager {
 
   private registerEvents() {
     this.registerEvent(new ReadyEvent(this.instance));
+    this.registerEvent(new MessageEvent(this.instance));
   }
 
   private registerEvent(event: Event) {
