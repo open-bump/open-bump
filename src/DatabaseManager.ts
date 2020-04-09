@@ -19,6 +19,8 @@ export default class DatabaseManager {
   public async init() {
     console.log("Connecting to database...");
     await this.sequelize.authenticate();
+    console.log("Syncing database...");
+    await this.sequelize.sync();
     console.log("Connection to database has been established successfully");
   }
 }
