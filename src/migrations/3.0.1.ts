@@ -2,7 +2,7 @@ import { Sequelize } from "sequelize-typescript";
 import { MigrationJS } from "./helpers/Migrator";
 
 const migration: MigrationJS = {
-  version: "3.1.0",
+  version: "3.0.1",
   up: async (connection: Sequelize) => {},
   down: async (connection: Sequelize) => {}
 };
