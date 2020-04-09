@@ -1,9 +1,10 @@
 import {
   AllowNull,
+  BelongsTo,
   Column,
   DataType,
   Default,
-  HasOne,
+  ForeignKey,
   Model,
   PrimaryKey,
   Table
@@ -20,7 +21,11 @@ export default class BumpData extends Model<BumpData> {
   @Column(DataType.UUID)
   id!: string;
 
-  @HasOne(() => Guild, "bumpDataId")
+  @ForeignKey(() => Guild)
+  @Column
+  guildId!: string;
+
+  @BelongsTo(() => Guild)
   guild!: Guild;
 
   @Column(DataType.TEXT)
