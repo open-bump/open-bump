@@ -135,6 +135,9 @@ const migration: MigrationJS = {
         onDelete: "CASCADE",
         transaction
       });
+
+      /* Commit Transaction */
+      await transaction.commit();
     } catch (error) {
       console.error("Error in migration, rolling back...");
       await transaction.rollback();
@@ -154,6 +157,9 @@ const migration: MigrationJS = {
 
       /* Delete "Guild" Table */
       await queryInterface.dropTable("Guild", { transaction });
+
+      /* Commit Transaction */
+      await transaction.commit();
     } catch (error) {
       console.error("Error in migration, rolling back...");
       await transaction.rollback();

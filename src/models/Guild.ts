@@ -68,6 +68,9 @@ export default class Guild extends Model<Guild> {
   @Column(DataType.INTEGER)
   totalBumps!: number;
 
+  @Column(DataType.BOOLEAN)
+  nsfw!: boolean;
+
   @AfterCreate
   public static async afterCreateHook(
     entity: Guild,
