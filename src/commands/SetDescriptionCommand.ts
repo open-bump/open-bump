@@ -35,7 +35,7 @@ export default class SetDescriptionCommand extends Command {
 
         const embed = {
           color: Utils.Colors.GREEN,
-          title: `${Utils.Emojis.CHECK} **Description has been updated**`,
+          title: `${Utils.Emojis.CHECK} Description has been updated`,
           description: `__**New Description:**__ *No Description*`
         };
         return void (await channel.send({ embed }));

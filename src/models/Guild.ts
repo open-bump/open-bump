@@ -43,7 +43,7 @@ export default class Guild extends Model<Guild> {
   name!: string;
 
   @Column(DataType.STRING(20))
-  feed!: string;
+  feed?: string;
 
   @HasMany(() => GuildFeature)
   features!: Array<GuildFeature>;
