@@ -1,4 +1,4 @@
-import Discord, { MessageEmbedOptions } from "discord.js";
+import Discord, { MessageEmbedOptions, PermissionString } from "discord.js";
 import ms from "ms";
 import path from "path";
 import Guild from "./models/Guild";
@@ -111,6 +111,73 @@ class Bump {
         }
       ]
     };
+  }
+
+  public static getBumpChannelIssues(
+    channel: Discord.GuildChannel,
+    guildDatabase: Guild
+  ) {
+    const { guild } = channel;
+
+    const issues: Array<string> = [];
+
+    const requiredPermissions: Array<{
+      permission: PermissionString;
+      name: string;
+    }> = [
+      { permission: "SEND_MESSAGES", name: "Send Messages" },
+      { permission: "VIEW_CHANNEL", name: "Read Messages" },
+      { permission: "EMBED_LINKS", name: "Embed Links" },
+      { permission: "USE_EXTERNAL_EMOJIS", name: "Use External Emojis" }
+    ];
+    for (const { permission, name } of requiredPermissions) {
+      if (
+        !channel
+          .permissionsFor(String(OpenBump.instance.client.user?.id))
+          ?.has(permission)
+      )
+        issues.push(
+          `Please grant \`${OpenBump.instance.client.user?.tag}\` the permission \`${name}\`.`
+        );
+    }
+
+    if (
+      guildDatabase.features.find(
+        ({ feature }) => feature === "RESTRICTED_CHANNEL"
+      )
+    )
+      return issues;
+
+    for (const permissionOverwrite of channel.permissionOverwrites.values()) {
+      if (permissionOverwrite.type !== "role") return;
+      if (permissionOverwrite.id === guild.id) {
+        // everyone role
+        if (!permissionOverwrite.allow.has("VIEW_CHANNEL"))
+          issues.push(
+            `Please grant \`@everyone\` the permission \`Read Messages\`.`
+          );
+        if (!permissionOverwrite.allow.has("READ_MESSAGE_HISTORY"))
+          issues.push(
+            `Please grant \`@everyone\` the permission \`Read Message History\`.`
+          );
+      } else {
+        // other role
+        if (permissionOverwrite.deny.has("VIEW_CHANNEL"))
+          issues.push(
+            `Please grant \`@${
+              guild.roles.cache.get(permissionOverwrite.id)?.name
+            }\` the permission \`Read Messages\``
+          );
+        if (permissionOverwrite.deny.has("READ_MESSAGE_HISTORY"))
+          issues.push(
+            `Please grant \`@${
+              guild.roles.cache.get(permissionOverwrite.id)?.name
+            }\` the permission \`Read Message History\``
+          );
+      }
+    }
+
+    return issues;
   }
 }
 
