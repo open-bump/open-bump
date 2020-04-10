@@ -20,6 +20,7 @@ const migration: MigrationJS = {
           },
           name: datatypes.STRING,
           feed: datatypes.STRING(20),
+          prefix: datatypes.STRING,
           autobump: datatypes.BOOLEAN,
           lastBumpedBy: datatypes.STRING(20),
           lastBumpedAt: datatypes.DATE,

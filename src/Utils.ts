@@ -80,4 +80,49 @@ export default class Utils {
       throw error;
     }
   }
+
+  public static Colors = {
+    BLUE: 0x698cce,
+    RED: 0xff0000,
+    GREEN: 0x3dd42c,
+    ORANGE: 0xff9900,
+    OPENBUMP: 0x27ad60
+  };
+
+  public static Emojis = {
+    LOCK: "🔒",
+    LOCKKEY: "🔐",
+    LOCKOPEN: "🔓",
+    ZAP: "⚡",
+    BELL: "🔔",
+    STAR: "⭐",
+    ARROWRIGHT: "➡",
+    INFORMATION: "ℹ",
+    MAILBOX: "📬",
+    THUMBSUP: "<:thumbsup:631606538598875174>",
+    THUMBSDOWN: "<:thumbsdown:631606537827123221>",
+    OWNER: "<:owner:547102770696814592>",
+    REGION: "<:region:547102740799553615>",
+    CREATED: "<:created:547102739503644672>",
+    SLINK: "<:slink:547112000778403844>",
+    MEMBERS: "<:members:547112000765821039>",
+    INFO: "<:info:547112000765820949>",
+    ONLINE: "<:online:546621462715301888>",
+    DND: "<:dnd:546621462434414593>",
+    IDLE: "<:idle:546621462677684225>",
+    STREAMING: "<:streaming:547114192646176793>",
+    INVISIBLE: "<:invisible:546621324131565574>",
+    LOADING: "<a:loading:547809249552760842>",
+    LOADINGGREEN: "<a:loading:631962121256566795>",
+    CHECK: "<:check:621063206235930634>",
+    XMARK: "<:xmark:621063205854380086>",
+    UNSET: "<:neutral:621063802028294155>",
+    NEUTRAL: "<:neutral:621063205854380057>",
+    IMPORTANTNOTICE: "<:importantnotice:621049166759460884>",
+    FEATURED: "<:FeaturedServer:622845429045919745>",
+    UNITEDSERVER: "<:UnitedServer:622845429435858955>",
+    EARLYSUPPORTER: "<:EarlySupporter:622852038031835137>",
+    AFFILIATEDSERVER: "<:AffiliatedServer:622857526924279848>",
+    BUMPCHANNEL: "<:BumpChannel:632703590632390686>"
+  };
 }

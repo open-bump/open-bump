@@ -51,6 +51,9 @@ export default class Guild extends Model<Guild> {
   @HasOne(() => BumpData)
   bumpData!: BumpData
 
+  @Column(DataType.STRING)
+  prefix!: string;
+
   @Column(DataType.BOOLEAN)
   autobump!: boolean;
 
