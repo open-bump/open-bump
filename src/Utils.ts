@@ -81,6 +81,10 @@ export default class Utils {
     }
   }
 
+  public static getInviteLink() {
+    return `https://discordapp.com/api/oauth2/authorize?client_id=${OpenBump.instance.client.user.id}&permissions=379969&scope=bot`;
+  }
+
   public static Colors = {
     BLUE: 0x698cce,
     RED: 0xff0000,

@@ -1,6 +1,7 @@
 import parser from "discord-command-parser";
 import Discord from "discord.js";
 import Command from "./Command";
+import AboutCommand from "./commands/AboutCommand";
 import HelpCommand from "./commands/HelpCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
 import config from "./config";
@@ -31,6 +32,7 @@ export default class CommandManager {
   }
 
   private registerCommands() {
+    this.registerCommand(new AboutCommand());
     this.registerCommand(new HelpCommand());
     this.registerCommand(new SetDescriptionCommand());
   }

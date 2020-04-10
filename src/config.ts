@@ -18,6 +18,7 @@ interface IConfig extends config.IConfig {
   };
   settings: {
     prefix: string;
+    support: string;
   };
 }
 
