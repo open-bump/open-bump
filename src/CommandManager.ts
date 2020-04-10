@@ -4,6 +4,7 @@ import Command from "./Command";
 import AboutCommand from "./commands/AboutCommand";
 import HelpCommand from "./commands/HelpCommand";
 import PreviewCommand from "./commands/PreviewCommand";
+import SetChannelCommand from "./commands/SetChannelCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
 import SetInviteCommand from "./commands/SetInviteCommand";
 import config from "./config";
@@ -33,7 +34,12 @@ export default class CommandManager {
       const command = this.getCommand(parsed.command);
       if (!command) return;
 
-      await command.run(parsed, guildDatabase);
+      try {
+        await command.run(parsed, guildDatabase);
+      } catch (error) {
+        const embed = Utils.errorToEmbed(error);
+        await message.channel.send({ embed });
+      }
     }
   }
 
@@ -41,6 +47,7 @@ export default class CommandManager {
     this.registerCommand(new AboutCommand(this.instance));
     this.registerCommand(new HelpCommand(this.instance));
     this.registerCommand(new PreviewCommand(this.instance));
+    this.registerCommand(new SetChannelCommand(this.instance));
     this.registerCommand(new SetDescriptionCommand(this.instance));
     this.registerCommand(new SetInviteCommand(this.instance));
   }

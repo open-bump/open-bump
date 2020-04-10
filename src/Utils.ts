@@ -207,6 +207,29 @@ export default class Utils {
     };
   }
 
+  public static findChannel(
+    input: string,
+    guild: Discord.Guild,
+    type?: Array<string>
+  ) {
+    const channels = Array.from(guild.channels.cache.values()).filter(
+      (channel) => !type || type.includes(channel.type)
+    );
+
+    let matching = channels.filter(
+      (channel) => channel.id === input.replace(/[^0-9]/gim, "")
+    );
+
+    if (!matching.length)
+      matching = channels.filter((channel) => channel.name === input);
+    if (!matching.length)
+      matching = channels.filter((channel) => channel.name.includes(input));
+
+    if (matching.length === 1) return matching[0];
+    else if (matching.length) throw new TooManyResultsError("guilds", matching);
+    throw new NotFoundError("guild");
+  }
+
   public static Colors = {
     BLUE: 0x698cce,
     RED: 0xff0000,
@@ -287,6 +310,34 @@ export class InviteNotValidError extends EmbedError {
       description:
         "It looks like the invite you have set is not valid or does not point to your guild.\n" +
         "Please set a new invite using `ob!setinvite`."
+    };
+  }
+}
+
+export class NotFoundError extends EmbedError {
+  constructor(private type: string) {
+    super(`Could not find ${type}!`);
+  }
+
+  public toEmbed() {
+    return {
+      color: Utils.Colors.RED,
+      title: `Can't find ${this.type}!`,
+      description: "Please specify your input."
+    };
+  }
+}
+
+export class TooManyResultsError<T> extends EmbedError {
+  constructor(private type: string, public results?: Array<T>) {
+    super(`Too many ${type} found!`);
+  }
+
+  public toEmbed() {
+    return {
+      color: Utils.Colors.RED,
+      title: `Too many ${this.type} found!`,
+      description: "Please specify your input."
     };
   }
 }
