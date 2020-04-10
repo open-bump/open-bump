@@ -114,7 +114,7 @@ class Bump {
   }
 
   public static getBumpChannelIssues(
-    channel: Discord.GuildChannel,
+    channel: Discord.TextChannel,
     guildDatabase: Guild
   ) {
     const { guild } = channel;
@@ -140,6 +140,9 @@ class Bump {
           `Please grant \`${OpenBump.instance.client.user?.tag}\` the permission \`${name}\`.`
         );
     }
+
+    if (guildDatabase.nsfw && !channel.nsfw)
+      issues.push("Please mark your bump channel as NSFW.");
 
     if (
       guildDatabase.features.find(
