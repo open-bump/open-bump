@@ -19,7 +19,7 @@ export default class OpenBump {
 
     this.client = new Discord.Client();
 
-    this.commandManager = new CommandManager();
+    this.commandManager = new CommandManager(this);
     this.eventManager = new EventManager(this);
     this.databaseManager = new DatabaseManager(this);
 

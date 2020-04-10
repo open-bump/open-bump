@@ -2,6 +2,7 @@ import { ParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import Guild from "./models/Guild";
 import Utils from "./Utils";
+import OpenBump from "./OpenBump";
 
 export default abstract class Command {
   public abstract name: string;
@@ -9,6 +10,8 @@ export default abstract class Command {
   public abstract syntax: string;
   public abstract description: string;
   protected permissions = [];
+
+  constructor(protected instance: OpenBump) {}
 
   public abstract async run(
     parsed: ParsedMessage,
