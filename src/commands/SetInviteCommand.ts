@@ -14,13 +14,15 @@ export default class SetInviteCommand extends Command {
     guildDatabase: Guild
   ) {
     const { channel, guild, author } = message;
-    if (channel.permissionsFor(guild.me)?.has("CREATE_INSTANT_INVITE")) {
-      const invite = await channel.createInvite(
-        {
-          maxAge: 0
-        },
-        `${author.tag} updated the invite link.`
-      );
+    if (
+      channel
+        .permissionsFor(String(this.instance.client.user?.id))
+        ?.has("CREATE_INSTANT_INVITE")
+    ) {
+      const invite = await channel.createInvite({
+        maxAge: 0,
+        reason: `${author.tag} updated the invite link.`
+      });
 
       guildDatabase.bumpData.invite = invite.code;
       await guildDatabase.bumpData.save();

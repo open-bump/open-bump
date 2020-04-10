@@ -16,7 +16,7 @@ export default class AboutCommand extends Command {
     const packageJson = Utils.getPackageJson();
     const embed = {
       color: Utils.Colors.BLUE,
-      title: `${Utils.Emojis.INFORMATION} About ${OpenBump.instance.client.user.username}`,
+      title: `${Utils.Emojis.INFORMATION} About ${this.instance.client.user?.username}`,
       description:
         `**Version:** ${packageJson.version}\n` +
         `**Author:** ${packageJson.author}\n` +

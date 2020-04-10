@@ -4,21 +4,25 @@ import Command from "./Command";
 import AboutCommand from "./commands/AboutCommand";
 import HelpCommand from "./commands/HelpCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
-import config from "./config";
-import Utils from "./Utils";
 import SetInviteCommand from "./commands/SetInviteCommand";
+import config from "./config";
+import OpenBump from "./OpenBump";
+import Utils from "./Utils";
 
 export default class CommandManager {
   private commands: { [name: string]: Command } = {};
 
-  constructor() {
+  constructor(private instance: OpenBump) {
     this.registerCommands();
   }
 
   public async run(message: Discord.Message) {
     if (!message.author || message.author.bot || !message.guild) return;
 
-    const prefixes = [config.settings.prefix];
+    const prefixes = [
+      config.settings.prefix,
+      String(this.instance.client.user)
+    ];
     const guildDatabase = await Utils.ensureGuild(message.guild);
     if (guildDatabase.features.find(({ feature }) => feature === "PREFIX"))
       if (guildDatabase.prefix) prefixes.push(guildDatabase.prefix);
@@ -33,10 +37,10 @@ export default class CommandManager {
   }
 
   private registerCommands() {
-    this.registerCommand(new AboutCommand());
-    this.registerCommand(new HelpCommand());
-    this.registerCommand(new SetDescriptionCommand());
-    this.registerCommand(new SetInviteCommand());
+    this.registerCommand(new AboutCommand(this.instance));
+    this.registerCommand(new HelpCommand(this.instance));
+    this.registerCommand(new SetDescriptionCommand(this.instance));
+    this.registerCommand(new SetInviteCommand(this.instance));
   }
 
   private registerCommand(command: Command) {
