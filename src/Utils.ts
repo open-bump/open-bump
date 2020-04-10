@@ -8,7 +8,115 @@ export type GuildMessage = Discord.Message & {
   channel: Discord.GuildChannel & Discord.TextBasedChannelFields;
 };
 
+class Bump {
+  public static getMissingValues(guild: Discord.Guild, guildDatabase: Guild) {
+    const missing = [];
+    if (!guildDatabase.bumpData.description) missing.push("Description");
+    if (!guildDatabase.bumpData.invite) missing.push("Invite");
+    return missing.length ? missing : false;
+  }
+
+  public static async getEmbed(
+    guild: Discord.Guild,
+    guildDatabase: Guild
+  ): Promise<MessageEmbedOptions> {
+    // Check for missing values
+    const missing = this.getMissingValues(guild, guildDatabase);
+    if (missing) throw new GuildNotReadyError(missing);
+
+    // Verify invite
+    let invite;
+    try {
+      invite = await OpenBump.instance.client.fetchInvite(
+        guildDatabase.bumpData.invite
+      );
+    } catch (error) {
+      throw new InviteNotValidError();
+    }
+    if (!invite.guild?.id || invite.guild.id !== guild.id)
+      throw new InviteNotValidError();
+
+    // Prepare data
+    let total = 0;
+    let online = 0;
+    let dnd = 0;
+    let idle = 0;
+    let offline = 0;
+    let bots = 0;
+    let roles = 0;
+    let channels = 0;
+    let emojis = 0;
+
+    for (const member of guild.members.cache.values()) {
+      if (member.presence?.status === "online") online++;
+      else if (member.presence?.status === "dnd") dnd++;
+      else if (member.presence?.status === "idle") idle++;
+      else offline++;
+      total++;
+      if (member.user.bot) bots++;
+    }
+
+    roles = guild.roles.cache.size;
+    channels = guild.channels.cache.size;
+    emojis = guild.emojis.cache.size;
+
+    // Color
+    const color = Utils.Colors.OPENBUMP;
+
+    // Region
+    const regions = await guild.fetchVoiceRegions();
+    const region = regions.get(guild.region);
+
+    // Description
+    const description =
+      `${Utils.Emojis.OWNER} **Owner:** ${guild.owner?.user.tag}\n` +
+      `${Utils.Emojis.REGION} **Region:** ${region?.name}\n` +
+      `${Utils.Emojis.CREATED} **Created:** ${ms(
+        Date.now() - guild.createdTimestamp,
+        { long: true }
+      )} ago\n` +
+      `\n` +
+      `${guildDatabase.bumpData.description}`;
+
+    // Create
+    return {
+      title: `**${guild.name}**`,
+      thumbnail: {
+        url: guild.iconURL() || undefined
+      },
+      color,
+      description,
+      fields: [
+        {
+          name: `${Utils.Emojis.SLINK} **Invite Link**`,
+          value: `**${invite}**`
+        },
+        {
+          name: `${Utils.Emojis.MEMBERS} **Members [${total}]**`,
+          value:
+            `${Utils.Emojis.ONLINE} **Online:** ${online}\n` +
+            `${Utils.Emojis.DND} **Do Not Disturb:** ${dnd}\n` +
+            `${Utils.Emojis.IDLE} **Idle:** ${idle}\n` +
+            `${Utils.Emojis.INVISIBLE} **Offline:** ${offline}`,
+          inline: true
+        },
+        {
+          name: `${Utils.Emojis.INFO} **Misc**`,
+          value:
+            `**Roles:** ${roles}\n` +
+            `**Bots:** ${bots}\n` +
+            `**Channels:** ${channels}\n` +
+            `**Emojis:** ${emojis}`,
+          inline: true
+        }
+      ]
+    };
+  }
+}
+
 export default class Utils {
+  public static Bump = Bump;
+
   public static mergeObjects<T extends object = object>(
     target: T,
     ...sources: Array<T>
@@ -90,6 +198,15 @@ export default class Utils {
     return `https://discordapp.com/api/oauth2/authorize?client_id=${OpenBump.instance.client.user?.id}&permissions=379969&scope=bot`;
   }
 
+  public static errorToEmbed(error: Error): MessageEmbedOptions {
+    if (error instanceof EmbedError) return error.toEmbed();
+    return {
+      color: Utils.Colors.RED,
+      title: `${Utils.Emojis.XMARK} Unknown error!`,
+      description: error.message
+    };
+  }
+
   public static Colors = {
     BLUE: 0x698cce,
     RED: 0xff0000,
@@ -136,121 +253,40 @@ export default class Utils {
   };
 }
 
-class Bump {
-  public getMissingValues(guild: Discord.Guild, guildDatabase: Guild) {
-    const missing = [];
-    if (!guildDatabase.bumpData.description) missing.push("Description");
-    if (!guildDatabase.bumpData.invite) missing.push("Invite");
-    return missing.length ? missing : false;
+export abstract class EmbedError extends Error {
+  public abstract toEmbed(): MessageEmbedOptions;
+}
+
+export class GuildNotReadyError extends EmbedError {
+  constructor(public missing: Array<string>) {
+    super("The guild is not ready yet!");
   }
 
-  public async getEmbed(
-    guild: Discord.Guild,
-    guildDatabase: Guild
-  ): Promise<MessageEmbedOptions> {
-    // Check for missing values
-    const missing = this.getMissingValues(guild, guildDatabase);
-    if (missing) throw new GuildNotReadyError(missing);
-
-    // Verify invite
-    let invite;
-    try {
-      invite = await OpenBump.instance.client.fetchInvite(
-        guildDatabase.bumpData.invite
-      );
-    } catch (error) {
-      throw new InviteNotValidError();
-    }
-    if (!invite.guild?.id || invite.guild.id !== guild.id)
-      throw new InviteNotValidError();
-
-    // Prepare data
-    let total = 0;
-    let online = 0;
-    let dnd = 0;
-    let idle = 0;
-    let offline = 0;
-    let bots = 0;
-    let roles = 0;
-    let channels = 0;
-    let emojis = 0;
-
-    for (const member of guild.members.cache.values()) {
-      if (member.presence) {
-        if (member.presence.status === "online") online++;
-        else if (member.presence.status === "dnd") online++;
-        else if (member.presence.status === "idle") idle++;
-      } else offline++;
-      total++;
-      if (member.user.bot) bots++;
-    }
-
-    roles = guild.roles.cache.size;
-    channels = guild.channels.cache.size;
-    emojis = guild.emojis.cache.size;
-
-    // Color
-    const color = Utils.Colors.OPENBUMP;
-
-    // Region
-    const regions = await guild.fetchVoiceRegions();
-    const region = regions.get(guild.region);
-
-    // Description
-    const description =
-      `${Utils.Emojis.OWNER} **Owner:** ${guild.owner?.user.tag}\n` +
-      `${Utils.Emojis.REGION} **Region:** ${region?.name}\n` +
-      `${Utils.Emojis.CREATED} **Created:** ${ms(
-        Date.now() - guild.createdTimestamp,
-        { long: true }
-      )} ago\n` +
-      `\n` +
-      `${guildDatabase.bumpData.description}`;
-
-    // Create
+  public toEmbed() {
     return {
-      title: `**${guild.name}**`,
-      thumbnail: {
-        url: guild.iconURL() || undefined
-      },
-      color,
-      description,
-      fields: [
-        {
-          name: `${Utils.Emojis.SLINK} **Invite Link**`,
-          value: `**${invite}**`
-        },
-        {
-          name: `${Utils.Emojis.MEMBERS} **Members [${total}]**`,
-          value:
-            `${Utils.Emojis.ONLINE} **Online:** ${online}\n` +
-            `${Utils.Emojis.DND} **Do Not Disturb:** ${dnd}\n` +
-            `${Utils.Emojis.IDLE} **Idle:** ${idle}\n` +
-            `${Utils.Emojis.INVISIBLE} **Offline:** ${offline}`,
-          inline: true
-        },
-        {
-          name: `${Utils.Emojis.INFO} **Misc**`,
-          value:
-            `**Roles:** ${roles}\n` +
-            `**Bots:** ${bots}\n` +
-            `**Channels:** ${channels}\n` +
-            `**Emojis:** ${emojis}`,
-          inline: true
-        }
-      ]
+      color: Utils.Colors.RED,
+      title: `${Utils.Emojis.XMARK} Guild not ready!`,
+      description:
+        "The following fields are missing:\n" +
+        this.missing.map((missing) => `- \`${missing}\``).join("\n") +
+        "\n" +
+        "Check out the command `ob!help` to learn how to set them."
     };
   }
 }
 
-class GuildNotReadyError extends Error {
-  constructor(public missing: Array<string>) {
-    super("The guild is not ready yet!");
-  }
-}
-
-class InviteNotValidError extends Error {
+export class InviteNotValidError extends EmbedError {
   constructor() {
     super("The guild's invite is not valid!");
+  }
+
+  public toEmbed() {
+    return {
+      color: Utils.Colors.RED,
+      title: `${Utils.Emojis.XMARK} Invite not valid!`,
+      description:
+        "It looks like the invite you have set is not valid or does not point to your guild.\n" +
+        "Please set a new invite using `ob!setinvite`."
+    };
   }
 }

@@ -3,6 +3,7 @@ import Discord from "discord.js";
 import Command from "./Command";
 import AboutCommand from "./commands/AboutCommand";
 import HelpCommand from "./commands/HelpCommand";
+import PreviewCommand from "./commands/PreviewCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
 import SetInviteCommand from "./commands/SetInviteCommand";
 import config from "./config";
@@ -39,6 +40,7 @@ export default class CommandManager {
   private registerCommands() {
     this.registerCommand(new AboutCommand(this.instance));
     this.registerCommand(new HelpCommand(this.instance));
+    this.registerCommand(new PreviewCommand(this.instance));
     this.registerCommand(new SetDescriptionCommand(this.instance));
     this.registerCommand(new SetInviteCommand(this.instance));
   }
