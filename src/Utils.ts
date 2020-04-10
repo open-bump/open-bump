@@ -3,6 +3,10 @@ import path from "path";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
 
+export type GuildMessage = Discord.Message & {
+  channel: Discord.GuildChannel & Discord.TextBasedChannelFields;
+};
+
 export default class Utils {
   public static mergeObjects<T extends object = object>(
     target: T,

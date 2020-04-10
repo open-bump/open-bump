@@ -6,6 +6,7 @@ import HelpCommand from "./commands/HelpCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
 import config from "./config";
 import Utils from "./Utils";
+import SetInviteCommand from "./commands/SetInviteCommand";
 
 export default class CommandManager {
   private commands: { [name: string]: Command } = {};
@@ -35,6 +36,7 @@ export default class CommandManager {
     this.registerCommand(new AboutCommand());
     this.registerCommand(new HelpCommand());
     this.registerCommand(new SetDescriptionCommand());
+    this.registerCommand(new SetInviteCommand());
   }
 
   private registerCommand(command: Command) {
