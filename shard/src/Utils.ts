@@ -125,7 +125,11 @@ class Bump {
     guildDatabase: Guild,
     embed: MessageEmbedOptions
   ) {
-    await OpenBump.instance.networkManager.emitBump(guildDatabase.id, embed);
+    const [internal, external] = await Promise.all([
+      OpenBump.instance.networkManager.emitBump(guildDatabase.id, embed),
+      this.bumpToThisShard(guildDatabase, embed)
+    ]);
+    return internal + external;
   }
 
   public static async bumpToThisShard(
@@ -133,8 +137,9 @@ class Bump {
     embed: MessageEmbedOptions
   ): Promise<number> {
     let guildFeeds = await this.fetchGuildFeeds();
+
     guildFeeds = guildFeeds.filter(
-      (guildFeed) => guildFeed.nsfw == guildDatabase.nsfw
+      (guildFeed) => Boolean(guildFeed.nsfw) == Boolean(guildDatabase.nsfw)
     );
 
     let amount = 0;
@@ -238,7 +243,6 @@ class Bump {
         }
       }
     });
-    console.log(JSON.stringify(channels, undefined, 3));
     return channels;
   }
 
