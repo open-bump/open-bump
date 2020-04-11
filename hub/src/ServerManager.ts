@@ -8,7 +8,6 @@ import Shard from "./Shard";
 
 interface IHandshakeQuery {
   authorization: string;
-  shard: number;
 }
 
 export default class ServerManager {
@@ -26,10 +25,8 @@ export default class ServerManager {
     this.total = config.discord.shards;
 
     this.io.use((socket, next) => {
-      const { authorization, shard }: IHandshakeQuery = socket.request._query;
-      if (authorization === undefined || shard === undefined)
-        return void next({});
-      if (shard >= this.total) return void next({});
+      const { authorization }: IHandshakeQuery = socket.request._query;
+      if (authorization === undefined) return void next({});
       const verified = bcrypt.compareSync(config.discord.token, authorization);
       if (!verified) return void next({});
       next();
@@ -43,7 +40,7 @@ export default class ServerManager {
     for (let i = 0; i < this.total; i++) {
       if (!this.shards[i]) free.push(i);
     }
-    if (focus !== undefined && free.includes(focus)) return focus;
+    if (typeof focus === "number" && free.includes(focus)) return focus;
     return free[0];
   }
 
@@ -56,18 +53,20 @@ export default class ServerManager {
   }
 
   private register() {
-    this.io.on("connection", (socket) => {
-      const { shard: requestedId } = socket.request._query;
+    this.io.on("connection", async (socket) => {
+      const requestedId: number | undefined = await new Promise((resolve) =>
+        socket.emit("identify", resolve)
+      );
       const id = this.getFreeShardId(requestedId);
       console.log(
         `New shard requesting ${
-          typeof requestedId !== "undefined" && requestedId !== "undefined"
+          typeof requestedId === "number"
             ? `ID ${requestedId}`
             : "no specific ID"
-        } connecting. Assigned ID ${id}.`
+        } connecting. Assigned ID #${id}.`
       );
       if (this.shards[id]) {
-        console.log(`Kicking out current shard.`);
+        console.log(`Kicking out current shard with ID #${id}.`);
         this.shards[id]?.disconnect(true);
       }
       const shard = new Shard(this.instance, this, socket, id);
