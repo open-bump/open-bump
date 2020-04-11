@@ -1,4 +1,5 @@
 import { ParsedMessage } from "discord-command-parser";
+import Discord from "discord.js";
 import Command from "../Command";
 import Guild from "../models/Guild";
 import Utils from "../Utils";
@@ -16,7 +17,24 @@ export default class SetChannelCommand extends Command {
     const { channel, guild } = message;
     if (args.length === 1) {
       if (!(args[0] === "reset" || args[0] === "default")) {
-        const newChannel = Utils.findChannel(args[0], guild);
+        const newChannel = Utils.findChannel(args[0], guild, [
+          "text"
+        ]) as Discord.TextChannel;
+
+        const issues = Utils.Bump.getBumpChannelIssues(
+          newChannel,
+          guildDatabase
+        );
+        if (issues.length) {
+          const embed = {
+            color: Utils.Colors.RED,
+            title: `${Utils.Emojis.XMARK} Can't use that channel`,
+            description:
+              `**Please fix these issues before using ${newChannel}:**\n` +
+              issues.map((issue) => `- ${issue}`).join("\n")
+          };
+          return void (await channel.send({ embed }));
+        }
 
         guildDatabase.feed = newChannel.id;
         await guildDatabase.save();

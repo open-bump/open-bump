@@ -152,7 +152,7 @@ class Bump {
         const channel = guild.channels.cache.get(guildFeed.feed);
         if (channel && channel instanceof TextChannel) {
           const issues = this.getBumpChannelIssues(channel, guildFeed);
-          if (!issues?.length) {
+          if (!issues.length) {
             try {
               await channel.send({ embed });
               amount++;
@@ -285,7 +285,7 @@ class Bump {
       return issues;
 
     for (const permissionOverwrite of channel.permissionOverwrites.values()) {
-      if (permissionOverwrite.type !== "role") return;
+      if (permissionOverwrite.type !== "role") continue;
       if (permissionOverwrite.id === guild.id) {
         // everyone role
         if (!permissionOverwrite.allow.has("VIEW_CHANNEL"))
