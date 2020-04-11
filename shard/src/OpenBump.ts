@@ -32,9 +32,16 @@ export default class OpenBump {
   private async init() {
     await this.databaseManager.init();
 
+    console.log("Starting socket connection...");
+    await this.networkManager.init();
+
+    console.log(
+      `Set client shard to ID ${this.networkManager.id} out of ${this.networkManager.total} shards.`
+    );
+    this.client.options.shards = [this.networkManager.id];
+    this.client.options.shardCount = this.networkManager.total;
+
     console.log("Logging in to Discord...");
     await this.client.login(config.discord.token);
-
-    await this.networkManager.init();
   }
 }

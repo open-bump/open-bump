@@ -14,7 +14,7 @@ export default class BumpCommand extends Command {
     await channel.send("test...");
 
     const embed = await Utils.Bump.getEmbed(guild, guildDatabase);
-    const amount = await Utils.Bump.bumpToThisShard(guildDatabase, embed);
+    const amount = await Utils.Bump.bumpToAllShards(guildDatabase, embed);
 
     await channel.send(`bumped: ${amount}`);
   }
