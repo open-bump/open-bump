@@ -5,7 +5,7 @@ import Utils from "../Utils";
 
 export default class SetDescriptionCommand extends Command {
   public name = "setdescription";
-  public aliases = ["set-description", "setdesc", "set-desc"];
+  public aliases = ["set-description", "setdesc", "set-desc", "description", "desc"];
   public syntax = "setdescription <description...|reset>";
   public description = "Set the description for your server";
 

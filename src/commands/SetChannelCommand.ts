@@ -5,8 +5,8 @@ import Utils from "../Utils";
 
 export default class SetChannelCommand extends Command {
   public name = "setchannel";
-  public aliases = ["set-channel"];
-  public syntax = "setchannel <channel|reset>";
+  public aliases = ["set-channel", "channel"];
+  public syntax = "setchannel [channel|reset]";
   public description = "Set the bump feed channel for your server";
 
   public async run(
@@ -38,6 +38,20 @@ export default class SetChannelCommand extends Command {
         };
         return void (await channel.send({ embed }));
       }
-    } else await this.sendSyntax(message);
+    } else {
+      const embed = {
+        color: Utils.Colors.BLUE,
+        title: `${Utils.Emojis.INFORMATION} Set a bump channel`,
+        description:
+          `__**Current Channel:**__ ${
+            guildDatabase.feed ? `<#${guildDatabase.feed}>` : "*No Channel*"
+          }\n` +
+          `\n` +
+          `By setting a bump channel, you agree to receive the other server's bumps on your server. In return, you'll get a cooldown reduction of 15 minutes.\n` +
+          `\n` +
+          `**Syntax:** ob!${this.syntax}`
+      };
+      return void (await channel.send({ embed }));
+    }
   }
 }
