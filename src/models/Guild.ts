@@ -1,17 +1,14 @@
 import {
+  AfterCreate,
   AllowNull,
-  BeforeCreate,
-  BelongsTo,
   Column,
   DataType,
   Default,
-  ForeignKey,
   HasMany,
+  HasOne,
   Model,
   PrimaryKey,
-  Table,
-  AfterCreate,
-  HasOne
+  Table
 } from "sequelize-typescript";
 import { Transaction } from "sequelize/types";
 import BumpData from "./BumpData";
@@ -30,6 +27,12 @@ import GuildFeature from "./GuildFeature";
         as: "bumpData"
       }
     ]
+  },
+  scopes: {
+    feedMetaOnly: {
+      attributes: ['id', 'feed', 'nsfw'],
+      include: [{ model: GuildFeature, as: "features" }]
+    }
   }
 })
 export default class Guild extends Model<Guild> {
@@ -49,7 +52,7 @@ export default class Guild extends Model<Guild> {
   features!: Array<GuildFeature>;
 
   @HasOne(() => BumpData)
-  bumpData!: BumpData
+  bumpData!: BumpData;
 
   @Column(DataType.STRING)
   prefix!: string;

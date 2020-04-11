@@ -42,8 +42,8 @@ export default class NsfwCommand extends Command {
         color: Utils.Colors.BLUE,
         title: `${Utils.Emojis.INFORMATION} Mark a server as NSFW`,
         description:
-          `Your server is currently marked as ${
-            nsfw ? "**NSFW server**" : "**not NSFW**"
+          `__**Current NSFW Status:**__ ${
+            nsfw ? "**NSFW**" : "**Not NSFW**"
           }.\n` +
           `\n` +
           `All servers that contain NSFW content have to be marked as NSFW servers. These servers only are bumped to other NSFW servers, and only receive other NSFW servers.\n` +

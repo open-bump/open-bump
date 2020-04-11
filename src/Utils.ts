@@ -1,6 +1,12 @@
-import Discord, { MessageEmbedOptions, PermissionString } from "discord.js";
+import Discord, {
+  MessageEmbedOptions,
+  PermissionString,
+  TextChannel
+} from "discord.js";
+import moment from "moment";
 import ms from "ms";
 import path from "path";
+import { Op } from "sequelize";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
 
@@ -9,6 +15,8 @@ export type GuildMessage = Discord.Message & {
 };
 
 class Bump {
+  private static justRemoved: { [id: string]: number } = {};
+
   public static getMissingValues(guild: Discord.Guild, guildDatabase: Guild) {
     const missing = [];
     if (!guildDatabase.bumpData.description) missing.push("Description");
@@ -111,6 +119,120 @@ class Bump {
         }
       ]
     };
+  }
+
+  public static async bumpToThisShard(
+    guildDatabase: Guild,
+    embed: MessageEmbedOptions
+  ): Promise<number> {
+    let guildFeeds = await this.fetchGuildFeeds();
+    guildFeeds = guildFeeds.filter(
+      (guildFeed) => guildFeed.nsfw == guildDatabase.nsfw
+    );
+
+    let amount = 0;
+
+    for (const guildFeed of guildFeeds) {
+      if (!guildFeed.feed) continue;
+
+      const guild = OpenBump.instance.client.guilds.cache.get(guildFeed.id);
+      if (guild) {
+        const channel = guild.channels.cache.get(guildFeed.feed);
+        if (channel && channel instanceof TextChannel) {
+          const issues = this.getBumpChannelIssues(channel, guildFeed);
+          if (!issues?.length) {
+            try {
+              await channel.send({ embed });
+              amount++;
+            } catch (error) {
+              console.error(
+                `Unknown hard error occured while trying to bump ${guild.id}: ${error.message}`
+              );
+            }
+          } else {
+            if (
+              !this.justRemoved[guild.id] ||
+              this.justRemoved[guild.id] <= moment().subtract(30, "s").valueOf()
+            ) {
+              this.justRemoved[guild.id] = Date.now();
+
+              guildDatabase.feed = undefined;
+              await guildDatabase.save();
+
+              console.log(
+                `Guild ${guild.name} (${guild.id}) had a bump channel set; but there are permission errors!`
+              );
+              const embed = {
+                color: Utils.Colors.RED,
+                title: `${Utils.Emojis.XMARK} Bump Error`,
+                description: `Hey there, we tried to bump to your bump channel on your server ${guild.name}. However, we had some issues.`,
+                fields: [
+                  {
+                    name: "**Issues**",
+                    value:
+                      `**Please fix these issues for ${channel} and set the bump channel again:**\n` +
+                      issues.map((issue) => `- ${issue}`).join("\n")
+                  }
+                ]
+              };
+              try {
+                await guild.owner?.user.send({ embed });
+              } catch (error) {
+                console.error(
+                  `Tried to inform the owner ${guild.ownerID} of guild ${guild.name} (${guild.id}) that bumping to their server failed, but failed contacting them. `
+                );
+              }
+            }
+          }
+        } else {
+          // TODO: Inform channel can't be found
+          if (
+            !this.justRemoved[guild.id] ||
+            this.justRemoved[guild.id] <= moment().subtract(30, "s").valueOf()
+          ) {
+            this.justRemoved[guild.id] = Date.now();
+
+            guildDatabase.feed = undefined;
+            await guildDatabase.save();
+
+            const embed = {
+              color: Utils.Colors.RED,
+              title: `${Utils.Emojis.XMARK} Channel not found`,
+              description:
+                `Hey there, we tried to bump to your bump channel on your server ${guild.name}. However, we were not able to find the channel. ` +
+                `Please fix this issue by setting a new bump channel using \`ob!setchannel <channel>\`.`
+            };
+            try {
+              await guild.owner?.user.send({ embed });
+            } catch (error) {
+              console.error(
+                `Tried to inform the owner ${guild.ownerID} of guild ${guild.name} (${guild.id}) that bumping to their server failed, but failed contacting them.`
+              );
+            }
+          }
+        }
+      }
+    }
+    return amount;
+  }
+
+  public static async fetchGuildFeeds() {
+    const channels = await Guild.scope("feedMetaOnly").findAll({
+      where: {
+        feed: {
+          [Op.and]: [
+            {
+              [Op.ne]: null
+            },
+            {
+              [Op.ne]: ""
+            }
+          ]
+        }
+      }
+    });
+    console.log(JSON.stringify(channels, undefined, 3));
+    return channels;
   }
 
   public static getBumpChannelIssues(
