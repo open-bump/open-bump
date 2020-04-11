@@ -38,6 +38,15 @@ export default class ServerManager {
     this.register();
   }
 
+  public getFreeShardId(focus?: number): number {
+    const free = [];
+    for (let i = 0; i < this.total; i++) {
+      if (!this.shards[i]) free.push(i);
+    }
+    if (focus !== undefined && free.includes(focus)) return focus;
+    return free[0];
+  }
+
   public getOtherShards(except?: number): Array<Shard> {
     const shards = Object.values(this.shards);
     const filtered = shards.filter(
@@ -48,13 +57,20 @@ export default class ServerManager {
 
   private register() {
     this.io.on("connection", (socket) => {
-      const { shard: id } = socket.request._query;
-      console.log(`New shard ${id} connecting...`);
+      const { shard: requestedId } = socket.request._query;
+      const id = this.getFreeShardId(requestedId);
+      console.log(
+        `New shard requesting ${
+          typeof requestedId !== "undefined" && requestedId !== "undefined"
+            ? `ID ${requestedId}`
+            : "no specific ID"
+        } connecting. Assigned ID ${id}.`
+      );
       if (this.shards[id]) {
         console.log(`Kicking out current shard.`);
         this.shards[id]?.disconnect(true);
       }
-      const shard = new Shard(this.instance, this, socket);
+      const shard = new Shard(this.instance, this, socket, id);
       this.shards[id] = shard;
       console.log(`Shard ${id} connected.`);
     });

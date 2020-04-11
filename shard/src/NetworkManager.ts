@@ -6,14 +6,17 @@ import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
 import Utils from "./Utils";
 
+interface ISetupData {
+  id: number;
+  total: number;
+}
+
 export default class NetworkManager {
-  public id: number;
+  public id!: number;
   public total!: number;
   private socket!: SocketIOClient.Socket;
 
-  constructor(private instance: OpenBump) {
-    this.id = config.discord.shard;
-  }
+  constructor(private instance: OpenBump) {}
 
   public async init() {
     const token = config.discord.token;
@@ -24,17 +27,27 @@ export default class NetworkManager {
     });
     console.log("Waiting for connection with hub...");
 
-    this.total = await new Promise((resolve) =>
+    const setupData = await new Promise<ISetupData>((resolve) =>
       {
         this.socket.once("connect", () => {
           console.log("Hub connected, awaiting setup...");
-          this.socket.emit('setup', (total: number) => {
-            return resolve(total);
+          this.socket.emit('setup', (data: ISetupData) => {
+            return resolve(data);
           });
         });
       }
     );
+    if(config.discord.shard !== undefined && config.discord.shard !== setupData.id) {
+      // Invalid ID
+      console.error(`Received invalid shard ID ${setupData.id} from hub, expected ${config.discord.shard}. Shutting down...`);
+      return process.exit();
+    }
+    console.log('setupData', setupData);
+    this.id = setupData.id;
+    this.total = setupData.total;
     console.log(`Received ${this.total} total shards.`);
+
+    this.socket.on('bump', this.onBump.bind(this));
   }
 
   private async onBump(
