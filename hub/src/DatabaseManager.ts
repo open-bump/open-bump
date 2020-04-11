@@ -3,15 +3,15 @@ import { Sequelize } from "sequelize-typescript";
 import config from "./config";
 import { MigrationAdapter } from "./migrations/helpers/MigrationAdapter";
 import { Migrator } from "./migrations/helpers/Migrator";
-import OpenBump from "./OpenBump";
 import Utils from "./Utils";
+import Hub from "./Hub";
 
 export default class DatabaseManager {
   public sequelize: Sequelize;
   private migrationAdapter: MigrationAdapter;
   private migrator: Migrator;
 
-  constructor(private instance: OpenBump) {
+  constructor(private instance: Hub) {
     const modelDir = path.join(this.instance.directory, "models");
 
     this.sequelize = new Sequelize({

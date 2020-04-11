@@ -15,10 +15,10 @@ interface IConfig extends config.IConfig {
       };
   discord: {
     token: string;
+    shards: number;
   };
   settings: {
-    prefix: string;
-    support: string;
+    port: number;
   };
 }
 
