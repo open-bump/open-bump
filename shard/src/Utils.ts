@@ -121,6 +121,13 @@ class Bump {
     };
   }
 
+  public static async bumpToAllShards(
+    guildDatabase: Guild,
+    embed: MessageEmbedOptions
+  ) {
+    await OpenBump.instance.networkManager.emitBump(guildDatabase.id, embed);
+  }
+
   public static async bumpToThisShard(
     guildDatabase: Guild,
     embed: MessageEmbedOptions
