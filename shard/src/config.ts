@@ -15,6 +15,7 @@ interface IConfig extends config.IConfig {
       };
   discord: {
     token: string;
+    shard: number;
   };
   settings: {
     prefix: string;

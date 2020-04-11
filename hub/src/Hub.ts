@@ -1,5 +1,6 @@
 import DatabaseManager from "./DatabaseManager";
 import ServerManager from "./ServerManager";
+import Shard from "./Shard";
 
 export default class Hub {
   public static instance: Hub;
