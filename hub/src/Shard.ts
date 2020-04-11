@@ -2,16 +2,20 @@ import socket from "socket.io";
 import Hub from "./Hub";
 import ServerManager from "./ServerManager";
 
+interface ISetupData {
+  id: number;
+  total: number;
+}
+
 export default class Shard {
-  public id: number;
   public ready = false;
 
   constructor(
     private instance: Hub,
     private serverManager: ServerManager,
-    private socket: socket.Socket
+    private socket: socket.Socket,
+    public id: number
   ) {
-    this.id = socket.request._query.shard;
 
     socket.on("disconnect", this.onDisconnect.bind(this));
     socket.on("setup", this.onSetup.bind(this));
@@ -22,9 +26,12 @@ export default class Shard {
     this.disconnect(false);
   }
 
-  private async onSetup(callback: (total: number) => void) {
+  private async onSetup(callback: (setupData: ISetupData) => void) {
     console.log(`Shard ${this.id} requested setup.`);
-    callback(this.serverManager.total);
+    callback({
+      id: this.id,
+      total: this.serverManager.total
+    });
   }
 
   private async onBump(guild: string, embed: object) {
