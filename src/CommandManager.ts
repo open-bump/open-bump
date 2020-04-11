@@ -2,6 +2,7 @@ import parser from "discord-command-parser";
 import Discord from "discord.js";
 import Command from "./Command";
 import AboutCommand from "./commands/AboutCommand";
+import BumpCommand from "./commands/BumpCommand";
 import HelpCommand from "./commands/HelpCommand";
 import NsfwCommand from "./commands/NsfwCommand";
 import PreviewCommand from "./commands/PreviewCommand";
@@ -46,6 +47,7 @@ export default class CommandManager {
 
   private registerCommands() {
     this.registerCommand(new AboutCommand(this.instance));
+    this.registerCommand(new BumpCommand(this.instance));
     this.registerCommand(new HelpCommand(this.instance));
     this.registerCommand(new NsfwCommand(this.instance));
     this.registerCommand(new PreviewCommand(this.instance));
