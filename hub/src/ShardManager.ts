@@ -10,7 +10,7 @@ interface IHandshakeQuery {
   authorization: string;
 }
 
-export default class ServerManager {
+export default class ShardManager {
   private app: express.Application;
   private http: http.Server;
   public io: socket.Server;

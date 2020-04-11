@@ -1,6 +1,5 @@
 import DatabaseManager from "./DatabaseManager";
-import ServerManager from "./ServerManager";
-import Shard from "./Shard";
+import ShardManager from "./ShardManager";
 
 export default class Hub {
   public static instance: Hub;
@@ -8,19 +7,19 @@ export default class Hub {
   public directory = __dirname;
 
   public databaseManager: DatabaseManager;
-  public serverManager: ServerManager;
+  public shardManager: ShardManager;
 
   constructor() {
     Hub.instance = this;
 
     this.databaseManager = new DatabaseManager(this);
-    this.serverManager = new ServerManager(this);
+    this.shardManager = new ShardManager(this);
 
     this.init();
   }
 
   private async init() {
     await this.databaseManager.init();
-    await this.serverManager.init();
+    await this.shardManager.init();
   }
 }

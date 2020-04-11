@@ -1,6 +1,6 @@
 import socket from "socket.io";
 import Hub from "./Hub";
-import ServerManager from "./ServerManager";
+import ShardManager from "./ShardManager";
 
 interface ISetupData {
   id: number;
@@ -12,7 +12,7 @@ export default class Shard {
 
   constructor(
     private instance: Hub,
-    private serverManager: ServerManager,
+    private shardManager: ShardManager,
     private socket: socket.Socket,
     public id: number
   ) {
@@ -23,7 +23,7 @@ export default class Shard {
 
     socket.emit("identified", {
       id: this.id,
-      total: this.serverManager.total
+      total: this.shardManager.total
     });
   }
 
@@ -40,7 +40,7 @@ export default class Shard {
     console.log(`Shard #${this.id} requested setup.`);
     callback({
       id: this.id,
-      total: this.serverManager.total
+      total: this.shardManager.total
     });
   }
 
@@ -49,7 +49,7 @@ export default class Shard {
     embed: object,
     callback: (amount: number) => void
   ) {
-    const shards = this.serverManager.getOtherShards(this.id);
+    const shards = this.shardManager.getOtherShards(this.id);
     const total = await Promise.all(
       shards.map(
         (shard) =>
@@ -75,6 +75,6 @@ export default class Shard {
     console.log(
       `Shard ${this.id} is disconnecting ${force ? "by" : "without"} force...`
     );
-    if (!force) this.instance.serverManager.shards[this.id] = undefined;
+    if (!force) this.instance.shardManager.shards[this.id] = undefined;
   }
 }
