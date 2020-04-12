@@ -56,7 +56,7 @@ export default class Guild extends Model<Guild> {
   feed?: string;
 
   @HasMany(() => GuildFeature)
-  features!: Array<GuildFeature>;
+  private features!: Array<GuildFeature>;
 
   @HasMany(() => AssignedTier)
   assignedTiers!: Array<AssignedTier>;
