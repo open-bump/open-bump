@@ -5,7 +5,13 @@ import Utils from "../Utils";
 
 export default class SetDescriptionCommand extends Command {
   public name = "setdescription";
-  public aliases = ["set-description", "setdesc", "set-desc", "description", "desc"];
+  public aliases = [
+    "set-description",
+    "setdesc",
+    "set-desc",
+    "description",
+    "desc"
+  ];
   public syntax = "setdescription <description...|reset>";
   public description = "Set the description for your server";
 
@@ -30,7 +36,7 @@ export default class SetDescriptionCommand extends Command {
         };
         return void (await channel.send({ embed }));
       } else {
-        guildDatabase.bumpData.description = undefined;
+        guildDatabase.bumpData.description = null;
         await guildDatabase.bumpData.save();
 
         const embed = {

@@ -20,6 +20,10 @@ interface IConfig extends config.IConfig {
   settings: {
     prefix: string;
     support: string;
+    cooldown: {
+      default: number;
+      min: number;
+    };
   };
 }
 

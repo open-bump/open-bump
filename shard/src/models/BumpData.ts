@@ -29,7 +29,7 @@ export default class BumpData extends Model<BumpData> {
   guild!: Guild;
 
   @Column(DataType.TEXT)
-  description?: string;
+  description?: string|null;
 
   @Column(DataType.STRING)
   invite!: string;

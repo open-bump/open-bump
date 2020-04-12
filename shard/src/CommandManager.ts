@@ -41,6 +41,7 @@ export default class CommandManager {
       } catch (error) {
         const embed = Utils.errorToEmbed(error);
         await message.channel.send({ embed });
+        console.error(`Catched error while command execution!`, error);
       }
     }
   }
