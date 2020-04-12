@@ -5,10 +5,12 @@ import {
   DataType,
   Default,
   ForeignKey,
+  HasMany,
   Model,
   PrimaryKey,
   Table
 } from "sequelize-typescript";
+import AssignedTier from "./AssignedTier";
 import User from "./User";
 
 @Table({
@@ -33,4 +35,7 @@ export default class Donator extends Model<Donator> {
 
   @Column(DataType.INTEGER)
   bonus!: number;
+
+  @HasMany(() => AssignedTier)
+  assignedTiers!: Array<AssignedTier>;
 }

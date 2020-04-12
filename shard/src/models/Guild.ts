@@ -11,6 +11,7 @@ import {
   Table
 } from "sequelize-typescript";
 import { Transaction } from "sequelize/types";
+import AssignedTier from "./AssignedTier";
 import BumpData from "./BumpData";
 import GuildFeature from "./GuildFeature";
 
@@ -30,7 +31,7 @@ import GuildFeature from "./GuildFeature";
   },
   scopes: {
     feedMetaOnly: {
-      attributes: ['id', 'feed', 'nsfw'],
+      attributes: ["id", "feed", "nsfw"],
       include: [{ model: GuildFeature, as: "features" }]
     }
   }
@@ -73,6 +74,9 @@ export default class Guild extends Model<Guild> {
 
   @Column(DataType.BOOLEAN)
   nsfw!: boolean;
+
+  @HasMany(() => AssignedTier)
+  assignedTiers!: Array<AssignedTier>;
 
   @AfterCreate
   public static async afterCreateHook(
