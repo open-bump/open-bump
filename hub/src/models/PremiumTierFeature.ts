@@ -10,36 +10,36 @@ import {
   Table,
   BelongsTo
 } from "sequelize-typescript";
-import Guild from "./Guild";
+import PremiumTier from "./PremiumTier";
 
-const GuildFeatureIndex = createIndexDecorator({
+const PremiumTierFeatureIndex = createIndexDecorator({
   type: "UNIQUE",
   unique: true
 });
 
 @Table({
-  tableName: "GuildFeature",
+  tableName: "PremiumTierFeature",
   defaultScope: {
     attributes: ["feature"]
   }
 })
-export default class GuildFeature extends Model<GuildFeature> {
+export default class PremiumTierFeature extends Model<PremiumTierFeature> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @AllowNull(false)
   @Column(DataType.UUID)
   id!: string;
 
-  @ForeignKey(() => Guild)
-  @GuildFeatureIndex
+  @ForeignKey(() => PremiumTier)
+  @PremiumTierFeatureIndex
   @AllowNull(false)
   @Column
-  guildId!: string;
+  premiumTierId!: string;
 
-  @BelongsTo(() => Guild)
-  guild!: Guild;
+  @BelongsTo(() => PremiumTier)
+  premiumTier!: PremiumTier;
 
-  @GuildFeatureIndex
+  @PremiumTierFeatureIndex
   @AllowNull(false)
   @Column(DataType.STRING(100))
   feature!: string;

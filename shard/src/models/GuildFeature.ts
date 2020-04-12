@@ -7,7 +7,8 @@ import {
   ForeignKey,
   Model,
   PrimaryKey,
-  Table
+  Table,
+  BelongsTo
 } from "sequelize-typescript";
 import Guild from "./Guild";
 
@@ -19,7 +20,7 @@ const GuildFeatureIndex = createIndexDecorator({
 @Table({
   tableName: "GuildFeature",
   defaultScope: {
-    attributes: ['feature']
+    attributes: ["feature"]
   }
 })
 export default class GuildFeature extends Model<GuildFeature> {
@@ -29,15 +30,13 @@ export default class GuildFeature extends Model<GuildFeature> {
   @Column(DataType.UUID)
   id!: string;
 
+  @ForeignKey(() => Guild)
+  @GuildFeatureIndex
   @AllowNull(false)
-  @Column({
-    type: DataType.UUID,
-    field: "guild"
-  })
+  @Column
   guildId!: string;
 
-  @GuildFeatureIndex
-  @ForeignKey(() => Guild)
+  @BelongsTo(() => Guild)
   guild!: Guild;
 
   @GuildFeatureIndex
