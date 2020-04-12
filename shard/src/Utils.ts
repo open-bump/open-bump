@@ -229,7 +229,7 @@ class Bump {
   }
 
   public static async fetchGuildFeeds() {
-    const channels = await Guild.scope("feedMetaOnly").findAll({
+    const channels = await Guild.findAll({
       where: {
         feed: {
           [Op.and]: [
@@ -491,7 +491,7 @@ export class GuildNotReadyError extends EmbedError {
       description:
         "The following fields are missing:\n" +
         this.missing.map((missing) => `- \`${missing}\``).join("\n") +
-        "\n" +
+        "\n\n" +
         "Check out the command `ob!help` to learn how to set them."
     };
   }
