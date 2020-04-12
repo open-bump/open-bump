@@ -44,7 +44,7 @@ const migration: MigrationJS = {
             allowNull: false,
             type: datatypes.STRING(20)
           },
-          amount: {
+          patreon: {
             type: datatypes.INTEGER
           },
           bonus: {
