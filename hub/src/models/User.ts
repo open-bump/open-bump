@@ -10,7 +10,10 @@ import {
 import Donator from "./Donator";
 
 @Table({
-  tableName: "User"
+  tableName: "User",
+  defaultScope: {
+    include: [{ model: Donator, as: "donator" }]
+  }
 })
 export default class User extends Model<User> {
   // Discord Snowflake
