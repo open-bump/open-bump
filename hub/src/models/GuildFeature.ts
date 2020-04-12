@@ -18,10 +18,7 @@ const GuildFeatureIndex = createIndexDecorator({
 });
 
 @Table({
-  tableName: "GuildFeature",
-  defaultScope: {
-    attributes: ["feature"]
-  }
+  tableName: "GuildFeature"
 })
 export default class GuildFeature extends Model<GuildFeature> {
   @PrimaryKey

@@ -1,5 +1,6 @@
 import {
   AllowNull,
+  BelongsTo,
   Column,
   createIndexDecorator,
   DataType,
@@ -7,8 +8,7 @@ import {
   ForeignKey,
   Model,
   PrimaryKey,
-  Table,
-  BelongsTo
+  Table
 } from "sequelize-typescript";
 import PremiumTier from "./PremiumTier";
 
@@ -18,10 +18,7 @@ const PremiumTierFeatureIndex = createIndexDecorator({
 });
 
 @Table({
-  tableName: "PremiumTierFeature",
-  defaultScope: {
-    attributes: ["feature"]
-  }
+  tableName: "PremiumTierFeature"
 })
 export default class PremiumTierFeature extends Model<PremiumTierFeature> {
   @PrimaryKey
