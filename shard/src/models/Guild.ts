@@ -82,6 +82,14 @@ export default class Guild extends Model<Guild> {
   @HasMany(() => AssignedTier)
   assignedTiers!: Array<AssignedTier>;
 
+  public getFeatures() {
+    const guildFeatures = this.features.map(({ feature }) => feature);
+    const tierFeatures = this.assignedTiers
+      .map((tier) => tier.premiumTier.features.map(({ feature }) => feature))
+      .reduce((previous, current) => [...previous, ...current], []);
+    return [...guildFeatures, ...tierFeatures];
+  }
+
   @AfterCreate
   public static async afterCreateHook(
     entity: Guild,

@@ -14,7 +14,15 @@ import Guild from "./Guild";
 import PremiumTier from "./PremiumTier";
 
 @Table({
-  tableName: "AssignedTier"
+  tableName: "AssignedTier",
+  defaultScope: {
+    include: [
+      {
+        model: PremiumTier,
+        as: "premiumTier"
+      }
+    ]
+  }
 })
 export default class AssignedTier extends Model<AssignedTier> {
   @PrimaryKey
