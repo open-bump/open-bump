@@ -73,7 +73,7 @@ export default class Shard {
 
   public disconnect(force = false) {
     console.log(
-      `Shard ${this.id} is disconnecting ${force ? "by" : "without"} force...`
+      `Shard #${this.id} is disconnecting ${force ? "by" : "without"} force...`
     );
     if (!force) this.instance.shardManager.shards[this.id] = undefined;
   }

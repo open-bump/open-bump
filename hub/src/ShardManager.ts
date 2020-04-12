@@ -71,7 +71,7 @@ export default class ShardManager {
       }
       const shard = new Shard(this.instance, this, socket, id);
       this.shards[id] = shard;
-      console.log(`Shard ${id} connected.`);
+      console.log(`Shard #${id} connected.`);
     });
   }
 
