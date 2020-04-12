@@ -21,12 +21,12 @@ export default class PremiumTier extends Model<PremiumTier> {
   id!: string;
 
   @AllowNull(false)
-  @Column(DataType.INTEGER)
-  cost!: number;
-
-  @AllowNull(false)
   @Column(DataType.STRING)
   name!: string;
+
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  cost!: number;
 
   @Column(DataType.INTEGER)
   cooldown?: number;

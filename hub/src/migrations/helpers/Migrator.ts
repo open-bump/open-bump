@@ -8,6 +8,7 @@ import {
 import { DataType, Sequelize } from "sequelize-typescript";
 import Utils from "../../Utils";
 import { MigrationAdapter } from "./MigrationAdapter";
+import { Op } from "sequelize";
 
 export interface Migration {
   version: string;
@@ -17,8 +18,16 @@ export interface Migration {
 
 export interface MigrationJS {
   version: string;
-  up: (connection: Sequelize, datatypes: typeof DataType) => Promise<void>;
-  down: (connection: Sequelize, datatypes: typeof DataType) => Promise<void>;
+  up: (
+    connection: Sequelize,
+    datatypes: typeof DataType,
+    op: typeof Op
+  ) => Promise<void>;
+  down: (
+    connection: Sequelize,
+    datatypes: typeof DataType,
+    op: typeof Op
+  ) => Promise<void>;
 }
 
 export interface MigrationOptions {
@@ -203,7 +212,7 @@ export class Migrator {
         const func: Function = eval(migration[op]);
 
         try {
-          await func.call(void 0, connection, DataType);
+          await func.call(void 0, connection, DataType, Op);
           console.log(
             `Migration Script ${migration.version} ('${op}') executed successfully.`
           );
