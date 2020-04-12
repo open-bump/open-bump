@@ -21,7 +21,9 @@ import GuildFeature from "./GuildFeature";
     include: [
       {
         model: GuildFeature,
-        as: "features"
+        as: "features",
+        separate: true,
+        limit: 3
       },
       {
         model: BumpData,
@@ -56,6 +58,9 @@ export default class Guild extends Model<Guild> {
   @HasMany(() => GuildFeature)
   features!: Array<GuildFeature>;
 
+  @HasMany(() => AssignedTier)
+  assignedTiers!: Array<AssignedTier>;
+
   @HasOne(() => BumpData)
   bumpData!: BumpData;
 
@@ -79,11 +84,10 @@ export default class Guild extends Model<Guild> {
   @Column(DataType.BOOLEAN)
   nsfw!: boolean;
 
-  @HasMany(() => AssignedTier)
-  assignedTiers!: Array<AssignedTier>;
-
   public getFeatures() {
-    const guildFeatures = this.features.map(({ feature }) => feature);
+    const guildFeatures = this.features
+      .filter(({ feature }) => Boolean(feature))
+      .map(({ feature }) => feature);
     const tierFeatures = this.assignedTiers
       .map((tier) => tier.premiumTier.features.map(({ feature }) => feature))
       .reduce((previous, current) => [...previous, ...current], []);

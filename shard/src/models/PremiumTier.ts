@@ -11,7 +11,15 @@ import {
 import PremiumTierFeature from "./PremiumTierFeature";
 
 @Table({
-  tableName: "PremiumTier"
+  tableName: "PremiumTier",
+  defaultScope: {
+    include: [
+      {
+        model: PremiumTierFeature,
+        as: "features"
+      }
+    ]
+  }
 })
 export default class PremiumTier extends Model<PremiumTier> {
   @PrimaryKey
