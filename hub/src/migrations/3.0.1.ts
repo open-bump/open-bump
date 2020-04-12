@@ -53,7 +53,7 @@ const migration: MigrationJS = {
             allowNull: false,
             type: datatypes.UUID
           },
-          guild: {
+          guildId: {
             allowNull: false,
             type: datatypes.STRING(20)
           },
@@ -76,22 +76,23 @@ const migration: MigrationJS = {
       );
 
       // Create Unique Constraint
-      await queryInterface.addConstraint("GuildFeature", ["guild", "feature"], {
+      await queryInterface.addConstraint("GuildFeature", ["guildId", "feature"], {
         type: "unique",
-        name: "GuildFeature_guild_feature_uk",
+        name: "GuildFeature_guildId_feature_uk",
         transaction
       });
 
       // Add Foreign Key From "GuildFeature" To "Guild"
-      await queryInterface.addConstraint("GuildFeature", ["guild"], {
+      await queryInterface.addConstraint("GuildFeature", ["guildId"], {
         type: "foreign key",
-        name: "GuildFeature_guild_Guild_fk",
+        name: "GuildFeature_guildId_Guild_fk",
         references: {
           table: "Guild",
           field: "id"
         },
         onUpdate: "CASCADE",
-        onDelete: "CASCADE"
+        onDelete: "CASCADE",
+        transaction
       });
 
       /* Create "BumpData" Table */
