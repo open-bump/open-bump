@@ -26,6 +26,10 @@ import GuildFeature from "./GuildFeature";
       {
         model: BumpData,
         as: "bumpData"
+      },
+      {
+        model: AssignedTier,
+        as: "assignedTiers"
       }
     ]
   },
