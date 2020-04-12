@@ -31,7 +31,7 @@ export default class Donator extends Model<Donator> {
   user!: User;
 
   @Column(DataType.INTEGER)
-  amount!: number;
+  patreon!: number;
 
   @Column(DataType.INTEGER)
   bonus!: number;
