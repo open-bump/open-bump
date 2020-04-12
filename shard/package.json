@@ -4,7 +4,12 @@
   "description": "Open Bump allows you to automatically advertise your server on other servers and let them advertise their server on your server.",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node-dev src/index.ts"
+    "start": "ts-node-dev --inspect -- src/index.ts",
+    "debug": "npm run debug:prepare && npm run debug:copy && npm run debug:tsc && npm run debug:cleanup",
+    "debug:prepare": "rm -rf dist/debug && mkdir -p dist/debug",
+    "debug:copy": "cp -r src/* dist/debug && mkdir -p config && cp -r config dist/debug/ && cp package.json dist/debug",
+    "debug:tsc": "tsc --project . --outDir dist/debug --sourceMap",
+    "debug:cleanup": "rm -r dist/debug/*.ts && rm -r dist/debug/**/*.ts"
   },
   "repository": {
     "type": "git",
@@ -19,6 +24,7 @@
   "dependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/socket.io-client": "^1.4.32",
+    "@types/ws": "^7.2.3",
     "bcryptjs": "^2.4.3",
     "config": "^3.3.1",
     "discord-command-parser": "^1.3.3",
@@ -41,6 +47,7 @@
     "@types/node": "^13.11.1",
     "@types/semver": "^7.1.0",
     "@types/validator": "^13.0.0",
-    "tsc": "^1.20150623.0"
+    "tsc": "^1.20150623.0",
+    "typescript": "^3.8.3"
   }
 }
