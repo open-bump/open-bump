@@ -1,7 +1,8 @@
 import Event from "../Event";
+import { ClientEvents } from "discord.js";
 
 export default class ReadyEvent extends Event {
-  public name = "ready";
+  public name: keyof ClientEvents = "ready";
 
   public async run() {
     console.log(`Logged in as ${this.instance.client.user?.tag}`);
