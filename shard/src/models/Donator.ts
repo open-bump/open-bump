@@ -38,4 +38,11 @@ export default class Donator extends Model<Donator> {
 
   @HasMany(() => AssignedTier)
   assignedTiers!: Array<AssignedTier>;
+
+  public getAmount() {
+    let amount = 0;
+    if (this.patreon) amount += this.patreon;
+    if (this.bonus) amount += this.bonus;
+    return amount;
+  }
 }
