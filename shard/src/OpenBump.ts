@@ -1,9 +1,10 @@
-import config from "./config";
 import Discord from "discord.js";
 import CommandManager from "./CommandManager";
-import EventManager from "./EventManager";
+import config from "./config";
 import DatabaseManager from "./DatabaseManager";
+import EventManager from "./EventManager";
 import NetworkManager from "./NetworkManager";
+import Premium from "./Premium";
 
 export default class OpenBump {
   public static instance: OpenBump;
@@ -15,6 +16,7 @@ export default class OpenBump {
   public eventManager: EventManager;
   public databaseManager: DatabaseManager;
   public networkManager: NetworkManager;
+  private premium: Premium;
 
   constructor() {
     OpenBump.instance = this;
@@ -25,6 +27,7 @@ export default class OpenBump {
     this.eventManager = new EventManager(this);
     this.databaseManager = new DatabaseManager(this);
     this.networkManager = new NetworkManager(this);
+    this.premium = new Premium(this);
 
     this.init();
   }
@@ -43,5 +46,7 @@ export default class OpenBump {
 
     console.log("Logging in to Discord...");
     await this.client.login(config.discord.token);
+
+    await this.premium.init();
   }
 }
