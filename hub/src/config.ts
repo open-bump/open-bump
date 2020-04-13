@@ -20,6 +20,11 @@ interface IConfig extends config.IConfig {
   settings: {
     port: number;
   };
+  patreon: {
+    enabled: boolean;
+    file: string;
+    campaign: string;
+  }
 }
 
 export default config as IConfig;

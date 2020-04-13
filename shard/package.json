@@ -4,7 +4,7 @@
   "description": "Open Bump allows you to automatically advertise your server on other servers and let them advertise their server on your server.",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node-dev --inspect -- src/index.ts",
+    "start": "ts-node-dev --inspect=9220 -- src/index.ts",
     "debug": "npm run debug:prepare && npm run debug:copy && npm run debug:tsc && npm run debug:cleanup",
     "debug:prepare": "rm -rf dist/debug && mkdir -p dist/debug",
     "debug:copy": "cp -r src/* dist/debug && mkdir -p config && cp -r config dist/debug/ && cp package.json dist/debug",

@@ -89,17 +89,6 @@ export default class Guild extends Model<Guild> {
     return [...guildFeatures, ...tierFeatures];
   }
 
-  public getCooldown(ms = false) {
-    let cooldown = config.settings.cooldown.default;
-    for (const { premiumTier } of this.assignedTiers)
-      if (premiumTier.cooldown && premiumTier.cooldown < cooldown)
-        cooldown = premiumTier.cooldown;
-    if (this.feed) cooldown -= 15;
-    if (cooldown < config.settings.cooldown.min)
-      cooldown = config.settings.cooldown.min;
-    return ms ? cooldown * 60 * 1000 : cooldown;
-  }
-
   @AfterCreate
   public static async afterCreateHook(
     entity: Guild,
