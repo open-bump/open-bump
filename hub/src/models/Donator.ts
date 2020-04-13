@@ -39,6 +39,24 @@ export default class Donator extends Model<Donator> {
   @HasMany(() => AssignedTier)
   assignedTiers!: Array<AssignedTier>;
 
+  @Column(DataType.DATE)
+  transitionStartedAt?: Date;
+
+  @Column(DataType.BOOLEAN)
+  transitionStartInformed?: boolean;
+
+  @Column(DataType.DATE)
+  transitionFixedAt?: Date;
+
+  @Column(DataType.DATE)
+  transitionEndedAt?: Date;
+
+  @Column(DataType.BOOLEAN)
+  transitionEndInformed?: boolean;
+
+  @Column(DataType.STRING)
+  transitionShard?: string;
+
   public getAmount() {
     let amount = 0;
     if (this.patreon) amount += this.patreon;
