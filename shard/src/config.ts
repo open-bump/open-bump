@@ -24,6 +24,7 @@ interface IConfig extends config.IConfig {
       default: number;
       min: number;
     };
+    features: Array<string>;
   };
 }
 

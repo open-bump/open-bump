@@ -80,13 +80,14 @@ export default class Guild extends Model<Guild> {
   nsfw!: boolean;
 
   public getFeatures() {
+    const defaultFeatures = config.settings.features;
     const guildFeatures = this.features
       .filter(({ feature }) => Boolean(feature))
       .map(({ feature }) => feature);
     const tierFeatures = this.assignedTiers
       .map((tier) => tier.premiumTier.features.map(({ feature }) => feature))
       .reduce((previous, current) => [...previous, ...current], []);
-    return [...guildFeatures, ...tierFeatures];
+    return [...defaultFeatures, ...guildFeatures, ...tierFeatures];
   }
 
   public getCooldown(ms = false) {
