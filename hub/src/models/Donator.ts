@@ -44,22 +44,19 @@ export default class Donator extends Model<Donator> {
   assignedTiers!: Array<AssignedTier>;
 
   @Column(DataType.DATE)
-  transitionStartedAt?: Date;
+  transitionStartedAt?: Date | null;
 
   @Column(DataType.BOOLEAN)
-  transitionStartInformed?: boolean;
+  transitionStartInformed?: boolean | null;
 
   @Column(DataType.DATE)
-  transitionFixedAt?: Date;
+  transitionFixedAt?: Date | null;
 
   @Column(DataType.DATE)
-  transitionEndedAt?: Date;
-
-  @Column(DataType.BOOLEAN)
-  transitionEndInformed?: boolean;
+  transitionEndedAt?: Date | null;
 
   @Column(DataType.STRING)
-  transitionShard?: string;
+  transitionShard?: string | null;
 
   public getAmount() {
     let amount = 0;

@@ -46,15 +46,6 @@ const migration: MigrationJS = {
 
       await queryInterface.addColumn(
         "Donator",
-        "transitionEndInformed",
-        {
-          type: datatypes.BOOLEAN
-        },
-        { transaction }
-      );
-
-      await queryInterface.addColumn(
-        "Donator",
         "transitionShard",
         {
           type: datatypes.STRING
