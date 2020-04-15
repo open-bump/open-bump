@@ -62,6 +62,51 @@ const migration: MigrationJS = {
         { transaction }
       );
 
+      /* Update all null balances to 0 */
+      await queryInterface.bulkUpdate(
+        "Donator",
+        {
+          patreon: 0
+        },
+        {
+          patreon: null
+        },
+        { transaction }
+      );
+      await queryInterface.bulkUpdate(
+        "Donator",
+        {
+          bonus: 0
+        },
+        {
+          bonus: null
+        },
+        { transaction }
+      );
+
+      /* Set default value to 0 for amount columns */
+      await queryInterface.changeColumn(
+        "Donator",
+        "patreon",
+        {
+          type: datatypes.INTEGER,
+          defaultValue: 0,
+          allowNull: false
+        },
+        { transaction }
+      );
+
+      await queryInterface.changeColumn(
+        "Donator",
+        "bonus",
+        {
+          type: datatypes.INTEGER,
+          defaultValue: 0,
+          allowNull: false
+        },
+        { transaction }
+      );
+
       /* Commit Transaction */
       await transaction.commit();
     } catch (error) {
@@ -70,7 +115,7 @@ const migration: MigrationJS = {
       throw error;
     }
   },
-  down: async (connection, _datatypes, op) => {
+  down: async (connection, datatypes, op) => {
     const transaction = await connection.transaction();
     try {
       const queryInterface = connection.getQueryInterface();

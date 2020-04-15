@@ -30,9 +30,13 @@ export default class Donator extends Model<Donator> {
   @BelongsTo(() => User)
   user!: User;
 
+  @Default(0)
+  @AllowNull(false)
   @Column(DataType.INTEGER)
   patreon!: number;
 
+  @Default(0)
+  @AllowNull(false)
   @Column(DataType.INTEGER)
   bonus!: number;
 
