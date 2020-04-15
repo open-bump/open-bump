@@ -1,8 +1,4 @@
-import Discord, {
-  MessageEmbedOptions,
-  PermissionString,
-  TextChannel
-} from "discord.js";
+import Discord, { MessageEmbedOptions, PermissionString, TextChannel } from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import path from "path";
@@ -363,7 +359,7 @@ export default class Utils {
     const databaseManager = OpenBump.instance.databaseManager;
     const transaction = await databaseManager.sequelize.transaction();
     try {
-      const existingGuild = await Guild.findOne({
+      const existingGuild = await Guild.scope("default").findOne({
         where: { id: guild.id },
         transaction
       });
@@ -373,7 +369,7 @@ export default class Utils {
         await transaction.commit();
         return existingGuild;
       } else {
-        const newGuild = await Guild.create(
+        const newGuild = await Guild.scope("default").create(
           {
             id: guild.id,
             name: guild.name
@@ -381,7 +377,7 @@ export default class Utils {
           { transaction }
         );
         await transaction.commit();
-        const finalGuild = await Guild.findOne({
+        const finalGuild = await Guild.scope("default").findOne({
           where: { id: guild.id }
         });
         return finalGuild || newGuild; // Use "finalGuild" with more data; and as fallback "newGuild"

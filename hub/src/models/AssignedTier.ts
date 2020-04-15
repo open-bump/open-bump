@@ -1,28 +1,10 @@
-import {
-  AllowNull,
-  BelongsTo,
-  Column,
-  DataType,
-  Default,
-  ForeignKey,
-  Model,
-  PrimaryKey,
-  Table
-} from "sequelize-typescript";
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, Model, PrimaryKey, Table } from "sequelize-typescript";
 import Donator from "./Donator";
 import Guild from "./Guild";
 import PremiumTier from "./PremiumTier";
 
 @Table({
-  tableName: "AssignedTier",
-  defaultScope: {
-    include: [
-      {
-        model: PremiumTier,
-        as: "premiumTier"
-      }
-    ]
-  }
+  tableName: "AssignedTier"
 })
 export default class AssignedTier extends Model<AssignedTier> {
   @PrimaryKey
@@ -55,3 +37,18 @@ export default class AssignedTier extends Model<AssignedTier> {
   @BelongsTo(() => PremiumTier)
   premiumTier!: PremiumTier;
 }
+
+setTimeout(() => {
+  AssignedTier.addScope("default", {
+    include: [
+      {
+        model: PremiumTier,
+        as: "premiumTier"
+      },
+      {
+        model: Guild,
+        as: "guild"
+      }
+    ]
+  });
+});

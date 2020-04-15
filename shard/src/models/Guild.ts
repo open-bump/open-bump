@@ -17,25 +17,7 @@ import BumpData from "./BumpData";
 import GuildFeature from "./GuildFeature";
 
 @Table({
-  tableName: "Guild",
-  defaultScope: {
-    include: [
-      {
-        model: GuildFeature,
-        as: "features",
-        separate: true,
-        limit: 3
-      },
-      {
-        model: BumpData,
-        as: "bumpData"
-      },
-      {
-        model: AssignedTier,
-        as: "assignedTiers"
-      }
-    ]
-  }
+  tableName: "Guild"
 })
 export default class Guild extends Model<Guild> {
   // Discord Snowflake
@@ -110,3 +92,24 @@ export default class Guild extends Model<Guild> {
     await entity.$set("bumpData", bumpData, { transaction });
   }
 }
+
+setTimeout(() => {
+  Guild.addScope("default", {
+    include: [
+      {
+        model: GuildFeature,
+        as: "features",
+        separate: true,
+        limit: 3
+      },
+      {
+        model: BumpData,
+        as: "bumpData"
+      },
+      {
+        model: AssignedTier.scope("default"),
+        as: "assignedTiers"
+      }
+    ]
+  });
+}, 10);
