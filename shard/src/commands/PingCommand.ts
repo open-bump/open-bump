@@ -11,10 +11,19 @@ export default class PingCommand extends Command {
 
   public async run({ message }: ParsedMessage, guildDatabase: Guild) {
     const { channel } = message;
-    const packageJson = Utils.getPackageJson();
+
+    const connected = this.instance.networkManager.connected;
+    const ping = this.instance.client.ws.ping;
+    let danger = false;
+
+    if (ping >= 1000) danger = true;
+    else if (!connected) danger = true;
+
     const embed = {
-      color: Utils.Colors.BLUE,
-      title: `${Utils.Emojis.INFORMATION} Ping`,
+      color: danger ? Utils.Colors.ORANGE : Utils.Colors.BLUE,
+      title: `${
+        danger ? Utils.Emojis.IMPORTANTNOTICE : Utils.Emojis.INFORMATION
+      } Ping`,
       fields: [
         {
           name: "Websocket Hearthbeat",
@@ -28,11 +37,7 @@ export default class PingCommand extends Command {
         },
         {
           name: "Manager",
-          value: `\`\`\`${
-            this.instance.networkManager.connected
-              ? "connected"
-              : "disconnected"
-          }\`\`\``,
+          value: `\`\`\`${connected ? "connected" : "disconnected"}\`\`\``,
           inline: true
         }
       ]
