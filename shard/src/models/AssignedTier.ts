@@ -14,7 +14,10 @@ import Guild from "./Guild";
 import PremiumTier from "./PremiumTier";
 
 @Table({
-  tableName: "AssignedTier"
+  tableName: "AssignedTier",
+  scopes: {
+    default: {}
+  }
 })
 export default class AssignedTier extends Model<AssignedTier> {
   @PrimaryKey
@@ -49,16 +52,20 @@ export default class AssignedTier extends Model<AssignedTier> {
 }
 
 setTimeout(() => {
-  AssignedTier.addScope("default", {
-    include: [
-      {
-        model: PremiumTier,
-        as: "premiumTier"
-      },
-      {
-        model: Guild,
-        as: "guild"
-      }
-    ]
-  });
+  AssignedTier.addScope(
+    "default",
+    {
+      include: [
+        {
+          model: PremiumTier,
+          as: "premiumTier"
+        },
+        {
+          model: Guild,
+          as: "guild"
+        }
+      ]
+    },
+    { override: true }
+  );
 });
