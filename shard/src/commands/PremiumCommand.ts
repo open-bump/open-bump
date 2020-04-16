@@ -1,4 +1,5 @@
 import { ParsedMessage } from "discord-command-parser";
+import { Op } from "sequelize";
 import Command from "../Command";
 import AssignedTier from "../models/AssignedTier";
 import Donator from "../models/Donator";
@@ -32,7 +33,10 @@ export default class PremiumCommand extends Command {
     )
       userDatabase.donator = undefined;
 
-    if (userDatabase?.donator && args.length === 0) {
+    if (
+      userDatabase?.donator &&
+      (args.length === 0 || (args.length === 1 && args[0] === "view"))
+    ) {
       const totalBalance =
         userDatabase.donator.patreon + userDatabase?.donator.bonus;
       const totalAssigned = userDatabase.donator.assignedTiers
@@ -72,7 +76,21 @@ export default class PremiumCommand extends Command {
       };
       return void (await channel.send({ embed }));
     } else if (!userDatabase?.donator && args.length === 0) {
-      return void message.channel.send("TODO");
+      const embed = {
+        color: Utils.Colors.ORANGE,
+        title: `${Utils.Emojis.FEATURED} Premium`,
+        description:
+          `Premium allows you to use additional features and commands. You can buy Premium from Patreon by using the link below:\n` +
+          `https://patreon.com/Looat\n` +
+          `\n` +
+          `To view a list of all available tiers, please use the command \`ob!premium tiers\`.`,
+        fields: [
+          {
+            name: `${Utils.Emojis.EXCLAMATION} You are not a Donator`,
+            value: `If you recently became a Donator, it might take up to 5 minutes until you can activate premium for your server.`
+          }
+        ]
+      };
     } else if (
       args.length === 1 &&
       (args[0] === "tiers" || args[0] === "list")
@@ -126,6 +144,68 @@ export default class PremiumCommand extends Command {
         };
         return void (await channel.send({ embed }));
       }
+    } else if (
+      userDatabase?.donator &&
+      args.length >= 2 &&
+      (args[0] === "activate" || args[0] === "enable")
+    ) {
+      const search = args.slice(1).join(" ");
+      const tier = await PremiumTier.findOne({
+        where: {
+          name: {
+            [Op.like]: Utils.escapeLike(search)
+          }
+        }
+      });
+      if (tier) {
+        const totalBalance =
+          userDatabase.donator.patreon + userDatabase?.donator.bonus;
+        const totalAssignedOthers = userDatabase.donator.assignedTiers
+          .filter((assigned) => assigned.guildId !== guild.id)
+          .map((assigned) => assigned.premiumTier.cost)
+          .reduce((acc, cur) => acc + cur, 0);
+        if (totalBalance >= totalAssignedOthers + tier.cost) {
+          // Can afford tier
+          for (const assignedTier of userDatabase.donator.assignedTiers)
+            if (assignedTier.guildId === guild.id) await assignedTier.destroy();
+
+          await AssignedTier.create({
+            donatorId: userDatabase.donator.id,
+            guildId: guild.id,
+            premiumTierId: tier.id
+          });
+
+          const embed = {
+            color: Utils.Colors.GREEN,
+            title: `${Utils.Emojis.CHECK} Premium activated`,
+            description: `You have successfully activated ${tier.name} for ${guild.name}. If this server had premium activated before, it will only be using the new tier now.`
+          };
+          return void (await channel.send({ embed }));
+        } else {
+          const embed = {
+            color: Utils.Colors.RED,
+            title: `${Utils.Emojis.XMARK} Insufficient balance`,
+            description:
+              `Your balance is not able to cover the cost for the ${tier.name} tier.\n` +
+              `The tier costs ${tier.cost} cents but you only have ${
+                totalBalance - totalAssignedOthers
+              } cents left for this server.\n` +
+              `Get an overview of your currently activated servers using \`ob!premium\`.`
+          };
+          return void (await channel.send({ embed }));
+        }
+      } else {
+        const embed = {
+          color: Utils.Colors.RED,
+          title: `${Utils.Emojis.XMARK} Tier not found`,
+          description:
+            `Could not find tier \`${search}\`.\n` +
+            `Use the command \`ob!premium tiers\` to get a list of all tiers.`
+        };
+        return void (await channel.send({ embed }));
+      }
+    } else {
+      return void (await this.sendSyntax(message));
     }
   }
 }
