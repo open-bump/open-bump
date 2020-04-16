@@ -91,11 +91,12 @@ export default class PremiumCommand extends Command {
           }
         ]
       };
+      return void (await channel.send({ embed }));
     } else if (
       args.length === 1 &&
       (args[0] === "tiers" || args[0] === "list")
     ) {
-      const premiumTiers = await PremiumTier.findAll();
+      const premiumTiers = await PremiumTier.findAll({ order: ["cost"] });
       const embed = {
         color: Utils.Colors.BLUE,
         title: `${Utils.Emojis.INFORMATION} Premium Tiers`,

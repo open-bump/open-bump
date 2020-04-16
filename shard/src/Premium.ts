@@ -94,9 +94,7 @@ export default class Premium {
         moment(violator.transitionStartedAt).isBefore(moment().subtract(1, "m")) // TODO: Update to 3 days
       ) {
         // Transition due
-        for (const assignedTier of violator.assignedTiers) {
-          await assignedTier.destroy();
-        }
+        await AssignedTier.destroy({ where: { donatorId: violator.id } });
 
         try {
           const user = await this.instance.client.users.fetch(violator.userId);
