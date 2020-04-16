@@ -17,11 +17,20 @@ export default class PremiumCommand extends Command {
     { message, arguments: args }: ParsedMessage,
     guildDatabase: Guild
   ) {
-    const { channel, author } = message;
+    const { channel, author, guild } = message;
     const userDatabase = await User.findOne({
       where: { id: author.id },
       include: [{ model: Donator, include: [AssignedTier.scope("default")] }]
     });
+
+    if (
+      userDatabase?.donator &&
+      !userDatabase.donator.patreon &&
+      !userDatabase.donator.bonus &&
+      (!userDatabase.donator.assignedTiers ||
+        userDatabase.donator.assignedTiers.length === 0)
+    )
+      userDatabase.donator = undefined;
 
     if (userDatabase?.donator && args.length === 0) {
       const totalBalance =
@@ -82,6 +91,41 @@ export default class PremiumCommand extends Command {
         }))
       };
       return void message.channel.send({ embed });
+    } else if (
+      userDatabase?.donator &&
+      args.length >= 1 &&
+      args.length <= 2 &&
+      (args[0] === "deactivate" || args[0] === "disable")
+    ) {
+      const targetId = args.length === 2 ? args[1] : guild.id;
+
+      const assignedTier = userDatabase.donator.assignedTiers.find(
+        (tier) => tier.guildId === targetId
+      );
+      if (assignedTier) {
+        await assignedTier.destroy();
+        const embed = {
+          color: Utils.Colors.GREEN,
+          title: `${Utils.Emojis.CHECK} Premium deactivated`,
+          description: `You have successfully deactivated premium for guild "${
+            assignedTier.guild.name || assignedTier.guildId
+          }".`
+        };
+        return void (await channel.send({ embed }));
+      } else {
+        const targetDatabase = await Guild.findOne({
+          where: { id: targetId }
+        });
+
+        const embed = {
+          color: Utils.Colors.RED,
+          title: `${Utils.Emojis.XMARK} Premium not activated`,
+          description: `You do not have premium activated for guild "${
+            targetDatabase?.name || targetId
+          }".`
+        };
+        return void (await channel.send({ embed }));
+      }
     }
   }
 }
