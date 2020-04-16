@@ -22,7 +22,7 @@ export default class User extends Model<User> {
   id!: string;
 
   @HasOne(() => Donator)
-  donator!: Donator;
+  donator?: Donator;
 
   @AfterCreate
   public static async afterCreateHook(
