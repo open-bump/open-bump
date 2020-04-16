@@ -16,6 +16,7 @@ export default class NetworkManager {
   public total!: number;
   private socket!: SocketIOClient.Socket;
   public ready = false;
+  public connected = false;
 
   constructor(private instance: OpenBump) {}
 
@@ -27,6 +28,8 @@ export default class NetworkManager {
       query: { authorization: hashed }
     });
     console.log("Waiting for connection with hub...");
+
+    this.socket.on("connect", this.onConnect.bind(this));
 
     this.socket.on("identify", this.onIdentify.bind(this));
 
@@ -67,6 +70,17 @@ export default class NetworkManager {
     });
 
     this.socket.on("bump", this.onBump.bind(this));
+    this.socket.on("disconnect", this.onDisconnect.bind(this));
+  }
+
+  public async onConnect() {
+    console.log("Connected to websocket");
+    this.connected = true;
+  }
+
+  public async onDisconnect() {
+    console.warn("Disconnected from websocket!");
+    this.connected = false;
   }
 
   public async emitBump(guild: string, embed: MessageEmbedOptions) {
