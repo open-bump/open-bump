@@ -1,4 +1,8 @@
-import Discord, { MessageEmbedOptions, PermissionString, TextChannel } from "discord.js";
+import Discord, {
+  MessageEmbedOptions,
+  PermissionString,
+  TextChannel
+} from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import path from "path";
@@ -425,6 +429,10 @@ export default class Utils {
     throw new NotFoundError("guild");
   }
 
+  public static escapeLike(value: string) {
+    return value.replace(/(_|%|\\)/g, "\\$1");
+  }
+
   public static Colors = {
     BLUE: 0x698cce,
     RED: 0xff0000,
@@ -442,6 +450,7 @@ export default class Utils {
     STAR: "⭐",
     ARROWRIGHT: "➡",
     INFORMATION: "ℹ",
+    EXCLAMATION: "❗",
     MAILBOX: "📬",
     THUMBSUP: "<:thumbsup:631606538598875174>",
     THUMBSDOWN: "<:thumbsdown:631606537827123221>",
