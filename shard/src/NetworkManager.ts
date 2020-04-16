@@ -14,7 +14,7 @@ interface ISetupData {
 export default class NetworkManager {
   public id!: number;
   public total!: number;
-  private socket!: SocketIOClient.Socket;
+  public socket!: SocketIOClient.Socket;
   public ready = false;
   public connected = false;
 

@@ -5,6 +5,7 @@ import AboutCommand from "./commands/AboutCommand";
 import BumpCommand from "./commands/BumpCommand";
 import HelpCommand from "./commands/HelpCommand";
 import NsfwCommand from "./commands/NsfwCommand";
+import PingCommand from "./commands/PingCommand";
 import PremiumCommand from "./commands/PremiumCommand";
 import PreviewCommand from "./commands/PreviewCommand";
 import SetChannelCommand from "./commands/SetChannelCommand";
@@ -52,6 +53,7 @@ export default class CommandManager {
     this.registerCommand(new BumpCommand(this.instance));
     this.registerCommand(new HelpCommand(this.instance));
     this.registerCommand(new NsfwCommand(this.instance));
+    this.registerCommand(new PingCommand(this.instance));
     this.registerCommand(new PremiumCommand(this.instance));
     this.registerCommand(new PreviewCommand(this.instance));
     this.registerCommand(new SetChannelCommand(this.instance));
