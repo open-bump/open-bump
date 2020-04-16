@@ -69,8 +69,8 @@ export default class Premium {
         try {
           const user = await this.instance.client.users.fetch(violator.userId);
           const embed = {
-            color: Utils.Colors.RED,
-            title: `${Utils.Emojis.XMARK} Payment issue`,
+            color: Utils.Colors.ORANGE,
+            title: `${Utils.Emojis.IMPORTANTNOTICE} Payment issue`,
             description:
               "Hey there, we recently detected a problem with your premium. " +
               "It looks like your balance is not enough to cover the cost for all activated servers. " +
@@ -124,8 +124,8 @@ export default class Premium {
         try {
           const user = await this.instance.client.users.fetch(violator.userId);
           const embed = {
-            color: Utils.Colors.RED,
-            title: `${Utils.Emojis.XMARK} Payment issue`,
+            color: Utils.Colors.ORANGE,
+            title: `${Utils.Emojis.IMPORTANTNOTICE} Payment issue`,
             description:
               "Hey there, we recently detected a problem with your premium. " +
               "It looks like your balance is not enough to cover the cost for all activated servers. " +
