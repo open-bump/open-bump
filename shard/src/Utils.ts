@@ -279,7 +279,7 @@ class Bump {
     if (guildDatabase.nsfw && !channel.nsfw)
       issues.push("Please mark your bump channel as NSFW.");
 
-    if (guildDatabase.getFeatures().includes("RESTRICTED_CHANNEL"))
+    if (guildDatabase.getFeatures().includes(Utils.Features.RESTRICTED_CHANNEL))
       return issues;
 
     for (const permissionOverwrite of channel.permissionOverwrites.values()) {
