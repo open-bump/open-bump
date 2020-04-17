@@ -121,6 +121,8 @@ class Bump {
     };
   }
 
+  public static bump(guildDatabase: Guild, embed: MessageEmbedOptions) {}
+
   public static async bumpToAllShards(
     guildDatabase: Guild,
     embed: MessageEmbedOptions
@@ -277,7 +279,7 @@ class Bump {
     if (guildDatabase.nsfw && !channel.nsfw)
       issues.push("Please mark your bump channel as NSFW.");
 
-    if (guildDatabase.getFeatures().includes("RESTRICTED_CHANNEL"))
+    if (guildDatabase.getFeatures().includes(Utils.Features.RESTRICTED_CHANNEL))
       return issues;
 
     for (const permissionOverwrite of channel.permissionOverwrites.values()) {
@@ -439,6 +441,16 @@ export default class Utils {
     GREEN: 0x3dd42c,
     ORANGE: 0xff9900,
     OPENBUMP: 0x27ad60
+  };
+
+  public static Features = {
+    COLOR: "COLOR",
+    BANNER: "BANNER",
+    PREFIX: "PREFIX",
+    FEATURED: "FEATURED",
+    CROSS: "CROSS",
+    RESTRICTED_CHANNEL: "RESTRICTED_CHANNEL",
+    AUTOBUMP: "AUTOBUMP"
   };
 
   public static Emojis = {
