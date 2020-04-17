@@ -30,7 +30,7 @@ export default class CommandManager {
       String(this.instance.client.user)
     ];
     const guildDatabase = await Utils.ensureGuild(message.guild);
-    if (guildDatabase.getFeatures().includes("PREFIX"))
+    if (guildDatabase.getFeatures().includes(Utils.Features.PREFIX))
       if (guildDatabase.prefix) prefixes.push(guildDatabase.prefix);
 
     const parsed = parser.parse(message, config.settings.prefix, {});
