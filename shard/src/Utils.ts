@@ -121,6 +121,8 @@ class Bump {
     };
   }
 
+  public static bump(guildDatabase: Guild, embed: MessageEmbedOptions) {}
+
   public static async bumpToAllShards(
     guildDatabase: Guild,
     embed: MessageEmbedOptions
@@ -439,6 +441,16 @@ export default class Utils {
     GREEN: 0x3dd42c,
     ORANGE: 0xff9900,
     OPENBUMP: 0x27ad60
+  };
+
+  public static Features = {
+    COLOR: "COLOR",
+    BANNER: "BANNER",
+    PREFIX: "PREFIX",
+    FEATURED: "FEATURED",
+    CROSS: "CROSS",
+    RESTRICTED_CHANNEL: "RESTRICTED_CHANNEL",
+    AUTOBUMP: "AUTOBUMP"
   };
 
   public static Emojis = {
