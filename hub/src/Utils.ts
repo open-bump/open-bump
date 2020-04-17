@@ -1,11 +1,7 @@
 import path from "path";
 import Hub from "./Hub";
 
-class Bump {}
-
 export default class Utils {
-  public static Bump = Bump;
-
   public static mergeObjects<T extends object = object>(
     target: T,
     ...sources: Array<T>
