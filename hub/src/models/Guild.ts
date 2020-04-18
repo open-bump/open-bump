@@ -60,6 +60,9 @@ export default class Guild extends Model<Guild> {
   @Column(DataType.BOOLEAN)
   nsfw!: boolean;
 
+  @Column(DataType.BOOLEAN)
+  hub!: boolean;
+
   public getFeatures() {
     const guildFeatures = this.features
       .filter(({ feature }) => Boolean(feature))

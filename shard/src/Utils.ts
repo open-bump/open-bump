@@ -132,29 +132,29 @@ class Bump {
         cross ? this.BumpType.CROSS : this.BumpType.HUBS
       )
     ]);
-    return internal + external;
+    return { amount: internal.length + external, featured: internal };
   }
 
   public static async bumpToThisShard(
     guildDatabase: Guild,
     embed: MessageEmbedOptions,
     type: keyof typeof Bump.BumpType
-  ): Promise<number> {
+  ): Promise<Array<Guild>> {
     let guildFeeds: Array<Guild>;
 
     if (type === Bump.BumpType.HUBS) {
-      guildFeeds = await this.fetchGuildFeeds(0, true);
+      guildFeeds = await this.fetchGuildFeeds(0, true, guildDatabase.id);
     } else if (type === Bump.BumpType.CROSS) {
-      guildFeeds = await this.fetchGuildFeeds(50, true);
+      guildFeeds = await this.fetchGuildFeeds(50, true, guildDatabase.id);
     } else if (type === Bump.BumpType.FULL) {
-      guildFeeds = await this.fetchGuildFeeds();
+      guildFeeds = await this.fetchGuildFeeds(-1, true, guildDatabase.id);
     } else throw new Error("This error should never be thrown.");
 
     guildFeeds = guildFeeds.filter(
       (guildFeed) => Boolean(guildFeed.nsfw) == Boolean(guildDatabase.nsfw)
     );
 
-    let amount = 0;
+    const bumpedTo: Array<Guild> = [];
 
     for (const guildFeed of guildFeeds) {
       if (!guildFeed.feed) continue;
@@ -167,7 +167,7 @@ class Bump {
           if (!issues.length) {
             try {
               await channel.send({ embed });
-              amount++;
+              bumpedTo.push(guildFeed);
             } catch (error) {
               console.error(
                 `Unknown hard error occured while trying to bump ${guild.id}: ${error.message}`
@@ -237,10 +237,14 @@ class Bump {
         }
       }
     }
-    return amount;
+    return bumpedTo;
   }
 
-  public static async fetchGuildFeeds(amount = -1, hubs = true) {
+  public static async fetchGuildFeeds(
+    amount = -1,
+    hubs = true,
+    include?: string
+  ) {
     const feedChannels =
       amount !== 0
         ? await Guild.findAll({
@@ -265,10 +269,13 @@ class Bump {
           })
         : [];
     const hubChannels =
-      hubs && amount >= 0 && feedChannels.length >= amount
+      (hubs && amount >= 0 && feedChannels.length >= amount) || include
         ? await Guild.findAll({
             where: {
-              hub: true,
+              [Op.or]: [
+                ...(hubs ? [{ hub: true }] : []),
+                ...(include ? [{ id: include }] : [])
+              ],
               id: {
                 [Op.notIn]: feedChannels.map(({ id }) => id)
               },
@@ -452,6 +459,14 @@ export default class Utils {
       title: `${Utils.Emojis.XMARK} Unknown error!`,
       description: error.message
     };
+  }
+
+  public static niceList(array: Array<string>) {
+    if (array.length <= 2) return array.join(" and ");
+    return (
+      array.slice(0, array.length - 1).join(", ") +
+      `and ${array[array.length - 1]}`
+    );
   }
 
   public static findChannel(
