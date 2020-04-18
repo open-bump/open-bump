@@ -89,6 +89,10 @@ export default class Guild extends Model<Guild> {
     return ms ? cooldown * 60 * 1000 : cooldown;
   }
 
+  public isPremium() {
+    return Boolean(this.assignedTiers?.length);
+  }
+
   @AfterCreate
   public static async afterCreateHook(
     entity: Guild,
