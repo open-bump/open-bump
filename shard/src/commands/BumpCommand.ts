@@ -1,11 +1,11 @@
 import { ParsedMessage } from "discord-command-parser";
 import ms from "ms";
 import { Op } from "sequelize";
+import { Sequelize } from "sequelize-typescript";
 import Command from "../Command";
 import BumpData from "../models/BumpData";
 import Guild from "../models/Guild";
 import Utils, { EmbedError } from "../Utils";
-import { Sequelize } from "sequelize-typescript";
 
 export default class BumpCommand extends Command {
   public name = "bump";
@@ -121,7 +121,9 @@ export default class BumpCommand extends Command {
         title: `${Utils.Emojis.IMPORTANTNOTICE} Autobump Enabled`,
         description:
           `You can't manually bump your server because you have autobump enabled.\n` +
-          `As long as you have autobump enabled, the bot automatically bumps your server every ${ms(
+          `As long as you have autobump enabled, ${
+            this.instance.client.user?.username
+          } automatically bumps your server every ${ms(
             guildDatabase.getCooldown(true),
             { long: true }
           )}.` +

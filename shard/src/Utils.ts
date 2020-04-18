@@ -1,8 +1,4 @@
-import Discord, {
-  MessageEmbedOptions,
-  PermissionString,
-  TextChannel
-} from "discord.js";
+import Discord, { MessageEmbedOptions, PermissionString, TextChannel } from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import path from "path";
@@ -124,7 +120,7 @@ class Bump {
   }
 
   public static async bump(guildDatabase: Guild, embed: MessageEmbedOptions) {
-    const cross = guildDatabase.getFeatures().includes(Utils.Features.CROSS);
+    const cross = guildDatabase.getFeatures().includes(Utils.Feature.CROSS);
     const [internal, external] = await Promise.all([
       this.bumpToThisShard(guildDatabase, embed, this.BumpType.CROSS),
       OpenBump.instance.networkManager.emitBump(
@@ -329,7 +325,7 @@ class Bump {
     if (guildDatabase.nsfw && !channel.nsfw)
       issues.push("Please mark your bump channel as NSFW.");
 
-    if (guildDatabase.getFeatures().includes(Utils.Features.RESTRICTED_CHANNEL))
+    if (guildDatabase.getFeatures().includes(Utils.Feature.RESTRICTED_CHANNEL))
       return issues;
 
     for (const permissionOverwrite of channel.permissionOverwrites.values()) {
@@ -513,7 +509,7 @@ export default class Utils {
     OPENBUMP: 0x27ad60
   };
 
-  public static Features = {
+  public static Feature = {
     COLOR: "COLOR",
     BANNER: "BANNER",
     PREFIX: "PREFIX",
@@ -628,6 +624,29 @@ export class TooManyResultsError<T> extends EmbedError {
       color: Utils.Colors.RED,
       title: `Too many ${this.type} found!`,
       description: "Please specify your input."
+    };
+  }
+}
+
+export class RestrictedFeatureError extends EmbedError {
+  constructor(
+    public feature:
+      | Array<keyof typeof Utils.Feature>
+      | keyof typeof Utils.Feature,
+    public guild: Guild
+  ) {
+    super(`This is a premium feature`);
+  }
+
+  public toEmbed() {
+    return {
+      color: Utils.Colors.RED,
+      title: `${Utils.Emojis.LOCKKEY} Premium Feature`,
+      description:
+        `This is a premium feature.\n` +
+        `Use the command \`${Utils.getPrefix(
+          this.guild
+        )}premium\` to view more information about premium.`
     };
   }
 }
