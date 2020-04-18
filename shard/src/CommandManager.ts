@@ -10,6 +10,7 @@ import PingCommand from "./commands/PingCommand";
 import PrefixCommand from "./commands/PrefixCommand";
 import PremiumCommand from "./commands/PremiumCommand";
 import PreviewCommand from "./commands/PreviewCommand";
+import SetBannerCommand from "./commands/SetBannerCommand";
 import SetChannelCommand from "./commands/SetChannelCommand";
 import SetColorCommand from "./commands/SetColorCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
@@ -61,6 +62,7 @@ export default class CommandManager {
     this.registerCommand(new PrefixCommand(this.instance));
     this.registerCommand(new PremiumCommand(this.instance));
     this.registerCommand(new PreviewCommand(this.instance));
+    this.registerCommand(new SetBannerCommand(this.instance));
     this.registerCommand(new SetChannelCommand(this.instance));
     this.registerCommand(new SetColorCommand(this.instance));
     this.registerCommand(new SetDescriptionCommand(this.instance));
