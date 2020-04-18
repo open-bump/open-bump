@@ -2,14 +2,14 @@ import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
 import config from "../config";
 import Guild from "../models/Guild";
-import OpenBump from "../OpenBump";
 import Utils from "../Utils";
 
 export default class AboutCommand extends Command {
   public name = "about";
-  public aliases = ["invite", "info", "information"];
+  public aliases = ["invite", "info", "information", "support"];
   public syntax = "about";
   public description = "View information about this bot";
+  public vanished = true;
 
   public async run({ message }: ParsedMessage, guildDatabase: Guild) {
     const { channel } = message;

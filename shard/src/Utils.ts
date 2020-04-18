@@ -1,10 +1,6 @@
 import Color from "color";
 import DBL from "dblapi.js";
-import Discord, {
-  MessageEmbedOptions,
-  PermissionString,
-  TextChannel
-} from "discord.js";
+import Discord, { MessageEmbedOptions, PermissionString, TextChannel } from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import ntc from "ntcjs";
@@ -572,7 +568,7 @@ export default class Utils {
     if (array.length <= 2) return array.join(" and ");
     return (
       array.slice(0, array.length - 1).join(", ") +
-      `and ${array[array.length - 1]}`
+      ` and ${array[array.length - 1]}`
     );
   }
 
