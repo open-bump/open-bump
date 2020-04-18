@@ -7,6 +7,10 @@ interface ISetupData {
   total: number;
 }
 
+interface IStatsData {
+  [shard: number]: { guilds: number; users: number };
+}
+
 export default class Shard {
   public ready = false;
 
@@ -20,6 +24,7 @@ export default class Shard {
     socket.on("setup", this.onSetup.bind(this));
     socket.on("ready", this.onReady.bind(this));
     socket.on("bump", this.onBump.bind(this));
+    socket.on("stats", this.onStats.bind(this));
 
     socket.emit("identified", {
       id: this.id,
@@ -71,6 +76,27 @@ export default class Shard {
     return void callback(
       total.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
     );
+  }
+
+  private async onStats(callback: (data: IStatsData) => void) {
+    const shards = this.shardManager.getOtherShards();
+    const response: IStatsData = {};
+    await Promise.all(
+      shards.map(
+        (shard) =>
+          new Promise(async (resolve) => {
+            const data = await new Promise<{
+              guilds: number;
+              users: number;
+            }>((resolve) => {
+              shard.socket.emit("stats", resolve);
+            });
+            response[shard.id] = data;
+            resolve();
+          })
+      )
+    );
+    callback(response);
   }
 
   public disconnect(force = false) {

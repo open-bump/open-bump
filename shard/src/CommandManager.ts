@@ -18,6 +18,7 @@ import SetInviteCommand from "./commands/SetInviteCommand";
 import config from "./config";
 import OpenBump from "./OpenBump";
 import Utils from "./Utils";
+import StatsCommand from "./commands/StatsCommand";
 
 export default class CommandManager {
   private commands: { [name: string]: Command } = {};
@@ -67,6 +68,7 @@ export default class CommandManager {
     this.registerCommand(new SetColorCommand(this.instance));
     this.registerCommand(new SetDescriptionCommand(this.instance));
     this.registerCommand(new SetInviteCommand(this.instance));
+    this.registerCommand(new StatsCommand(this.instance));
   }
 
   private registerCommand(command: Command) {

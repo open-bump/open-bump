@@ -70,6 +70,7 @@ export default class NetworkManager {
     });
 
     this.socket.on("bump", this.onBump.bind(this));
+    this.socket.on("stats", this.onStats.bind(this));
     this.socket.on("disconnect", this.onDisconnect.bind(this));
   }
 
@@ -94,6 +95,13 @@ export default class NetworkManager {
     return amount;
   }
 
+  public async requestStats() {
+    const stats = await new Promise<{
+      [shard: number]: { guilds: number; users: number };
+    }>((resolve) => this.socket.emit("stats", resolve));
+    return stats;
+  }
+
   public async setReady() {
     this.ready = true;
     this.socket.emit("ready");
@@ -113,6 +121,14 @@ export default class NetworkManager {
     if (!guildDatabase) return;
     const amount = await Utils.Bump.bumpToThisShard(guildDatabase, embed, type);
     callback(amount.length);
+  }
+
+  private async onStats(
+    callback: (data: { guilds: number; users: number }) => void
+  ) {
+    const guilds = this.instance.client.guilds.cache.size;
+    const users = this.instance.client.users.cache.size;
+    callback({ guilds, users });
   }
 
   public async onIdentify(callback: (shard?: number) => void) {
