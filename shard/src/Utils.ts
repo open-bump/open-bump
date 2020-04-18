@@ -194,7 +194,7 @@ class Bump {
             ) {
               this.justRemoved[guild.id] = Date.now();
 
-              guildDatabase.feed = undefined;
+              guildDatabase.feed = null;
               await guildDatabase.save();
 
               console.log(
@@ -230,7 +230,7 @@ class Bump {
           ) {
             this.justRemoved[guild.id] = Date.now();
 
-            guildDatabase.feed = undefined;
+            guildDatabase.feed = null;
             await guildDatabase.save();
 
             const embed = {
