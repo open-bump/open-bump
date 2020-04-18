@@ -19,7 +19,8 @@ export default class BumpCommand extends Command {
       !guildDatabase.getFeatures().includes("AUTOBUMP") ||
       !guildDatabase.autobump
     ) {
-      const cooldown = guildDatabase.getCooldown(true);
+      const voted = await Utils.Lists.hasVotedTopGG(author.id);
+      const cooldown = guildDatabase.getCooldown(true, voted);
       const nextBump = guildDatabase.lastBumpedAt?.valueOf() + cooldown;
       const remaining = nextBump - Date.now();
       if (nextBump && nextBump > Date.now()) {
@@ -92,7 +93,7 @@ export default class BumpCommand extends Command {
 
       let description =
         `Your server has been bumped to ${amount} servers.\n` +
-        `You can bump again in ${ms(guildDatabase.getCooldown(true), {
+        `You can bump again in ${ms(cooldown, {
           long: true
         })}.`;
 

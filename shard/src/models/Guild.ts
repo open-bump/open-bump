@@ -30,7 +30,7 @@ export default class Guild extends Model<Guild> {
   name!: string;
 
   @Column(DataType.STRING(20))
-  feed?: string;
+  feed!: string | null;
 
   @HasMany(() => GuildFeature)
   private features!: Array<GuildFeature>;
@@ -77,12 +77,13 @@ export default class Guild extends Model<Guild> {
     return [...defaultFeatures, ...guildFeatures, ...tierFeatures];
   }
 
-  public getCooldown(ms = false) {
+  public getCooldown(ms = false, voted = false) {
     let cooldown = config.settings.cooldown.default;
     for (const { premiumTier } of this.assignedTiers)
       if (premiumTier.cooldown && premiumTier.cooldown < cooldown)
         cooldown = premiumTier.cooldown;
-    if (this.feed) cooldown -= 15;
+    if (this.feed) cooldown -= config.settings.cooldown.feed;
+    if (voted) cooldown -= config.settings.cooldown.vote;
     if (cooldown < config.settings.cooldown.min)
       cooldown = config.settings.cooldown.min;
     return ms ? cooldown * 60 * 1000 : cooldown;

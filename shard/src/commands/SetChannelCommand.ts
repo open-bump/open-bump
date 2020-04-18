@@ -46,7 +46,7 @@ export default class SetChannelCommand extends Command {
         };
         return void (await channel.send({ embed }));
       } else {
-        guildDatabase.feed = undefined;
+        guildDatabase.feed = null;
         await guildDatabase.save();
 
         const embed = {

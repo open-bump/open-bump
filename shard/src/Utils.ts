@@ -1,4 +1,5 @@
 import Color from "color";
+import DBL from "dblapi.js";
 import Discord, {
   MessageEmbedOptions,
   PermissionString,
@@ -383,8 +384,38 @@ class Bump {
   };
 }
 
+class Lists {
+  private static dbl?: DBL = undefined;
+
+  public static start() {
+    this.startTopGG();
+  }
+
+  private static startTopGG() {
+    if (!config.lists?.topgg?.enabled) return;
+    this.dbl = new DBL(config.lists.topgg.token, OpenBump.instance.client);
+
+    this.dbl.on("posted", () => console.log("Server cound posted to top.gg"));
+    this.dbl.on("error", (error) =>
+      console.error("Error while posting stats to top.gg:", error)
+    );
+
+    console.log("Started top.gg");
+  }
+
+  public static async hasVotedTopGG(user: string): Promise<boolean> {
+    if (!this.dbl) return false;
+    try {
+      return await this.dbl.hasVoted(user);
+    } catch (error) {
+      return false;
+    }
+  }
+}
+
 export default class Utils {
   public static Bump = Bump;
+  public static Lists = Lists;
 
   public static mergeObjects<T extends object = object>(
     target: T,
