@@ -81,4 +81,8 @@ export default class CommandManager {
     );
     return command;
   }
+
+  public getCommands() {
+    return Object.values(this.commands);
+  }
 }

@@ -9,6 +9,7 @@ export default abstract class Command {
   public aliases: Array<string> = [];
   public abstract syntax: string;
   public abstract description: string;
+  public vanished = false;
   protected permissions = [];
 
   constructor(protected instance: OpenBump) {}
