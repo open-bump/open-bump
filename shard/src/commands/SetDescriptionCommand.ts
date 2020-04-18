@@ -12,7 +12,7 @@ export default class SetDescriptionCommand extends Command {
     "description",
     "desc"
   ];
-  public syntax = "setdescription <description...|reset>";
+  public syntax = "setdescription <<description...>|reset>";
   public description = "Set the description for your server";
 
   public async run(
@@ -46,6 +46,6 @@ export default class SetDescriptionCommand extends Command {
         };
         return void (await channel.send({ embed }));
       }
-    } else await this.sendSyntax(message);
+    } else await this.sendSyntax(message, guildDatabase);
   }
 }

@@ -41,7 +41,7 @@ export default class Guild extends Model<Guild> {
   bumpData!: BumpData;
 
   @Column(DataType.STRING)
-  prefix!: string;
+  prefix!: string | null;
 
   @Column(DataType.BOOLEAN)
   autobump!: boolean;

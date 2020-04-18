@@ -7,6 +7,7 @@ import BumpCommand from "./commands/BumpCommand";
 import HelpCommand from "./commands/HelpCommand";
 import NsfwCommand from "./commands/NsfwCommand";
 import PingCommand from "./commands/PingCommand";
+import PrefixCommand from "./commands/PrefixCommand";
 import PremiumCommand from "./commands/PremiumCommand";
 import PreviewCommand from "./commands/PreviewCommand";
 import SetChannelCommand from "./commands/SetChannelCommand";
@@ -34,7 +35,7 @@ export default class CommandManager {
     if (guildDatabase.getFeatures().includes(Utils.Feature.PREFIX))
       if (guildDatabase.prefix) prefixes.push(guildDatabase.prefix);
 
-    const parsed = parser.parse(message, config.settings.prefix, {});
+    const parsed = parser.parse(message, prefixes, {});
     if (parsed.success) {
       const command = this.getCommand(parsed.command);
       if (!command) return;
@@ -56,6 +57,7 @@ export default class CommandManager {
     this.registerCommand(new HelpCommand(this.instance));
     this.registerCommand(new NsfwCommand(this.instance));
     this.registerCommand(new PingCommand(this.instance));
+    this.registerCommand(new PrefixCommand(this.instance));
     this.registerCommand(new PremiumCommand(this.instance));
     this.registerCommand(new PreviewCommand(this.instance));
     this.registerCommand(new SetChannelCommand(this.instance));
