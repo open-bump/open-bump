@@ -1,4 +1,8 @@
-import Discord, { MessageEmbedOptions, PermissionString, TextChannel } from "discord.js";
+import Discord, {
+  MessageEmbedOptions,
+  PermissionString,
+  TextChannel
+} from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import path from "path";
