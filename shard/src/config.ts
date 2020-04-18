@@ -23,8 +23,16 @@ interface IConfig extends config.IConfig {
     cooldown: {
       default: number;
       min: number;
+      feed: number;
+      vote: number;
     };
     features: Array<string>;
+  };
+  lists: {
+    topgg: {
+      enabled: boolean;
+      token: string;
+    };
   };
 }
 
