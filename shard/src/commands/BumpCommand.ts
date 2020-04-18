@@ -1,10 +1,13 @@
 import { ParsedMessage } from "discord-command-parser";
+import Discord from "discord.js";
 import ms from "ms";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
 import Command from "../Command";
+import config from "../config";
 import BumpData from "../models/BumpData";
 import Guild from "../models/Guild";
+import OpenBump from "../OpenBump";
 import Utils, { EmbedError } from "../Utils";
 
 export default class BumpCommand extends Command {
@@ -24,13 +27,58 @@ export default class BumpCommand extends Command {
       const nextBump = guildDatabase.lastBumpedAt?.valueOf() + cooldown;
       const remaining = nextBump - Date.now();
       if (nextBump && nextBump > Date.now()) {
-        // TODO: Suggestions
+        const suggestions: Array<Discord.EmbedFieldData> = [];
+
+        const voteCooldown = guildDatabase.getCooldown(true, true);
+        if (
+          !guildDatabase.feed &&
+          guildDatabase.getCooldown() > config.settings.cooldown.min &&
+          Utils.randomInt(2) === 0
+        )
+          suggestions.push({
+            name: `${Utils.Emojis.BELL} Suggestion: Bump Channel`,
+            value:
+              `You don't want to wait ${ms(cooldown, {
+                long: true
+              })} until you can bump? You can reduce your cooldown by seting your guild a bump channel!\n` +
+              `To set a bump channel, please use the command \`${Utils.getPrefix(
+                guildDatabase
+              )}setchannel <channel>\`.`
+          });
+        else if (
+          !voted &&
+          guildDatabase.getCooldown() > config.settings.cooldown.min &&
+          cooldown > voteCooldown &&
+          Utils.randomInt(3) === 0
+        )
+          suggestions.push({
+            name: `${Utils.Emojis.BELL} Suggestion: Vote`,
+            value:
+              `You don't want to wait ${ms(cooldown, {
+                long: true
+              })} until you can bump? Vote for our bot!\n` +
+              `You can vote at https://top.gg/bot/${OpenBump.instance.client.user?.id}/vote. ` +
+              `It will decrease your cooldown by ${ms(cooldown - voteCooldown, {
+                long: true
+              })} for 12 hours.`
+          });
+        else if (!guildDatabase.isPremium() && Utils.randomInt(3) === 0)
+          suggestions.push({
+            name: `${Utils.Emojis.BELL} Suggestion: Premium`,
+            value:
+              `You don't want to wait ${ms(cooldown, {
+                long: true
+              })} until you can bump? Upgrade to premium!\n` +
+              `To view more information about premium, use the command \`ob!premium\`.`
+          });
+
         const embed = {
           color: Utils.Colors.RED,
           title: `${Utils.Emojis.XMARK} You are on cooldown!`,
           description:
             `**Total Cooldown:** ${ms(cooldown, { long: true })}\n` +
-            `**Next Bump:** In ${ms(remaining, { long: true })}`
+            `**Next Bump:** In ${ms(remaining, { long: true })}`,
+          fields: suggestions
         };
         return void (await channel.send({ embed }));
       }

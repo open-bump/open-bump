@@ -73,6 +73,10 @@ export default class Guild extends Model<Guild> {
     return [...guildFeatures, ...tierFeatures];
   }
 
+  public isPremium() {
+    return Boolean(this.assignedTiers?.length);
+  }
+
   @AfterCreate
   public static async afterCreateHook(
     entity: Guild,

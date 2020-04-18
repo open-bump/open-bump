@@ -446,6 +446,13 @@ export default class Utils {
     return this.isObject(item) && !Array.isArray(item);
   }
 
+  /**
+   * Random number inclusive 0 and exclusive range
+   */
+  public static randomInt(range: number): number {
+    return Math.floor(Math.random() * Math.floor(range));
+  }
+
   public static getPackageJson() {
     try {
       return require(path.join(OpenBump.instance.directory, "package.json"));
