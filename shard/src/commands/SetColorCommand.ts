@@ -4,8 +4,8 @@ import Guild from "../models/Guild";
 import Utils, { RestrictedFeatureError, TitleError } from "../Utils";
 
 export default class SetColorCommand extends Command {
-  public name = "color";
-  public aliases = ["setcolor", "set-color"];
+  public name = "setcolor";
+  public aliases = ["color", "set-color"];
   public syntax = "setcolor <<color>|reset>";
   public description = "Set the bump color for your server";
 

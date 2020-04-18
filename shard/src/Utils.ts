@@ -77,6 +77,11 @@ class Bump {
     if (guildDatabase.getFeatures().includes(Utils.Feature.COLOR))
       color = guildDatabase.bumpData.color ?? color;
 
+    // Banner
+    let banner: string | undefined = undefined;
+    if (guildDatabase.getFeatures().includes(Utils.Feature.BANNER))
+      banner = guildDatabase.bumpData.banner ?? banner;
+
     // Region
     const regions = await guild.fetchVoiceRegions();
     const region = regions.get(guild.region);
@@ -123,7 +128,10 @@ class Bump {
             `**Emojis:** ${emojis}`,
           inline: true
         }
-      ]
+      ],
+      image: {
+        url: banner
+      }
     };
   }
 
