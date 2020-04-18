@@ -48,10 +48,10 @@ export default class Guild extends Model<Guild> {
   autobump!: boolean;
 
   @Column(DataType.STRING(20))
-  lastBumpedBy!: string;
+  lastBumpedBy?: string;
 
   @Column(DataType.DATE)
-  lastBumpedAt!: Date;
+  lastBumpedAt?: Date;
 
   @Default(0)
   @AllowNull(false)

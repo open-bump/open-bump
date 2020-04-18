@@ -10,7 +10,10 @@ export default class ReadyEvent extends Event {
   public async run() {
     console.log(`Logged in as ${this.instance.client.user?.tag}`);
     this.instance.networkManager.setReady();
-    if (this.first) Utils.Lists.start();
+    if (this.first) {
+      Utils.Lists.start();
+      Utils.Bump.startAutobump();
+    }
 
     this.first = false;
   }

@@ -382,6 +382,58 @@ class Bump {
     CROSS: "CROSS" as "CROSS",
     FULL: "FULL" as "FULL"
   };
+
+  public static startAutobump() {
+    setTimeout(() => {
+      Bump.autobumpLoop.bind(this);
+      Bump.startAutobump();
+    }, 1000 * 30);
+    Bump.autobumpLoop();
+  }
+
+  private static async autobumpLoop() {
+    console.log("Running autobump loop...");
+
+    try {
+      const autobumpable = await Guild.scope("default").findAll({
+        where: {
+          autobump: true
+        }
+      });
+
+      for (const guildDatabase of autobumpable) {
+        try {
+          if (!guildDatabase.getFeatures().includes(Utils.Feature.AUTOBUMP)) {
+            guildDatabase.autobump = false;
+            return void (await guildDatabase.save());
+          }
+          const cooldown = guildDatabase.getCooldown(true);
+          const nextBump = guildDatabase.lastBumpedAt
+            ? guildDatabase.lastBumpedAt.valueOf() + cooldown
+            : 0;
+          if (nextBump && nextBump > Date.now()) return;
+          const guild = OpenBump.instance.client.guilds.cache.get(
+            guildDatabase.id
+          );
+          if (!guild) return;
+
+          console.log(`Guild ${guildDatabase.id} is now being autobumped...`);
+          await Bump.bump(
+            guildDatabase,
+            await Bump.getEmbed(guild, guildDatabase)
+          );
+
+          guildDatabase.lastBumpedAt = new Date();
+          guildDatabase.lastBumpedBy = OpenBump.instance.client.user?.id;
+          await guildDatabase.save();
+        } catch (error) {
+          console.error(`Error while autobumping ${guildDatabase?.id}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error(`Error in general autobump loop:`, error);
+    }
+  }
 }
 
 class Lists {
