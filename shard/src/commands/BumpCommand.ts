@@ -24,7 +24,9 @@ export default class BumpCommand extends Command {
     ) {
       const voted = await Utils.Lists.hasVotedTopGG(author.id);
       const cooldown = guildDatabase.getCooldown(true, voted);
-      const nextBump = guildDatabase.lastBumpedAt?.valueOf() + cooldown;
+      const nextBump = guildDatabase.lastBumpedAt
+        ? guildDatabase.lastBumpedAt.valueOf() + cooldown
+        : 0;
       const remaining = nextBump - Date.now();
       if (nextBump && nextBump > Date.now()) {
         const suggestions: Array<Discord.EmbedFieldData> = [];
