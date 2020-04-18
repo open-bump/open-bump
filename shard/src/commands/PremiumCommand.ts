@@ -52,6 +52,8 @@ export default class PremiumCommand extends Command {
           `\n\n` +
           `Manage your pledge at **[Patreon](https://www.patreon.com/Looat)**.`;
 
+      const prefix = Utils.getPrefix(guildDatabase);
+
       const embed = {
         color: Utils.Colors.BLUE,
         title: `${Utils.Emojis.INFORMATION} Premium Overview`,
@@ -68,9 +70,9 @@ export default class PremiumCommand extends Command {
           {
             name: "Syntax",
             value:
-              `- \`ob!premium activate <tier...>\` - Activate Premium on this server\n` +
-              `- \`ob!premium deactivate [serverId]\` - Deactivate Premium\n` +
-              `- \`ob!premium tiers\` - List all tiers`
+              `- \`${prefix}premium activate <tier...>\` - Activate Premium on this server\n` +
+              `- \`${prefix}premium deactivate [serverId]\` - Deactivate Premium\n` +
+              `- \`${prefix}premium tiers\` - List all tiers`
           }
         ]
       };
@@ -83,7 +85,9 @@ export default class PremiumCommand extends Command {
           `Premium allows you to use additional features and commands. You can buy Premium from Patreon by using the link below:\n` +
           `https://patreon.com/Looat\n` +
           `\n` +
-          `To view a list of all available tiers, please use the command \`ob!premium tiers\`.`,
+          `To view a list of all available tiers, please use the command \`${Utils.getPrefix(
+            guildDatabase
+          )}premium tiers\`.`,
         fields: [
           {
             name: `${Utils.Emojis.EXCLAMATION} You are not a Donator`,
@@ -100,8 +104,9 @@ export default class PremiumCommand extends Command {
       const embed = {
         color: Utils.Colors.BLUE,
         title: `${Utils.Emojis.INFORMATION} Premium Tiers`,
-        description:
-          "This is a list of all tiers. Use the command `ob!premium activate <tier...>` to activate premium on this server.",
+        description: `This is a list of all tiers. Use the command \`${Utils.getPrefix(
+          guildDatabase
+        )}premium activate <tier...>\` to activate premium on this server.`,
         fields: premiumTiers.map((premiumTier) => ({
           name: `${premiumTier.name} | ${premiumTier.cost} cents`,
           value: premiumTier.features
@@ -191,7 +196,9 @@ export default class PremiumCommand extends Command {
               `The tier costs ${tier.cost} cents but you only have ${
                 totalBalance - totalAssignedOthers
               } cents left for this server.\n` +
-              `Get an overview of your currently activated servers using \`ob!premium\`.`
+              `Get an overview of your currently activated servers using \`${Utils.getPrefix(
+                guildDatabase
+              )}premium\`.`
           };
           return void (await channel.send({ embed }));
         }
@@ -201,12 +208,14 @@ export default class PremiumCommand extends Command {
           title: `${Utils.Emojis.XMARK} Tier not found`,
           description:
             `Could not find tier \`${search}\`.\n` +
-            `Use the command \`ob!premium tiers\` to get a list of all tiers.`
+            `Use the command \`${Utils.getPrefix(
+              guildDatabase
+            )}premium tiers\` to get a list of all tiers.`
         };
         return void (await channel.send({ embed }));
       }
     } else {
-      return void (await this.sendSyntax(message));
+      return void (await this.sendSyntax(message, guildDatabase));
     }
   }
 }

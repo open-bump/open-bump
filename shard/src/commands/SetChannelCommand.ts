@@ -67,7 +67,7 @@ export default class SetChannelCommand extends Command {
           `\n` +
           `By setting a bump channel, you agree to receive the other server's bumps on your server. In return, you'll get a cooldown reduction of 15 minutes.\n` +
           `\n` +
-          `**Syntax:** ob!${this.syntax}`
+          `**Syntax:** ${Utils.getPrefix(guildDatabase)}${this.syntax}`
       };
       return void (await channel.send({ embed }));
     }

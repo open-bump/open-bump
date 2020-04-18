@@ -1,8 +1,8 @@
 import { ParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import Guild from "./models/Guild";
-import Utils from "./Utils";
 import OpenBump from "./OpenBump";
+import Utils from "./Utils";
 
 export default abstract class Command {
   public abstract name: string;
@@ -25,11 +25,17 @@ export default abstract class Command {
     return this.permissions;
   }
 
-  protected async sendSyntax(message: Discord.Message, syntax?: string) {
+  protected async sendSyntax(
+    message: Discord.Message,
+    guild: Guild,
+    syntax?: string
+  ) {
     const embed = {
       color: Utils.Colors.RED,
       title: `${Utils.Emojis.XMARK} Syntax Error`,
-      description: `**Syntax:** ${syntax || this.syntax}`
+      description: `**Syntax:** ${Utils.getPrefix(guild)}${
+        syntax || this.syntax
+      }`
     };
     return void (await message.channel.send({ embed }));
   }

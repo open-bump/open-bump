@@ -76,7 +76,7 @@ export default class Premium {
               "It looks like your balance is not enough to cover the cost for all activated servers. " +
               "Please fix this issue asap." +
               "You can increate your pledge or disable/change change servers. " +
-              "To get an overview of your activated premium servers, use the command `ob!premium` to do so. " +
+              `To get an overview of your activated premium servers, use the command \`${Utils.getPrefix()}premium\` to do so. ` +
               "Please note, the premium command needs to be executed on your own server and not via DMs. " +
               `If you believe this is an error, please contact **[Support](${config.settings.support})**.\n` +
               `\n` +
@@ -131,7 +131,7 @@ export default class Premium {
               "It looks like your balance is not enough to cover the cost for all activated servers. " +
               "Please fix this issue asap." +
               "You can increate your pledge or disable/change change servers. " +
-              "To get an overview of your activated premium servers, use the command `ob!premium` to do so. " +
+              `To get an overview of your activated premium servers, use the command \`${Utils.getPrefix()}premium\` to do so. ` +
               "Please note, the premium command needs to be executed on your own server and not via DMs. " +
               `If you believe this is an error, please contact **[Support](${config.settings.support})**.`
           };

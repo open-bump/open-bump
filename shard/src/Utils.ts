@@ -8,6 +8,7 @@ import ms from "ms";
 import path from "path";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
+import config from "./config";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
 
@@ -31,7 +32,7 @@ class Bump {
   ): Promise<MessageEmbedOptions> {
     // Check for missing values
     const missing = this.getMissingValues(guild, guildDatabase);
-    if (missing) throw new GuildNotReadyError(missing);
+    if (missing) throw new GuildNotReadyError(missing, guildDatabase);
 
     // Verify invite
     let invite;
@@ -40,10 +41,10 @@ class Bump {
         guildDatabase.bumpData.invite
       );
     } catch (error) {
-      throw new InviteNotValidError();
+      throw new InviteNotValidError(guildDatabase);
     }
     if (!invite.guild?.id || invite.guild.id !== guild.id)
-      throw new InviteNotValidError();
+      throw new InviteNotValidError(guildDatabase);
 
     // Prepare data
     let total = 0;
@@ -224,7 +225,9 @@ class Bump {
               title: `${Utils.Emojis.XMARK} Channel not found`,
               description:
                 `Hey there, we tried to bump to your bump channel on your server ${guild.name}. However, we were not able to find the channel. ` +
-                `Please fix this issue by setting a new bump channel using \`ob!setchannel <channel>\`.`
+                `Please fix this issue by setting a new bump channel using \`${Utils.getPrefix(
+                  guildDatabase
+                )}setchannel <channel>\`.`
             };
             try {
               await guild.owner?.user.send({ embed });
@@ -496,6 +499,12 @@ export default class Utils {
     return value.replace(/(_|%|\\)/g, "\\$1");
   }
 
+  public static getPrefix(guild?: Guild) {
+    if (guild?.getFeatures().includes("PREFIX") && guild.prefix)
+      return guild.prefix;
+    return config.settings.prefix;
+  }
+
   public static Colors = {
     BLUE: 0x698cce,
     RED: 0xff0000,
@@ -558,7 +567,7 @@ export abstract class EmbedError extends Error {
 }
 
 export class GuildNotReadyError extends EmbedError {
-  constructor(public missing: Array<string>) {
+  constructor(public missing: Array<string>, public guild: Guild) {
     super("The guild is not ready yet!");
   }
 
@@ -570,13 +579,15 @@ export class GuildNotReadyError extends EmbedError {
         "The following fields are missing:\n" +
         this.missing.map((missing) => `- \`${missing}\``).join("\n") +
         "\n\n" +
-        "Check out the command `ob!help` to learn how to set them."
+        `Check out the command \`${Utils.getPrefix(
+          this.guild
+        )}help\` to learn how to set them.`
     };
   }
 }
 
 export class InviteNotValidError extends EmbedError {
-  constructor() {
+  constructor(public guild: Guild) {
     super("The guild's invite is not valid!");
   }
 
@@ -586,7 +597,9 @@ export class InviteNotValidError extends EmbedError {
       title: `${Utils.Emojis.XMARK} Invite not valid!`,
       description:
         "It looks like the invite you have set is not valid or does not point to your guild.\n" +
-        "Please set a new invite using `ob!setinvite`."
+        `Please set a new invite using \`${Utils.getPrefix(
+          this.guild
+        )}setinvite\`.`
     };
   }
 }
