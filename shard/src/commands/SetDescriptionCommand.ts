@@ -20,6 +20,7 @@ export default class SetDescriptionCommand extends Command {
     guildDatabase: Guild
   ) {
     const { channel } = message;
+
     if (args.length >= 1) {
       if (
         !((args[0] === "reset" || args[0] === "default") && args.length === 1)

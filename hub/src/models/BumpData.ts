@@ -38,5 +38,5 @@ export default class BumpData extends Model<BumpData> {
   banner!: string;
 
   @Column(DataType.INTEGER)
-  color!: number;
+  color?: number | null;
 }

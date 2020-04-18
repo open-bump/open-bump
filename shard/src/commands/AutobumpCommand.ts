@@ -22,7 +22,7 @@ export default class AutobumpCommand extends Command {
     const { channel } = message;
 
     if (!guildDatabase.getFeatures().includes(Utils.Feature.AUTOBUMP))
-      throw new RestrictedFeatureError("AUTOBUMP", guildDatabase);
+      throw new RestrictedFeatureError(Utils.Feature.AUTOBUMP, guildDatabase);
 
     if (args.length === 1) {
       if (args[0] === "enable" || args[0] === "on" || args[0] === "true") {

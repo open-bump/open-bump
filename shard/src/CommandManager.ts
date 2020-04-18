@@ -11,6 +11,7 @@ import PrefixCommand from "./commands/PrefixCommand";
 import PremiumCommand from "./commands/PremiumCommand";
 import PreviewCommand from "./commands/PreviewCommand";
 import SetChannelCommand from "./commands/SetChannelCommand";
+import SetColorCommand from "./commands/SetColorCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
 import SetInviteCommand from "./commands/SetInviteCommand";
 import config from "./config";
@@ -61,6 +62,7 @@ export default class CommandManager {
     this.registerCommand(new PremiumCommand(this.instance));
     this.registerCommand(new PreviewCommand(this.instance));
     this.registerCommand(new SetChannelCommand(this.instance));
+    this.registerCommand(new SetColorCommand(this.instance));
     this.registerCommand(new SetDescriptionCommand(this.instance));
     this.registerCommand(new SetInviteCommand(this.instance));
   }
