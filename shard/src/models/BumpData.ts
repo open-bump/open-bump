@@ -29,7 +29,7 @@ export default class BumpData extends Model<BumpData> {
   guild!: Guild;
 
   @Column(DataType.TEXT)
-  description?: string|null;
+  description?: string | null;
 
   @Column(DataType.STRING)
   invite!: string;
@@ -38,5 +38,5 @@ export default class BumpData extends Model<BumpData> {
   banner!: string;
 
   @Column(DataType.INTEGER)
-  color!: number;
+  color?: number | null;
 }

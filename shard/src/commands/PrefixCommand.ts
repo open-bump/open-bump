@@ -34,8 +34,8 @@ export default class PrefixCommand extends Command {
       };
       return void (await channel.send({ embed }));
     } else if (args.length === 1) {
-      if (!guildDatabase.getFeatures().includes(Utils.Feature.AUTOBUMP))
-        throw new RestrictedFeatureError("PREFIX", guildDatabase);
+      if (!guildDatabase.getFeatures().includes(Utils.Feature.PREFIX))
+        throw new RestrictedFeatureError(Utils.Feature.PREFIX, guildDatabase);
 
       const newPrefix =
         args[0] === "reset" || args[0] === "default" ? null : args[0];

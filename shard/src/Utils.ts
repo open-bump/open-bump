@@ -1,3 +1,4 @@
+import Color from "color";
 import Discord, {
   MessageEmbedOptions,
   PermissionString,
@@ -5,6 +6,7 @@ import Discord, {
 } from "discord.js";
 import moment from "moment";
 import ms from "ms";
+import ntc from "ntcjs";
 import path from "path";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
@@ -71,7 +73,9 @@ class Bump {
     emojis = guild.emojis.cache.size;
 
     // Color
-    const color = Utils.Colors.OPENBUMP;
+    let color = Utils.Colors.OPENBUMP;
+    if (guildDatabase.getFeatures().includes(Utils.Feature.COLOR))
+      color = guildDatabase.bumpData.color ?? color;
 
     // Region
     const regions = await guild.fetchVoiceRegions();
@@ -459,7 +463,9 @@ export default class Utils {
     if (error instanceof EmbedError) return error.toEmbed();
     return {
       color: Utils.Colors.RED,
-      title: `${Utils.Emojis.XMARK} Unknown error!`,
+      title: `${Utils.Emojis.XMARK} ${
+        error instanceof TitleError ? error.title : "Unknown error"
+      }`,
       description: error.message
     };
   }
@@ -499,6 +505,16 @@ export default class Utils {
     return value.replace(/(_|%|\\)/g, "\\$1");
   }
 
+  public static textToColor(input: string): number {
+    return Color(input).rgbNumber();
+  }
+
+  public static colorToText(input: number): string {
+    const hex = Color(input).hex();
+    const [, name, exact] = ntc.name(hex);
+    return exact ? name : hex;
+  }
+
   public static getPrefix(guild?: Guild) {
     if (guild?.getFeatures().includes("PREFIX") && guild.prefix)
       return guild.prefix;
@@ -514,13 +530,13 @@ export default class Utils {
   };
 
   public static Feature = {
-    COLOR: "COLOR",
-    BANNER: "BANNER",
-    PREFIX: "PREFIX",
-    FEATURED: "FEATURED",
-    CROSS: "CROSS",
-    RESTRICTED_CHANNEL: "RESTRICTED_CHANNEL",
-    AUTOBUMP: "AUTOBUMP"
+    COLOR: "COLOR" as "COLOR",
+    BANNER: "BANNER" as "BANNER",
+    PREFIX: "PREFIX" as "PREFIX",
+    FEATURED: "FEATURED" as "FEATURED",
+    CROSS: "CROSS" as "CROSS",
+    RESTRICTED_CHANNEL: "RESTRICTED_CHANNEL" as "RESTRICTED_CHANNEL",
+    AUTOBUMP: "AUTOBUMP" as "AUTOBUMP"
   };
 
   public static Emojis = {
@@ -564,6 +580,19 @@ export default class Utils {
 
 export abstract class EmbedError extends Error {
   public abstract toEmbed(): MessageEmbedOptions;
+}
+
+export class TitleError extends Error {
+  constructor(public title: string, message: string) {
+    super(message);
+  }
+
+  public static create(title: string, error: Error | string) {
+    return new TitleError(
+      title,
+      error instanceof Error ? error?.message || String(error) : error
+    );
+  }
 }
 
 export class GuildNotReadyError extends EmbedError {
