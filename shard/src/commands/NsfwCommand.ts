@@ -15,24 +15,28 @@ export default class NsfwCommand extends Command {
   ) {
     const { channel, guild } = message;
     if (args.length === 1) {
-      if (args[0] === "enable" || args[0] === "on") {
+      if (args[0] === "enable" || args[0] === "on" || args[0] === "true") {
         guildDatabase.nsfw = true;
         await guildDatabase.save();
 
         const embed = {
           color: Utils.Colors.GREEN,
           title: `${Utils.Emojis.CHECK} NSFW status has been updated`,
-          description: `__**New NSFW Status:**__ enabled`
+          description: `__**New NSFW Status:**__ Enabled`
         };
         return void (await channel.send({ embed }));
-      } else if (args[0] === "disable" || args[0] === "off") {
+      } else if (
+        args[0] === "disable" ||
+        args[0] === "off" ||
+        args[0] === "false"
+      ) {
         guildDatabase.nsfw = false;
         await guildDatabase.save();
 
         const embed = {
           color: Utils.Colors.GREEN,
           title: `${Utils.Emojis.CHECK} NSFW status has been updated`,
-          description: `__**New NSFW Status:**__ disabled`
+          description: `__**New NSFW Status:**__ Disabled`
         };
         return void (await channel.send({ embed }));
       } else return void (await this.sendSyntax(message));
