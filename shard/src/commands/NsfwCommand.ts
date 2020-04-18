@@ -39,7 +39,7 @@ export default class NsfwCommand extends Command {
           description: `__**New NSFW Status:**__ Disabled`
         };
         return void (await channel.send({ embed }));
-      } else return void (await this.sendSyntax(message));
+      } else return void (await this.sendSyntax(message, guildDatabase));
     } else {
       const { nsfw } = guildDatabase;
       const embed = {
@@ -54,9 +54,9 @@ export default class NsfwCommand extends Command {
           `\n` +
           `You can ${
             nsfw ? "disable" : "enable"
-          } NSFW marking by running the command \`ob!nsfw ${
-            nsfw ? "disable" : "enable"
-          }\`.`
+          } NSFW marking by running the command \`${Utils.getPrefix(
+            guildDatabase
+          )}nsfw ${nsfw ? "disable" : "enable"}\`.`
       };
       return void (await channel.send({ embed }));
     }
