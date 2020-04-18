@@ -37,8 +37,7 @@ export default class SetInviteCommand extends Command {
       const embed = {
         color: Utils.Colors.RED,
         title: `${Utils.Emojis.XMARK} Missing Permissions`,
-        description:
-          "Make sure the bot has the `Create Instant Invite` permission in this channel to be able to set an invite."
+        description: `Make sure ${this.instance.client.user?.username} has the \`Create Instant Invite\` permission in this channel to be able to set an invite.`
       };
     }
   }

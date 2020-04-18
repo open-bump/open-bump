@@ -2,6 +2,7 @@ import parser from "discord-command-parser";
 import Discord from "discord.js";
 import Command from "./Command";
 import AboutCommand from "./commands/AboutCommand";
+import AutobumpCommand from "./commands/AutobumpCommand";
 import BumpCommand from "./commands/BumpCommand";
 import HelpCommand from "./commands/HelpCommand";
 import NsfwCommand from "./commands/NsfwCommand";
@@ -30,7 +31,7 @@ export default class CommandManager {
       String(this.instance.client.user)
     ];
     const guildDatabase = await Utils.ensureGuild(message.guild);
-    if (guildDatabase.getFeatures().includes(Utils.Features.PREFIX))
+    if (guildDatabase.getFeatures().includes(Utils.Feature.PREFIX))
       if (guildDatabase.prefix) prefixes.push(guildDatabase.prefix);
 
     const parsed = parser.parse(message, config.settings.prefix, {});
@@ -50,6 +51,7 @@ export default class CommandManager {
 
   private registerCommands() {
     this.registerCommand(new AboutCommand(this.instance));
+    this.registerCommand(new AutobumpCommand(this.instance));
     this.registerCommand(new BumpCommand(this.instance));
     this.registerCommand(new HelpCommand(this.instance));
     this.registerCommand(new NsfwCommand(this.instance));

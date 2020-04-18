@@ -6,14 +6,14 @@ import Utils from "../Utils";
 export default class NsfwCommand extends Command {
   public name = "nsfw";
   public aliases = ["setnsfw", "set-nsfw", "togglensfw", "toggle-nsfw"];
-  public syntax = "setnsfw [enable|disable]";
+  public syntax = "nsfw [enable|disable]";
   public description = "Set whether your server is NSFW or not";
 
   public async run(
     { message, arguments: args }: ParsedMessage,
     guildDatabase: Guild
   ) {
-    const { channel, guild } = message;
+    const { channel } = message;
     if (args.length === 1) {
       if (args[0] === "enable" || args[0] === "on" || args[0] === "true") {
         guildDatabase.nsfw = true;
