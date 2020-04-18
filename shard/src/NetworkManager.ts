@@ -83,9 +83,9 @@ export default class NetworkManager {
     this.connected = false;
   }
 
-  public async emitBump(guild: string, embed: MessageEmbedOptions) {
+  public async emitBump(guild: string, embed: MessageEmbedOptions, type: keyof typeof Utils.Bump.BumpType) {
     const amount: number = await new Promise((resolve) =>
-      this.socket.emit("bump", guild, embed, resolve)
+      this.socket.emit("bump", guild, embed, type, resolve)
     );
     return amount;
   }
@@ -98,6 +98,7 @@ export default class NetworkManager {
   private async onBump(
     guild: string,
     embed: object,
+    type: keyof typeof Utils.Bump.BumpType,
     origin: number,
     callback: (amount: number) => void
   ) {
@@ -106,7 +107,7 @@ export default class NetworkManager {
       where: { id: guild }
     });
     if (!guildDatabase) return;
-    const amount = await Utils.Bump.bumpToThisShard(guildDatabase, embed);
+    const amount = await Utils.Bump.bumpToThisShard(guildDatabase, embed, type);
     callback(amount);
   }
 

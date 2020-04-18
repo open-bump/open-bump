@@ -47,6 +47,7 @@ export default class Shard {
   private async onBump(
     guild: string,
     embed: object,
+    type: string,
     callback: (amount: number) => void
   ) {
     const shards = this.shardManager.getOtherShards(this.id);
@@ -58,6 +59,7 @@ export default class Shard {
               "bump",
               guild,
               embed,
+              type,
               this.id,
               (amount: number) => {
                 resolve(amount);

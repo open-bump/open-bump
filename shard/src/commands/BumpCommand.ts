@@ -47,7 +47,7 @@ export default class BumpCommand extends Command {
         } else throw error;
       }
 
-      const amount = await Utils.Bump.bumpToAllShards(guildDatabase, bumpEmbed);
+      const amount = await Utils.Bump.bump(guildDatabase, bumpEmbed);
 
       guildDatabase.lastBumpedAt = new Date();
       guildDatabase.lastBumpedBy = author.id;

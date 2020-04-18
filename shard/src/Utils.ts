@@ -7,6 +7,7 @@ import moment from "moment";
 import ms from "ms";
 import path from "path";
 import { Op } from "sequelize";
+import { Sequelize } from "sequelize-typescript";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
 
@@ -121,24 +122,33 @@ class Bump {
     };
   }
 
-  public static bump(guildDatabase: Guild, embed: MessageEmbedOptions) {}
-
-  public static async bumpToAllShards(
-    guildDatabase: Guild,
-    embed: MessageEmbedOptions
-  ) {
+  public static async bump(guildDatabase: Guild, embed: MessageEmbedOptions) {
+    const cross = guildDatabase.getFeatures().includes(Utils.Features.CROSS);
     const [internal, external] = await Promise.all([
-      OpenBump.instance.networkManager.emitBump(guildDatabase.id, embed),
-      this.bumpToThisShard(guildDatabase, embed)
+      this.bumpToThisShard(guildDatabase, embed, this.BumpType.CROSS),
+      OpenBump.instance.networkManager.emitBump(
+        guildDatabase.id,
+        embed,
+        cross ? this.BumpType.CROSS : this.BumpType.HUBS
+      )
     ]);
     return internal + external;
   }
 
   public static async bumpToThisShard(
     guildDatabase: Guild,
-    embed: MessageEmbedOptions
+    embed: MessageEmbedOptions,
+    type: keyof typeof Bump.BumpType
   ): Promise<number> {
-    let guildFeeds = await this.fetchGuildFeeds();
+    let guildFeeds: Array<Guild>;
+
+    if (type === Bump.BumpType.HUBS) {
+      guildFeeds = await this.fetchGuildFeeds(0, true);
+    } else if (type === Bump.BumpType.CROSS) {
+      guildFeeds = await this.fetchGuildFeeds(50, true);
+    } else if (type === Bump.BumpType.FULL) {
+      guildFeeds = await this.fetchGuildFeeds();
+    } else throw new Error("This error should never be thrown.");
 
     guildFeeds = guildFeeds.filter(
       (guildFeed) => Boolean(guildFeed.nsfw) == Boolean(guildDatabase.nsfw)
@@ -230,22 +240,52 @@ class Bump {
     return amount;
   }
 
-  public static async fetchGuildFeeds() {
-    const channels = await Guild.findAll({
-      where: {
-        feed: {
-          [Op.and]: [
-            {
-              [Op.ne]: null
+  public static async fetchGuildFeeds(amount = -1, hubs = true) {
+    const feedChannels =
+      amount !== 0
+        ? await Guild.findAll({
+            where: {
+              feed: {
+                [Op.and]: [
+                  {
+                    [Op.ne]: null
+                  },
+                  {
+                    [Op.ne]: ""
+                  }
+                ]
+              }
             },
-            {
-              [Op.ne]: ""
+            ...(amount >= 0
+              ? {
+                  order: [Sequelize.literal("rand()")],
+                  limit: amount
+                }
+              : {})
+          })
+        : [];
+    const hubChannels =
+      hubs && amount >= 0 && feedChannels.length >= amount
+        ? await Guild.findAll({
+            where: {
+              hub: true,
+              id: {
+                [Op.notIn]: feedChannels.map(({ id }) => id)
+              },
+              feed: {
+                [Op.and]: [
+                  {
+                    [Op.ne]: null
+                  },
+                  {
+                    [Op.ne]: ""
+                  }
+                ]
+              }
             }
-          ]
-        }
-      }
-    });
-    return channels;
+          })
+        : [];
+    return [...feedChannels, ...hubChannels];
   }
 
   public static getBumpChannelIssues(
@@ -313,6 +353,12 @@ class Bump {
 
     return issues;
   }
+
+  public static BumpType = {
+    HUBS: "HUBS" as "HUBS",
+    CROSS: "CROSS" as "CROSS",
+    FULL: "FULL" as "FULL"
+  };
 }
 
 export default class Utils {
