@@ -627,7 +627,7 @@ export default class Utils {
       matching = channels.filter((channel) => channel.name.includes(input));
 
     if (matching.length === 1) return matching[0];
-    else if (matching.length) throw new TooManyResultsError("guilds", matching);
+    else if (matching.length) throw new TooManyResultsError("channels", matching);
     throw new NotFoundError("guild");
   }
 
