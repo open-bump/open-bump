@@ -1,7 +1,52 @@
+import fetch from "node-fetch";
 import path from "path";
+import config from "./config";
 import Hub from "./Hub";
 
+class Notifications {
+  public static async postShardConnected(shard: number) {
+    return await this.post({
+      color: Utils.Colors.ORANGE,
+      description: `${Utils.Emojis.IMPORTANTNOTICE} Shard #${shard} connected`
+    });
+  }
+
+  public static async postShardReady(shard: number) {
+    return await this.post({
+      color: Utils.Colors.GREEN,
+      description: `${Utils.Emojis.CHECK} Shard #${shard} ready`
+    });
+  }
+
+  public static async postShardDisconnected(shard: number, force = false) {
+    return await this.post({
+      color: Utils.Colors.RED,
+      description: `${Utils.Emojis.EXCLAMATION} Shard #${shard} disconnected`,
+      fields: [
+        {
+          name: "Disconnected by force",
+          value: String(force)
+        }
+      ]
+    });
+  }
+
+  private static async post(embed: object) {
+    await fetch(config.settings.logs.webhook, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        embeds: [embed]
+      })
+    });
+  }
+}
+
 export default class Utils {
+  public static Notifications = Notifications;
+
   public static mergeObjects<T extends object = object>(
     target: T,
     ...sources: Array<T>
@@ -40,4 +85,18 @@ export default class Utils {
     } catch (error) {}
     throw new Error(`Can't load package.json!`);
   }
+
+  public static Colors = {
+    BLUE: 0x698cce,
+    RED: 0xff0000,
+    GREEN: 0x3dd42c,
+    ORANGE: 0xff9900,
+    OPENBUMP: 0x27ad60
+  };
+
+  public static Emojis = {
+    IMPORTANTNOTICE: "⚠️",
+    CHECK: "✅",
+    EXCLAMATION: "❗"
+  };
 }

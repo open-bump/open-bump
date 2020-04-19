@@ -663,7 +663,7 @@ export default class Utils {
     XMARK: "<:xmark:621063205854380086>",
     UNSET: "<:neutral:621063802028294155>",
     NEUTRAL: "<:neutral:621063205854380057>",
-    IMPORTANTNOTICE: "<:importantnotice:621049166759460884>",
+    IMPORTANTNOTICE: "⚠️",
     FEATURED: "<:FeaturedServer:622845429045919745>",
     UNITEDSERVER: "<:UnitedServer:622845429435858955>",
     EARLYSUPPORTER: "<:EarlySupporter:622852038031835137>",

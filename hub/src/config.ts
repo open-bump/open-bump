@@ -19,6 +19,9 @@ interface IConfig extends config.IConfig {
   };
   settings: {
     port: number;
+    logs: {
+      webhook: string;
+    }
   };
   patreon: {
     enabled: boolean;

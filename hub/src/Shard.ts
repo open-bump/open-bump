@@ -1,6 +1,7 @@
 import socket from "socket.io";
 import Hub from "./Hub";
 import ShardManager from "./ShardManager";
+import Utils from "./Utils";
 
 interface ISetupData {
   id: number;
@@ -37,6 +38,8 @@ export default class Shard {
       id: this.id,
       total: this.shardManager.total
     });
+
+    Utils.Notifications.postShardConnected(this.id);
   }
 
   private async onDisconnect() {
@@ -45,6 +48,7 @@ export default class Shard {
 
   private onReady() {
     console.log(`Shard #${this.id} confirmed it's ready.`);
+    Utils.Notifications.postShardReady(this.id);
     this.ready = true;
   }
 
@@ -118,5 +122,6 @@ export default class Shard {
       `Shard #${this.id} is disconnecting ${force ? "by" : "without"} force...`
     );
     if (!force) this.instance.shardManager.shards[this.id] = undefined;
+    Utils.Notifications.postShardDisconnected(this.id, force);
   }
 }
