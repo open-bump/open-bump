@@ -1,6 +1,7 @@
 import { ParsedMessage } from "discord-command-parser";
 import { Op } from "sequelize";
 import Command from "../Command";
+import config from "../config";
 import AssignedTier from "../models/AssignedTier";
 import Donator from "../models/Donator";
 import Guild from "../models/Guild";
@@ -50,7 +51,7 @@ export default class PremiumCommand extends Command {
       if (userDatabase.donator.patreon)
         description +=
           `\n\n` +
-          `Manage your pledge at **[Patreon](https://www.patreon.com/Looat)**.`;
+          `Manage your pledge at **[Patreon](${config.settings.patreon})**.`;
 
       const prefix = Utils.getPrefix(guildDatabase);
 
@@ -83,7 +84,7 @@ export default class PremiumCommand extends Command {
         title: `${Utils.Emojis.FEATURED} Premium`,
         description:
           `Premium allows you to use additional features and commands. You can buy Premium from Patreon by using the link below:\n` +
-          `https://patreon.com/Looat\n` +
+          `${config.settings.patreon}\n` +
           `\n` +
           `To view a list of all available tiers, please use the command \`${Utils.getPrefix(
             guildDatabase
