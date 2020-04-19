@@ -11,6 +11,16 @@ interface ISetupData {
   total: number;
 }
 
+interface IStatsShardData {
+  guilds: number;
+  users: number;
+  uptime: number | null;
+}
+
+interface IStatsData {
+  [shard: number]: IStatsShardData | "timeout" | "disconnected";
+}
+
 export default class NetworkManager {
   public id!: number;
   public total!: number;
@@ -96,9 +106,9 @@ export default class NetworkManager {
   }
 
   public async requestStats() {
-    const stats = await new Promise<{
-      [shard: number]: { guilds: number; users: number };
-    }>((resolve) => this.socket.emit("stats", resolve));
+    const stats = await new Promise<IStatsData>((resolve) =>
+      this.socket.emit("stats", resolve)
+    );
     return stats;
   }
 
@@ -123,12 +133,11 @@ export default class NetworkManager {
     callback(amount.length);
   }
 
-  private async onStats(
-    callback: (data: { guilds: number; users: number }) => void
-  ) {
+  private async onStats(callback: (data: IStatsShardData) => void) {
     const guilds = this.instance.client.guilds.cache.size;
     const users = this.instance.client.users.cache.size;
-    callback({ guilds, users });
+    const uptime = this.instance.client.uptime;
+    callback({ guilds, users, uptime });
   }
 
   public async onIdentify(callback: (shard?: number) => void) {
