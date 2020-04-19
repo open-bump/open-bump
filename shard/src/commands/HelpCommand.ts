@@ -8,6 +8,7 @@ export default class HelpCommand extends Command {
   public name = "help";
   public syntax = "help [command]";
   public description = "View a list of available commands";
+  public general = true;
 
   public async run(
     { message, arguments: args }: ParsedMessage,
@@ -15,19 +16,46 @@ export default class HelpCommand extends Command {
   ) {
     const { channel } = message;
     if (args.length === 0) {
+      const prefix = Utils.getPrefix(guildDatabase);
       const embed = {
         color: Utils.Colors.GREEN,
-        title: `${Utils.Emojis.INFORMATION} Help`,
-        description: `To view more information about a command, use the command \`${Utils.getPrefix(
+        title: `PYS Bump | Discord Bump Bot`,
+        description: `To view more information - \`${Utils.getPrefix(
           guildDatabase
-        )}help <command>\``,
-        fields: this.instance.commandManager
-          .getCommands()
-          .filter(({ vanished }) => !vanished)
-          .map((command) => ({
-            name: command.syntax,
-            value: command.description
-          }))
+        )}help <command>\`.`,
+        thumbnail: {
+          url: OpenBump.instance.client.user?.displayAvatarURL()
+        },
+        fields: [
+          {
+            name: "General Help Plugins",
+            value: this.instance.commandManager
+              .getCommands()
+              .filter(({ vanished }) => !vanished)
+              .filter(({ general }) => general)
+              .map(
+                (command) =>
+                  `\`${prefix}${command.name}\` - ${command.description}`
+              )
+              .join("\n")
+          },
+          {
+            name: "Bumpset Help Plugins",
+            value: this.instance.commandManager
+              .getCommands()
+              .filter(({ vanished }) => !vanished)
+              .filter(({ general }) => !general)
+              .map(
+                (command) =>
+                  `\`${prefix}${command.name}\` - ${command.description}`
+              )
+              .join("\n")
+          }
+        ],
+        footer: {
+          text: `Shard #${OpenBump.instance.networkManager.id} | Shard Guilds: ${OpenBump.instance.client.guilds.cache.size} | Shard Latency: ${OpenBump.instance.client.ws.ping}`
+        },
+        timestamp: Date.now()
       };
       return void (await channel.send({ embed }));
     } else if (args.length === 1) {

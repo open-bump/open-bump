@@ -9,6 +9,7 @@ export default class SetChannelCommand extends Command {
   public aliases = ["set-channel", "channel"];
   public syntax = "setchannel [channel|reset]";
   public description = "Set the bump feed channel for your server";
+  public general = false;
 
   public async run(
     { message, arguments: args }: ParsedMessage,

@@ -6,7 +6,6 @@ import Discord, {
   TextChannel
 } from "discord.js";
 import moment from "moment";
-import ms from "ms";
 import fetch from "node-fetch";
 import ntc from "ntcjs";
 import path from "path";
@@ -87,6 +86,7 @@ class Bump {
     let idle = 0;
     let offline = 0;
     let bots = 0;
+    let humans = 0;
     let roles = 0;
     let channels = 0;
     let emojis = 0;
@@ -98,6 +98,7 @@ class Bump {
       else offline++;
       total++;
       if (member.user.bot) bots++;
+      else humans++;
     }
 
     roles = guild.roles.cache.size;
@@ -121,13 +122,14 @@ class Bump {
     // Description
     const description =
       `${Utils.Emojis.OWNER} **Owner:** ${guild.owner?.user.tag}\n` +
+      `${Utils.Emojis.CREATED} **Created:** ${moment(
+        guild.createdTimestamp
+      ).format("ddd, DD MMM YYYY")}\n` +
       `${Utils.Emojis.REGION} **Region:** ${region?.name}\n` +
-      `${Utils.Emojis.CREATED} **Created:** ${ms(
-        Date.now() - guild.createdTimestamp,
-        { long: true }
-      )} ago\n` +
       `\n` +
-      `${guildDatabase.bumpData.description}`;
+      `${guildDatabase.bumpData.description}` +
+      `\n\n` +
+      `${Utils.Emojis.SLINK} **[CLICK HERE TO JOIN](${invite})**`;
 
     // Create
     return {
@@ -139,26 +141,26 @@ class Bump {
       description,
       fields: [
         {
-          name: `${Utils.Emojis.SLINK} **Invite Link**`,
-          value: `**${invite}**`
+          name: `${Utils.Emojis.MEMBERS} Members \`${total}\``,
+          value:
+            `**Online:** \`${online}\` | ` +
+            `**Idle:** \`${idle}\` | ` +
+            `**Do Not Disturb:** \`${dnd}\``
         },
         {
-          name: `${Utils.Emojis.MEMBERS} **Members [${total}]**`,
+          name: `${Utils.Emojis.INFO} Misc`,
           value:
-            `${Utils.Emojis.ONLINE} **Online:** ${online}\n` +
-            `${Utils.Emojis.DND} **Do Not Disturb:** ${dnd}\n` +
-            `${Utils.Emojis.IDLE} **Idle:** ${idle}\n` +
-            `${Utils.Emojis.INVISIBLE} **Offline:** ${offline}`,
-          inline: true
+            `**Roles:** \`${roles}\` | ` +
+            `**Channels:** \`${channels}\` | ` +
+            `**Bots:** \`${bots}\` | ` +
+            `**Humans:** \`${humans}\``
         },
         {
-          name: `${Utils.Emojis.INFO} **Misc**`,
-          value:
-            `**Roles:** ${roles}\n` +
-            `**Bots:** ${bots}\n` +
-            `**Channels:** ${channels}\n` +
-            `**Emojis:** ${emojis}`,
-          inline: true
+          name: `${Utils.Emojis.EMOJIS} Total Emojis \`${emojis}\``,
+          value: Array.from(guild.emojis.cache.values())
+            .slice(0, 10)
+            .map(String)
+            .join(" ")
         }
       ],
       image: {
@@ -627,7 +629,8 @@ export default class Utils {
       matching = channels.filter((channel) => channel.name.includes(input));
 
     if (matching.length === 1) return matching[0];
-    else if (matching.length) throw new TooManyResultsError("guilds", matching);
+    else if (matching.length)
+      throw new TooManyResultsError("guilds", matching);
     throw new NotFoundError("guild");
   }
 
@@ -654,9 +657,9 @@ export default class Utils {
   public static Colors = {
     BLUE: 0x698cce,
     RED: 0xff0000,
-    GREEN: 0x3dd42c,
+    GREEN: 0x337ed8,
     ORANGE: 0xff9900,
-    OPENBUMP: 0x27ad60
+    OPENBUMP: 0
   };
 
   public static Feature = {
@@ -687,10 +690,11 @@ export default class Utils {
     THUMBSDOWN: "<:thumbsdown:631606537827123221>",
     OWNER: "<:owner:547102770696814592>",
     REGION: "<:region:547102740799553615>",
-    CREATED: "<:created:547102739503644672>",
+    CREATED: "<:region:547102740799553615>",
     SLINK: "<:slink:547112000778403844>",
     MEMBERS: "<:members:547112000765821039>",
     INFO: "<:info:547112000765820949>",
+    EMOJIS: "😆",
     ONLINE: "<:online:546621462715301888>",
     DND: "<:dnd:546621462434414593>",
     IDLE: "<:idle:546621462677684225>",

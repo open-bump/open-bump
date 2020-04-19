@@ -9,6 +9,7 @@ export default abstract class Command {
   public aliases: Array<string> = [];
   public abstract syntax: string;
   public abstract description: string;
+  public abstract general: boolean;
   public vanished = false;
   protected permissions = [];
 

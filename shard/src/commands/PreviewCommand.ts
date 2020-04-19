@@ -8,6 +8,7 @@ export default class PreviewCommand extends Command {
   public aliases = ["showcase"];
   public syntax = "preview";
   public description = "Display a preview of your bump's embed";
+  public general = false;
 
   public async run({ message }: ParsedMessage, guildDatabase: Guild) {
     const { channel, guild } = message;

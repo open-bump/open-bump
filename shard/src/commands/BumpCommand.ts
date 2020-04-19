@@ -14,6 +14,7 @@ export default class BumpCommand extends Command {
   public name = "bump";
   public syntax = "bump";
   public description = "Bump your server";
+  public general = true;
 
   public async run({ message }: ParsedMessage, guildDatabase: Guild) {
     const { channel, guild, author } = message;
@@ -78,8 +79,9 @@ export default class BumpCommand extends Command {
           color: Utils.Colors.RED,
           title: `${Utils.Emojis.XMARK} You are on cooldown!`,
           description:
-            `**Total Cooldown:** ${ms(cooldown, { long: true })}\n` +
-            `**Next Bump:** In ${ms(remaining, { long: true })}`,
+            `**Total Cooldown:** ${ms(cooldown, {
+              long: true
+            })}\n` + `**Next Bump:** In ${ms(remaining, { long: true })}`,
           fields: suggestions
         };
         return void (await channel.send({ embed }));
@@ -94,7 +96,9 @@ export default class BumpCommand extends Command {
         color: Utils.Colors.BLUE,
         title: `${Utils.Emojis.LOADING} Your server is being bumped...`
       };
-      const loadingMessage = await channel.send({ embed: loadingEmbed });
+      const loadingMessage = await channel.send({
+        embed: loadingEmbed
+      });
 
       // TODO: Use correct bump utils function to regulate receivers
       let bumpEmbed;
@@ -103,7 +107,9 @@ export default class BumpCommand extends Command {
         bumpEmbed = await Utils.Bump.getEmbed(guild, guildDatabase);
       } catch (error) {
         if (error instanceof EmbedError) {
-          return void (await loadingMessage.edit({ embed: error.toEmbed() }));
+          return void (await loadingMessage.edit({
+            embed: error.toEmbed()
+          }));
         } else throw error;
       }
 

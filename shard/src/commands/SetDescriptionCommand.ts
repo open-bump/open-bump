@@ -14,6 +14,7 @@ export default class SetDescriptionCommand extends Command {
   ];
   public syntax = "setdescription <<description...>|reset>";
   public description = "Set the description for your server";
+  public general = false;
 
   public async run(
     { message, arguments: args, body }: ParsedMessage,

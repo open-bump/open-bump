@@ -54,21 +54,21 @@ export default class CommandManager {
   }
 
   private registerCommands() {
-    this.registerCommand(new AboutCommand(this.instance));
-    this.registerCommand(new AutobumpCommand(this.instance));
-    this.registerCommand(new BumpCommand(this.instance));
     this.registerCommand(new HelpCommand(this.instance));
-    this.registerCommand(new NsfwCommand(this.instance));
-    this.registerCommand(new PingCommand(this.instance));
     this.registerCommand(new PrefixCommand(this.instance));
     this.registerCommand(new PremiumCommand(this.instance));
-    this.registerCommand(new PreviewCommand(this.instance));
+    this.registerCommand(new BumpCommand(this.instance));
+    this.registerCommand(new AboutCommand(this.instance));
+    this.registerCommand(new AutobumpCommand(this.instance));
+    this.registerCommand(new NsfwCommand(this.instance));
+    this.registerCommand(new PingCommand(this.instance));
     this.registerCommand(new SetBannerCommand(this.instance));
     this.registerCommand(new SetChannelCommand(this.instance));
     this.registerCommand(new SetColorCommand(this.instance));
     this.registerCommand(new SetDescriptionCommand(this.instance));
     this.registerCommand(new SetInviteCommand(this.instance));
     this.registerCommand(new StatsCommand(this.instance));
+    this.registerCommand(new PreviewCommand(this.instance));
   }
 
   private registerCommand(command: Command) {

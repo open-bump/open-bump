@@ -14,6 +14,7 @@ export default class PremiumCommand extends Command {
   public aliases = ["patreon", "donate", "donator"];
   public syntax = "premium [tiers|activate <tier...>|deactivate [serverId]]";
   public description = "View information about and manage your premium";
+  public general = true;
 
   public async run(
     { message, arguments: args }: ParsedMessage,
@@ -22,7 +23,12 @@ export default class PremiumCommand extends Command {
     const { channel, author, guild } = message;
     const userDatabase = await User.findOne({
       where: { id: author.id },
-      include: [{ model: Donator, include: [AssignedTier.scope("default")] }]
+      include: [
+        {
+          model: Donator,
+          include: [AssignedTier.scope("default")]
+        }
+      ]
     });
 
     if (
@@ -101,7 +107,9 @@ export default class PremiumCommand extends Command {
       args.length === 1 &&
       (args[0] === "tiers" || args[0] === "list")
     ) {
-      const premiumTiers = await PremiumTier.findAll({ order: ["cost"] });
+      const premiumTiers = await PremiumTier.findAll({
+        order: ["cost"]
+      });
       const embed = {
         color: Utils.Colors.BLUE,
         title: `${Utils.Emojis.INFORMATION} Premium Tiers`,

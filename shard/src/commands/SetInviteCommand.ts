@@ -8,6 +8,7 @@ export default class SetInviteCommand extends Command {
   public aliases = ["set-invite", "setdesc", "set-desc"];
   public syntax = "setinvite";
   public description = "Set the invite for your server";
+  public general = false;
 
   public async run(
     { message, arguments: args, body }: ParsedMessage<GuildMessage>,

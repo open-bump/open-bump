@@ -8,6 +8,7 @@ export default class SetColorCommand extends Command {
   public aliases = ["color", "set-color"];
   public syntax = "setcolor <<color>|reset>";
   public description = "Set the bump color for your server";
+  public general = false;
 
   public async run(
     { message, arguments: args }: ParsedMessage,

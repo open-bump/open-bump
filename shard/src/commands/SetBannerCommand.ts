@@ -8,6 +8,7 @@ export default class SetBannerCommand extends Command {
   public aliases = ["banner", "set-banner"];
   public syntax = "setbanner <<url>|reset>";
   public description = "Set the bump banner for your server";
+  public general = false;
 
   public async run(
     { message, arguments: args }: ParsedMessage<GuildMessage>,

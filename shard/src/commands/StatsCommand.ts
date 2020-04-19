@@ -8,6 +8,7 @@ export default class StatsCommand extends Command {
   public name = "stats";
   public syntax = "stats";
   public description = "View the bot's stats";
+  public general = true;
   public vanished = true;
 
   public async run({ message }: ParsedMessage, guildDatabase: Guild) {

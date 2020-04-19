@@ -8,6 +8,7 @@ export default class NsfwCommand extends Command {
   public aliases = ["setnsfw", "set-nsfw", "togglensfw", "toggle-nsfw"];
   public syntax = "nsfw [enable|disable]";
   public description = "Set whether your server is NSFW or not";
+  public general = false;
 
   public async run(
     { message, arguments: args }: ParsedMessage,

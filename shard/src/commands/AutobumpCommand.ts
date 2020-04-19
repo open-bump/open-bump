@@ -14,6 +14,7 @@ export default class AutobumpCommand extends Command {
   ];
   public syntax = "autobump [enable|disable]";
   public description = "Enable and disable autobump";
+  public general = false;
 
   public async run(
     { message, arguments: args }: ParsedMessage,

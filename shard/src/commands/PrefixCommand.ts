@@ -8,6 +8,7 @@ export default class PrefixCommand extends Command {
   public aliases = ["setprefix", "set-prefix"];
   public syntax = "prefix [<prefix>|reset]";
   public description = "View and update your prefix";
+  public general = true;
 
   public async run(
     { message, arguments: args }: ParsedMessage,
