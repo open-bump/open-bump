@@ -13,37 +13,59 @@ export default class StatsCommand extends Command {
   public async run({ message }: ParsedMessage, guildDatabase: Guild) {
     const { channel } = message;
 
-    const statsData = await this.instance.networkManager.requestStats();
+    const connected = this.instance.networkManager.connected;
+    const shards = this.instance.networkManager.total;
+    const statsData = connected
+      ? await this.instance.networkManager.requestStats()
+      : [];
+
+    let danger = !connected;
+    for (const id of Object.keys(statsData))
+      danger = danger || typeof statsData[Number(id)] === "string";
 
     const embed = {
-      color: Utils.Colors.BLUE,
-      title: `${Utils.Emojis.INFORMATION} Stats`,
-      fields: Object.keys(statsData)
-        .map(Number)
-        .sort((a: number, b: number) => a - b)
-        .map((id) => {
-          const stats = statsData[id];
-          let error = false;
-          if (stats === "timeout") error = true;
-          else if (stats === "disconnected") error = true;
-          return {
-            name: `Shard #${id}/${this.instance.networkManager.total}${
-              this.instance.networkManager.id === id ? " (current)" : ""
-            }`,
-            value:
-              `\`\`\`${error ? "diff" : "yaml"}\n` +
-              (stats === "timeout"
-                ? "- Timeout \n \n "
-                : stats === "disconnected"
-                ? "- Disconnected \n \n "
-                : `Servers: ${stats.guilds}\n` +
-                  `Users: ${stats.users}\n` +
-                  `Uptime: ${ms(stats.uptime || 0)}`) +
-              `\`\`\``,
-            inline: true
-          };
-        })
+      color: danger ? Utils.Colors.ORANGE : Utils.Colors.BLUE,
+      title: `${
+        danger ? Utils.Emojis.IMPORTANTNOTICE : Utils.Emojis.INFORMATION
+      } Stats`,
+      fields: [
+        {
+          name: "Manager",
+          value:
+            `\`\`\`${!connected ? "diff" : "yaml"}\n` +
+            (connected ? `Shards: ${shards}` : "- Disconnected ") +
+            `\`\`\``
+        },
+        ...Object.keys(statsData)
+          .map(Number)
+          .sort((a: number, b: number) => a - b)
+          .map((id) => {
+            const stats = statsData[id];
+            let error = false;
+            if (stats === "timeout") error = true;
+            else if (stats === "disconnected") error = true;
+            return {
+              name: `Shard #${id}${
+                this.instance.networkManager.id === id ? " (current)" : ""
+              }`,
+              value:
+                `\`\`\`${error ? "diff" : "yaml"}\n` +
+                (stats === "timeout"
+                  ? "- Timeout \n \n \n "
+                  : stats === "disconnected"
+                  ? "- Disconnected \n \n \n "
+                  : `Servers: ${stats.guilds}\n` +
+                    `Users: ${stats.users}\n` +
+                    `Uptime: ${ms(stats.uptime || 0)}\n` +
+                    `Ping: ${ms(stats.discordping)}`) +
+                `\`\`\``,
+              inline: true
+            };
+          })
+      ]
     };
-    return void (await channel.send({ embed }));
+    return void (await channel.send({
+      embed
+    }));
   }
 }

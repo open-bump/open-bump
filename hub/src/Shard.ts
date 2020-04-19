@@ -11,6 +11,7 @@ interface IStatsShardData {
   guilds: number;
   users: number;
   uptime: number | null;
+  discordping: number;
 }
 
 interface IStatsData {

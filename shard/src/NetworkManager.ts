@@ -11,10 +11,11 @@ interface ISetupData {
   total: number;
 }
 
-interface IStatsShardData {
+export interface IStatsShardData {
   guilds: number;
   users: number;
   uptime: number | null;
+  discordping: number;
 }
 
 interface IStatsData {
@@ -137,7 +138,8 @@ export default class NetworkManager {
     const guilds = this.instance.client.guilds.cache.size;
     const users = this.instance.client.users.cache.size;
     const uptime = this.instance.client.uptime;
-    callback({ guilds, users, uptime });
+    const discordping = this.instance.client.ws.ping;
+    callback({ guilds, users, uptime, discordping });
   }
 
   public async onIdentify(callback: (shard?: number) => void) {
