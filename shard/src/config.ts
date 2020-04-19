@@ -27,6 +27,9 @@ interface IConfig extends config.IConfig {
       vote: number;
     };
     features: Array<string>;
+    logs: {
+      guilds: string;
+    };
   };
   lists: {
     topgg: {
