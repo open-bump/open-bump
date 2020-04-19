@@ -7,8 +7,14 @@ interface ISetupData {
   total: number;
 }
 
+interface IStatsShardData {
+  guilds: number;
+  users: number;
+  uptime: number | null;
+}
+
 interface IStatsData {
-  [shard: number]: { guilds: number; users: number };
+  [shard: number]: IStatsShardData | "timeout" | "disconnected";
 }
 
 export default class Shard {
@@ -85,17 +91,24 @@ export default class Shard {
       shards.map(
         (shard) =>
           new Promise(async (resolve) => {
-            const data = await new Promise<{
-              guilds: number;
-              users: number;
-            }>((resolve) => {
+            if (!shard) return resolve();
+            const timeout = Number(
+              setTimeout(() => {
+                response[shard.id] = "timeout";
+                resolve;
+              }, 1000 * 5)
+            );
+            const data = await new Promise<IStatsShardData>((resolve) => {
               shard.socket.emit("stats", resolve);
             });
+            clearTimeout(timeout);
             response[shard.id] = data;
             resolve();
           })
       )
     );
+    for (let id = 0; id < this.shardManager.total; id++)
+      if (!response[id]) response[id] = "disconnected";
     callback(response);
   }
 
