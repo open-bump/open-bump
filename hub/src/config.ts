@@ -20,14 +20,14 @@ interface IConfig extends config.IConfig {
   settings: {
     port: number;
     logs: {
-      webhook: string;
-    }
+      shards: string;
+    };
   };
   patreon: {
     enabled: boolean;
     file: string;
     campaign: string;
-  }
+  };
 }
 
 export default config as IConfig;

@@ -31,15 +31,20 @@ class Notifications {
     });
   }
 
-  private static async post(embed: object) {
-    await fetch(config.settings.logs.webhook, {
+  private static async post(content: object | string) {
+    if (!config.settings.logs?.shards) return;
+    await fetch(config.settings.logs.shards, {
       method: "POST",
       headers: {
         "content-type": "application/json"
       },
-      body: JSON.stringify({
-        embeds: [embed]
-      })
+      body: JSON.stringify(
+        typeof content === "string"
+          ? { content }
+          : {
+              embeds: [content]
+            }
+      )
     });
   }
 }

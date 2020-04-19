@@ -1,8 +1,13 @@
 import Color from "color";
 import DBL from "dblapi.js";
-import Discord, { MessageEmbedOptions, PermissionString, TextChannel } from "discord.js";
+import Discord, {
+  MessageEmbedOptions,
+  PermissionString,
+  TextChannel
+} from "discord.js";
 import moment from "moment";
 import ms from "ms";
+import fetch from "node-fetch";
 import ntc from "ntcjs";
 import path from "path";
 import { Op } from "sequelize";
@@ -10,6 +15,36 @@ import { Sequelize } from "sequelize-typescript";
 import config from "./config";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
+
+class Notifications {
+  public static async postGuildAdded(guild: Discord.Guild) {
+    return await this.post(
+      `${Utils.Emojis.ADD} Joined guild **${guild.name}** (${guild.id}) [Shard #${OpenBump.instance.networkManager.id}]`
+    );
+  }
+  public static async postGuildRemoved(guild: Discord.Guild) {
+    return await this.post(
+      `${Utils.Emojis.REMOVE} Left guild **${guild.name}** (${guild.id}) [Shard #${OpenBump.instance.networkManager.id}]`
+    );
+  }
+
+  private static async post(content: object | string) {
+    if (!config.settings.logs?.guilds) return;
+    await fetch(config.settings.logs.guilds, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(
+        typeof content === "string"
+          ? { content }
+          : {
+              embeds: [content]
+            }
+      )
+    });
+  }
+}
 
 export type GuildMessage = Discord.Message & {
   channel: Discord.GuildChannel & Discord.TextBasedChannelFields;
@@ -462,6 +497,7 @@ class Lists {
 }
 
 export default class Utils {
+  public static Notifications = Notifications;
   public static Bump = Bump;
   public static Lists = Lists;
 
@@ -640,10 +676,13 @@ export default class Utils {
     ZAP: "⚡",
     BELL: "🔔",
     STAR: "⭐",
+
     ARROWRIGHT: "➡",
     INFORMATION: "ℹ",
     EXCLAMATION: "❗",
     MAILBOX: "📬",
+    ADD: "\\✔️",
+    REMOVE: "\\➖",
     THUMBSUP: "<:thumbsup:631606538598875174>",
     THUMBSDOWN: "<:thumbsdown:631606537827123221>",
     OWNER: "<:owner:547102770696814592>",
