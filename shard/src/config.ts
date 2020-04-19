@@ -30,6 +30,7 @@ interface IConfig extends config.IConfig {
     logs: {
       guilds: string;
     };
+    patreon: string;
   };
   lists: {
     topgg: {
