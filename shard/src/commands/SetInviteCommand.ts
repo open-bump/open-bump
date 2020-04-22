@@ -5,7 +5,7 @@ import Utils, { GuildMessage } from "../Utils";
 
 export default class SetInviteCommand extends Command {
   public name = "setinvite";
-  public aliases = ["set-invite", "setdesc", "set-desc"];
+  public aliases = ["set-invite"];
   public syntax = "setinvite";
   public description = "Set the invite for your server";
 
