@@ -121,11 +121,11 @@ class Bump {
 
     // Description
     const description =
-      `${Utils.Emojis.OWNER} **Owner:** ${guild.owner?.user.tag}\n` +
-      `${Utils.Emojis.CREATED} **Created:** ${moment(
+      `${Utils.Emojis.OWNER} **Owner:** \`${guild.owner?.user.tag}\`\n` +
+      `${Utils.Emojis.REGION} **Region:** \`${region?.name}\`\n` +
+      `${Utils.Emojis.CREATED} **Created:** \`${moment(
         guild.createdTimestamp
-      ).format("ddd, DD MMM YYYY")}\n` +
-      `${Utils.Emojis.REGION} **Region:** ${region?.name}\n` +
+      ).format("ddd, DD MMM YYYY")}\`\n` +
       `\n` +
       `${guildDatabase.bumpData.description}` +
       `\n\n` +
@@ -630,7 +630,7 @@ export default class Utils {
 
     if (matching.length === 1) return matching[0];
     else if (matching.length)
-      throw new TooManyResultsError("guilds", matching);
+      throw new TooManyResultsError("channels", matching);
     throw new NotFoundError("guild");
   }
 
@@ -679,7 +679,6 @@ export default class Utils {
     ZAP: "⚡",
     BELL: "🔔",
     STAR: "⭐",
-
     ARROWRIGHT: "➡",
     INFORMATION: "ℹ",
     EXCLAMATION: "❗",
@@ -690,11 +689,11 @@ export default class Utils {
     THUMBSDOWN: "<:thumbsdown:631606537827123221>",
     OWNER: "<:owner:547102770696814592>",
     REGION: "<:region:547102740799553615>",
-    CREATED: "<:region:547102740799553615>",
-    SLINK: "<:slink:547112000778403844>",
-    MEMBERS: "<:members:547112000765821039>",
-    INFO: "<:info:547112000765820949>",
-    EMOJIS: "😆",
+    CREATED: "<:created:547102739503644672>",
+    SLINK: "<:link:688700604448505917>",
+    MEMBERS: "<:members:688700604431728698>",
+    INFO: "<:error:678624265276358696>",
+    EMOJIS: "<:pys_happy:688700604935307361>",
     ONLINE: "<:online:546621462715301888>",
     DND: "<:dnd:546621462434414593>",
     IDLE: "<:idle:546621462677684225>",
@@ -703,7 +702,7 @@ export default class Utils {
     LOADING: "<a:loading:547809249552760842>",
     LOADINGGREEN: "<a:loading:631962121256566795>",
     CHECK: "<:check:621063206235930634>",
-    XMARK: "<:xmark:621063205854380086>",
+    XMARK: "<:cross:678626371110567973>",
     UNSET: "<:neutral:621063802028294155>",
     NEUTRAL: "<:neutral:621063205854380057>",
     IMPORTANTNOTICE: "⚠️",

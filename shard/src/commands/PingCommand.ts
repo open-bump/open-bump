@@ -9,7 +9,6 @@ export default class PingCommand extends Command {
   public syntax = "ping";
   public description = "View the bot's ping";
   public general = true;
-  public vanished = true;
 
   public async run({ message }: ParsedMessage, guildDatabase: Guild) {
     const { channel } = message;

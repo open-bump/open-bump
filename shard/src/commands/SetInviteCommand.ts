@@ -5,7 +5,7 @@ import Utils, { GuildMessage } from "../Utils";
 
 export default class SetInviteCommand extends Command {
   public name = "setinvite";
-  public aliases = ["set-invite", "setdesc", "set-desc"];
+  public aliases = ["set-invite"];
   public syntax = "setinvite";
   public description = "Set the invite for your server";
   public general = false;
@@ -40,6 +40,7 @@ export default class SetInviteCommand extends Command {
         title: `${Utils.Emojis.XMARK} Missing Permissions`,
         description: `Make sure ${this.instance.client.user?.username} has the \`Create Instant Invite\` permission in this channel to be able to set an invite.`
       };
+      return void (await channel.send({ embed }));
     }
   }
 }

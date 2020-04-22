@@ -14,7 +14,7 @@ export default class BumpCommand extends Command {
   public name = "bump";
   public syntax = "bump";
   public description = "Bump your server";
-  public general = true;
+  public general = false;
 
   public async run({ message }: ParsedMessage, guildDatabase: Guild) {
     const { channel, guild, author } = message;
