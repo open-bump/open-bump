@@ -9,7 +9,12 @@
     "debug:prepare": "rm -rf dist/debug && mkdir -p dist/debug",
     "debug:copy": "cp -r src/* dist/debug && mkdir -p config && cp -r config dist/debug/ && cp package.json dist/debug",
     "debug:tsc": "tsc --project . --outDir dist/debug --sourceMap",
-    "debug:cleanup": "rm -r dist/debug/*.ts && rm -r dist/debug/**/*.ts"
+    "debug:cleanup": "rm -r dist/debug/*.ts && rm -r dist/debug/**/*.ts",
+    "build": "npm run build:prepare && npm run build:copy && npm run build:tsc && npm run build:cleanup",
+    "build:prepare": "rm -rf dist/build && mkdir -p dist/build",
+    "build:copy": "cp -r src/* dist/build && mkdir -p config && cp -r config dist/build/ && cp package.json dist/build",
+    "build:tsc": "tsc --project . --outDir dist/build",
+    "build:cleanup": "rm -r dist/build/*.ts && rm -r dist/build/**/*.ts"
   },
   "repository": {
     "type": "git",
@@ -22,9 +27,6 @@
   },
   "homepage": "https://openbump.com/",
   "dependencies": {
-    "@types/bcryptjs": "^2.4.2",
-    "@types/socket.io-client": "^1.4.32",
-    "@types/ws": "^7.2.3",
     "bcryptjs": "^2.4.3",
     "color": "^3.1.2",
     "config": "^3.3.1",
@@ -45,6 +47,9 @@
     "sqlite3": "^4.1.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/socket.io-client": "^1.4.32",
+    "@types/ws": "^7.2.3",
     "@types/bluebird": "^3.5.30",
     "@types/color": "^3.0.1",
     "@types/config": "0.0.36",

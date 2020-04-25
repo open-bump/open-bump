@@ -4,7 +4,12 @@
   "description": "Open Bump allows you to automatically advertise your server on other servers and let them advertise their server on your server.",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node-dev --inspect=9221 -- src/index.ts"
+    "start": "ts-node-dev --inspect=9221 -- src/index.ts",
+    "build": "npm run build:prepare && npm run build:copy && npm run build:tsc && npm run build:cleanup",
+    "build:prepare": "rm -rf dist/build && mkdir -p dist/build",
+    "build:copy": "cp -r src/* dist/build && mkdir -p config && cp -r config dist/build/ && cp package.json dist/build",
+    "build:tsc": "tsc --project . --outDir dist/build",
+    "build:cleanup": "rm -r dist/build/*.ts && rm -r dist/build/**/*.ts"
   },
   "repository": {
     "type": "git",
@@ -17,8 +22,6 @@
   },
   "homepage": "https://openbump.com/",
   "dependencies": {
-    "@types/bcryptjs": "^2.4.2",
-    "@types/socket.io": "^2.1.4",
     "bcryptjs": "^2.4.3",
     "config": "^3.3.1",
     "dblapi.js": "^2.3.0",
@@ -44,6 +47,8 @@
     "sqlite3": "^4.1.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/socket.io": "^2.1.4",
     "@types/bluebird": "^3.5.30",
     "@types/config": "0.0.36",
     "@types/express": "^4.17.6",
@@ -52,6 +57,7 @@
     "@types/node-fetch": "^2.5.6",
     "@types/semver": "^7.1.0",
     "@types/validator": "^13.0.0",
-    "tsc": "^1.20150623.0"
+    "tsc": "^1.20150623.0",
+    "typescript": "^3.8.3"
   }
 }
