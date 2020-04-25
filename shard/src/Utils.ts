@@ -762,7 +762,7 @@ export default class Utils {
     LOADING: "<a:loading:547809249552760842>",
     LOADINGGREEN: "<a:loading:631962121256566795>",
     CHECK: "<:check:621063206235930634>",
-    XMARK: "<:cross:678626371110567973>",
+    XMARK: "<:xmark:621063205854380086>",
     UNSET: "<:neutral:621063802028294155>",
     NEUTRAL: "<:neutral:621063205854380057>",
     IMPORTANTNOTICE: "⚠️",
