@@ -1,4 +1,4 @@
-import Discord from "discord.js";
+import Discord, { WebSocketOptions } from "discord.js";
 import CommandManager from "./CommandManager";
 import config from "./config";
 import DatabaseManager from "./DatabaseManager";
@@ -21,7 +21,14 @@ export default class OpenBump {
   constructor() {
     OpenBump.instance = this;
 
-    this.client = new Discord.Client();
+    this.client = new Discord.Client({
+      ws: {
+        properties: {
+          $browser: "Discord Android",
+          $device: "Discord Android"
+        }
+      } as WebSocketOptions
+    });
 
     this.commandManager = new CommandManager(this);
     this.eventManager = new EventManager(this);
@@ -48,5 +55,18 @@ export default class OpenBump {
     await this.client.login(config.discord.token);
 
     await this.premium.init();
+  }
+
+  public async customStatusLoop() {
+    const totalServers = await this.networkManager.requestTotalServerCount();
+    this.client.user?.setPresence({
+      status: "online",
+      activity: {
+        type: "WATCHING",
+        name: `${config.settings.prefix}help | ${totalServers} servers | Discord Bump Bot`
+      }
+    });
+
+    setTimeout(this.customStatusLoop.bind(this), 1000 * 60 * 15); // Update every 15 minutes
   }
 }
