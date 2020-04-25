@@ -15,10 +15,10 @@ import SetChannelCommand from "./commands/SetChannelCommand";
 import SetColorCommand from "./commands/SetColorCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
 import SetInviteCommand from "./commands/SetInviteCommand";
+import StatsCommand from "./commands/StatsCommand";
 import config from "./config";
 import OpenBump from "./OpenBump";
 import Utils from "./Utils";
-import StatsCommand from "./commands/StatsCommand";
 
 export default class CommandManager {
   private commands: { [name: string]: Command } = {};
@@ -28,7 +28,14 @@ export default class CommandManager {
   }
 
   public async run(message: Discord.Message) {
-    if (!message.author || message.author.bot || !message.guild) return;
+    if (
+      !message.author ||
+      message.author.bot ||
+      !message.guild ||
+      !message.channel ||
+      !(message.channel instanceof Discord.TextChannel)
+    )
+      return;
 
     const prefixes = [
       config.settings.prefix,
@@ -42,6 +49,49 @@ export default class CommandManager {
     if (parsed.success) {
       const command = this.getCommand(parsed.command);
       if (!command) return;
+
+      const channel: Discord.TextChannel = parsed.message
+        .channel as Discord.TextChannel;
+      const requiredPermissions = new Discord.Permissions(
+        await command.calculatePermissions(parsed, guildDatabase)
+      );
+      const channelPermissions =
+        channel.permissionsFor(String(OpenBump.instance.client.user?.id)) ||
+        new Discord.Permissions(0);
+      const missing =
+        requiredPermissions.bitfield & ~channelPermissions.bitfield;
+      if (missing) {
+        if (
+          channelPermissions?.has([
+            Discord.Permissions.FLAGS.SEND_MESSAGES,
+            Discord.Permissions.FLAGS.EMBED_LINKS
+          ])
+        ) {
+          // Send permissions error
+          const embed = {
+            color: Utils.Colors.RED,
+            title: `${Utils.Emojis.XMARK} Permissions Error`,
+            description:
+              `Make sure the bot has the following permissions in this channel:\n` +
+              Utils.getPermissionIdentifiers(missing)
+                .map(Utils.translatePermission)
+                .map((permission) => `- \`${permission}\``)
+                .join("\n")
+          };
+          return void (await channel.send({ embed }));
+        } else if (
+          channelPermissions?.has([Discord.Permissions.FLAGS.SEND_MESSAGES])
+        ) {
+          // Send permissions error in plain text
+          return void (await channel.send(
+            "**Permissions Error!**\n" +
+              "Grant this bot `Send Messages` and `Embed Links` to view more information."
+          ));
+        } else {
+          return void console.log("TODO");
+          // Send DM as the bot doesn't have enough permissions
+        }
+      }
 
       try {
         await command.run(parsed, guildDatabase);

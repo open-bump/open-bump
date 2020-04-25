@@ -10,9 +10,21 @@ export default abstract class Command {
   public abstract syntax: string;
   public abstract description: string;
   public vanished = false;
-  protected permissions = [];
+  private permissions: Discord.PermissionResolvable = [
+    Discord.Permissions.FLAGS.SEND_MESSAGES,
+    Discord.Permissions.FLAGS.VIEW_CHANNEL,
+    Discord.Permissions.FLAGS.EMBED_LINKS
+  ];
 
-  constructor(protected instance: OpenBump) {}
+  constructor(
+    protected instance: OpenBump,
+    permissions?: Discord.PermissionResolvable
+  ) {
+    if (permissions)
+      this.permissions =
+        new Discord.Permissions(this.permissions).bitfield |
+        new Discord.Permissions(permissions).bitfield;
+  }
 
   public abstract async run(
     parsed: ParsedMessage,
