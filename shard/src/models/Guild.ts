@@ -51,7 +51,7 @@ export default class Guild extends Model<Guild> {
   lastBumpedBy?: string;
 
   @Column(DataType.DATE)
-  lastBumpedAt?: Date;
+  lastBumpedAt?: Date | null;
 
   @Default(0)
   @AllowNull(false)
