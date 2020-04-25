@@ -1,10 +1,6 @@
 import Color from "color";
 import DBL from "dblapi.js";
-import Discord, {
-  MessageEmbedOptions,
-  PermissionString,
-  TextChannel
-} from "discord.js";
+import Discord, { MessageEmbedOptions, PermissionString, TextChannel } from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import fetch from "node-fetch";
