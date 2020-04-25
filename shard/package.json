@@ -59,7 +59,6 @@
     "@types/node-fetch": "^2.5.6",
     "@types/semver": "^7.1.0",
     "@types/validator": "^13.0.0",
-    "tsc": "^1.20150623.0",
     "typescript": "^3.8.3"
   }
 }
