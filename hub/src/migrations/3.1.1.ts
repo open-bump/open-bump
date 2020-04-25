@@ -33,7 +33,7 @@ const migration: MigrationJS = {
           await queryInterface.bulkInsert(
             "PremiumTierFeature",
             data.features.map((feature) => ({
-              id: require('uuid').v4(),
+              id: require("uuid").v4(),
               premiumTierId: data.id,
               feature: feature
             })),
@@ -43,40 +43,48 @@ const migration: MigrationJS = {
       }
 
       await insertTier({
-        id: "122ca791-b19e-4c69-9e06-4554dfcaff67",
-        name: "Wumpus",
+        id: "c8a68353-31ee-47ee-8694-a533d2c8283f",
+        name: "Basic Wumpus",
         cost: 100,
-        features: ["COLOR", "BANNER", "PREFIX", "FEATURED", "CROSS"]
+        cooldown: 30,
+        features: ["PREFIX", "RESTRICTED_CHANNEL"]
       });
 
       await insertTier({
-        id: "d502d010-925e-4342-ba97-9d001fb35dbe",
-        name: "Boxer",
+        id: "5d132b40-deed-4be2-ada9-c9704c391f48",
+        name: "Classic Wumpus",
         cost: 300,
-        features: ["AUTOBUMP", "PREFIX", "CROSS"]
+        cooldown: 30,
+        features: ["PREFIX", "RESTRICTED_CHANNEL", "BANNER", "COLOR"]
       });
 
       await insertTier({
-        id: "215f4d85-e53e-4fd3-8657-31b46562b63c",
-        name: "Cool Wumpus",
+        id: "e890b016-4b97-43d3-963e-455501e8679b",
+        name: "Nitro Wumpus",
         cost: 500,
-        features: ["COLOR", "BANNER", "PREFIX", "FEATURED", "AUTOBUMP", "CROSS"]
+        cooldown: 30,
+        features: [
+          "PREFIX",
+          "RESTRICTED_CHANNEL",
+          "BANNER",
+          "COLOR",
+          "AUTOBUMP"
+        ]
       });
 
       await insertTier({
-        id: "ebc8ce5c-1034-4af1-868b-582c20ef95e8",
-        name: "Fast Boxer",
-        cost: 500,
+        id: "5a4cfedc-d51b-406b-9957-638832e287c2",
+        name: "Booster Wumpus",
+        cost: 800,
         cooldown: 15,
-        features: ["PREFIX", "AUTOBUMP", "CROSS"]
-      });
-
-      await insertTier({
-        id: "dd6328b3-7d54-41f3-8c63-39d350a55cc1",
-        name: "Super Wumpus",
-        cost: 700,
-        cooldown: 15,
-        features: ["COLOR", "BANNER", "PREFIX", "FEATURED", "AUTOBUMP", "CROSS"]
+        features: [
+          "PREFIX",
+          "RESTRICTED_CHANNEL",
+          "BANNER",
+          "COLOR",
+          "AUTOBUMP",
+          "CROSS"
+        ]
       });
 
       /* Commit Transaction */
@@ -94,18 +102,21 @@ const migration: MigrationJS = {
 
       /* Delete Default Premium Tiers */
       const defaultTiers = [
-        "122ca791-b19e-4c69-9e06-4554dfcaff67",
-        "d502d010-925e-4342-ba97-9d001fb35dbe",
-        "215f4d85-e53e-4fd3-8657-31b46562b63c",
-        "ebc8ce5c-1034-4af1-868b-582c20ef95e8",
-        "dd6328b3-7d54-41f3-8c63-39d350a55cc1"
+        "c8a68353-31ee-47ee-8694-a533d2c8283f",
+        "5d132b40-deed-4be2-ada9-c9704c391f48",
+        "e890b016-4b97-43d3-963e-455501e8679b",
+        "5a4cfedc-d51b-406b-9957-638832e287c2"
       ];
 
-      await queryInterface.bulkDelete("PremiumTier", {
-        id: {
-          [op.in]: defaultTiers
-        }
-      }, { transaction });
+      await queryInterface.bulkDelete(
+        "PremiumTier",
+        {
+          id: {
+            [op.in]: defaultTiers
+          }
+        },
+        { transaction }
+      );
 
       /* Commit Transaction */
       await transaction.commit();
