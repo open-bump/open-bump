@@ -32,6 +32,9 @@ interface IConfig extends config.IConfig {
       guilds: string;
     };
     patreon: string;
+    meta: {
+      radioXInvite: string;
+    }
   };
   lists: {
     topgg: {

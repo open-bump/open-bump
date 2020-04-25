@@ -499,6 +499,10 @@ class Lists {
       return false;
     }
   }
+
+  public static getLinkTopGG() {
+    return `https://top.gg/bot/${OpenBump.instance.client.user?.id}/vote`;
+  }
 }
 
 export default class Utils {

@@ -5,6 +5,7 @@ import AboutCommand from "./commands/AboutCommand";
 import AutobumpCommand from "./commands/AutobumpCommand";
 import BumpCommand from "./commands/BumpCommand";
 import HelpCommand from "./commands/HelpCommand";
+import InviteCommand from "./commands/InviteCommand";
 import NsfwCommand from "./commands/NsfwCommand";
 import PingCommand from "./commands/PingCommand";
 import PrefixCommand from "./commands/PrefixCommand";
@@ -112,6 +113,7 @@ export default class CommandManager {
     this.registerCommand(new PremiumCommand(this.instance));
     this.registerCommand(new BumpCommand(this.instance));
     this.registerCommand(new AboutCommand(this.instance));
+    this.registerCommand(new InviteCommand(this.instance));
     this.registerCommand(new AutobumpCommand(this.instance));
     this.registerCommand(new NsfwCommand(this.instance));
     this.registerCommand(new SetBannerCommand(this.instance));
