@@ -10,7 +10,6 @@ export default class AboutCommand extends Command {
   public syntax = "about";
   public description = "View information about this bot";
   public general = true;
-  public vanished = true;
 
   public async run(
     { message }: ParsedMessage<GuildMessage>,

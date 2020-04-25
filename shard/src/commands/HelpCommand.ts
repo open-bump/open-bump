@@ -31,7 +31,6 @@ export default class HelpCommand extends Command {
             name: "General Help Plugins",
             value: this.instance.commandManager
               .getCommands()
-              .filter(({ vanished }) => !vanished)
               .filter(({ general }) => general)
               .map(
                 (command) =>
@@ -43,7 +42,6 @@ export default class HelpCommand extends Command {
             name: "Bumpset Help Plugins",
             value: this.instance.commandManager
               .getCommands()
-              .filter(({ vanished }) => !vanished)
               .filter(({ general }) => !general)
               .map(
                 (command) =>

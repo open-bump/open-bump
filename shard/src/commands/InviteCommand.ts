@@ -9,7 +9,6 @@ export default class InviteCommand extends Command {
   public syntax = "invite";
   public description = "Get an invite link to invite the bot";
   public general = true;
-  public vanished = true;
 
   public async run(
     { message }: ParsedMessage<GuildMessage>,

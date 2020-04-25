@@ -9,6 +9,7 @@ export default class VoteCommand extends Command {
   public name = "vote";
   public syntax = "vote";
   public description = `Vote for this bot to get a cooldown reduction`;
+  public general = true;
 
   public async run(
     { message }: ParsedMessage<GuildMessage>,

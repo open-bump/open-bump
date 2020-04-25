@@ -10,7 +10,6 @@ export default abstract class Command {
   public abstract syntax: string;
   public abstract description: string;
   public abstract general: boolean;
-  public vanished = false;
   private permissions: Discord.PermissionResolvable = [
     Discord.Permissions.FLAGS.SEND_MESSAGES,
     Discord.Permissions.FLAGS.VIEW_CHANNEL,
