@@ -35,7 +35,7 @@ export default class NetworkManager {
     const token = config.discord.token;
     const hashed = bcrypt.hashSync(token, bcrypt.genSaltSync(10));
 
-    this.socket = io("http://localhost:3000", {
+    this.socket = io(config.settings.hub, {
       query: { authorization: hashed }
     });
     console.log("Waiting for connection with hub...");
