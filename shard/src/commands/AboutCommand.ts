@@ -6,7 +6,7 @@ import Utils, { GuildMessage } from "../Utils";
 
 export default class AboutCommand extends Command {
   public name = "about";
-  public aliases = ["invite", "info", "information", "support"];
+  public aliases = ["invite", "info", "information"];
   public syntax = "about";
   public description = "View information about this bot";
   public vanished = true;
