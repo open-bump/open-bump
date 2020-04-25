@@ -1,6 +1,11 @@
 import Color from "color";
 import DBL from "dblapi.js";
-import Discord, { MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js";
+import Discord, {
+  MessageEmbedOptions,
+  Permissions,
+  PermissionString,
+  TextChannel
+} from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import fetch from "node-fetch";
@@ -491,6 +496,10 @@ class Lists {
     } catch (error) {
       return false;
     }
+  }
+
+  public static getLinkTopGG() {
+    return `https://top.gg/bot/${OpenBump.instance.client.user?.id}/vote`;
   }
 }
 
