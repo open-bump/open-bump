@@ -627,7 +627,8 @@ export default class Utils {
       matching = channels.filter((channel) => channel.name.includes(input));
 
     if (matching.length === 1) return matching[0];
-    else if (matching.length) throw new TooManyResultsError("channels", matching);
+    else if (matching.length)
+      throw new TooManyResultsError("channels", matching);
     throw new NotFoundError("guild");
   }
 
@@ -650,6 +651,57 @@ export default class Utils {
       return guild.prefix;
     return config.settings.prefix;
   }
+
+  public static getPermissionIdentifiers(bits: number) {
+    const permissions = new Discord.Permissions(bits);
+    return permissions.toArray();
+  }
+
+  public static translatePermission(
+    permission: Array<Discord.PermissionString> | Discord.PermissionString
+  ) {
+    if (Array.isArray(permission)) {
+      return permission.map((id) => Utils.PermissionsNames[id]);
+    } else {
+      return Utils.PermissionsNames[permission];
+    }
+  }
+
+  public static PermissionsNames: {
+    [id in Discord.PermissionString]: string;
+  } = {
+    ADD_REACTIONS: "Add Reactions",
+    ADMINISTRATOR: "Administrator",
+    ATTACH_FILES: "Attach Files",
+    BAN_MEMBERS: "Ban Members",
+    CHANGE_NICKNAME: "Change Nickname",
+    CONNECT: "Connect",
+    CREATE_INSTANT_INVITE: "Create Invite",
+    DEAFEN_MEMBERS: "Deafen Members",
+    EMBED_LINKS: "Embed Links",
+    KICK_MEMBERS: "Kick Members",
+    MANAGE_CHANNELS: "Manage Channels",
+    MANAGE_EMOJIS: "Manage Emojis",
+    MANAGE_GUILD: "Manage Server",
+    MANAGE_MESSAGES: "Manage Messages",
+    MANAGE_NICKNAMES: "Manage Nicknames",
+    VIEW_CHANNEL: "Read Text Channels & See Voice Channels",
+    VIEW_AUDIT_LOG: "View Audit Log",
+    MANAGE_ROLES: "Manage Roles",
+    MANAGE_WEBHOOKS: "Manage Webhooks",
+    MENTION_EVERYONE: "Mention @everyone, @here, and All Roles",
+    MOVE_MEMBERS: "Move Members",
+    MUTE_MEMBERS: "Mute Members",
+    PRIORITY_SPEAKER: "Priority Speaker",
+    READ_MESSAGE_HISTORY: "Read Message History",
+    SEND_MESSAGES: "Send Messages",
+    SEND_TTS_MESSAGES: "Send TTS Messages",
+    SPEAK: "Speak",
+    STREAM: "Video",
+    USE_EXTERNAL_EMOJIS: "Use External Emojis",
+    USE_VAD: "Use Voice Activity",
+    VIEW_GUILD_INSIGHTS: "View Guild Insights"
+  };
 
   public static Colors = {
     BLUE: 0x698cce,
