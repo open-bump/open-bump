@@ -39,7 +39,10 @@ export default class VoteCommand extends Command {
           config.settings.cooldown.vote * 60 * 1000,
           { long: true }
         )} for 12 hours.\n` +
-        `After 12 hours, just vote again to unlock your super power again!`
+        `After 12 hours, just vote again to unlock your super power again!`,
+      thumbnail: {
+        url: this.instance.client.user?.displayAvatarURL()
+      }
     };
     return void (await channel.send({ embed }));
   }

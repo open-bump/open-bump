@@ -31,6 +31,9 @@ export default class StatsCommand extends Command {
       title: `${
         danger ? Utils.Emojis.IMPORTANTNOTICE : Utils.Emojis.INFORMATION
       } Stats`,
+      thumbnail: {
+        url: this.instance.client.user?.displayAvatarURL()
+      },
       fields: [
         {
           name: "Manager",

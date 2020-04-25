@@ -84,7 +84,7 @@ export default class PremiumCommand extends Command {
         ]
       };
       return void (await channel.send({ embed }));
-    } else if (!userDatabase?.donator && args.length === 0) {
+    } else if (!userDatabase?.donator) {
       const embed = {
         color: Utils.Colors.ORANGE,
         title: `${Utils.Emojis.FEATURED} Premium`,
@@ -95,6 +95,9 @@ export default class PremiumCommand extends Command {
           `To view a list of all available tiers, please use the command \`${Utils.getPrefix(
             guildDatabase
           )}premium tiers\`.`,
+        thumbnail: {
+          url: this.instance.client.user?.displayAvatarURL()
+        },
         fields: [
           {
             name: `${Utils.Emojis.EXCLAMATION} You are not a Donator`,

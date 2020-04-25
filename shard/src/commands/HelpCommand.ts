@@ -24,7 +24,7 @@ export default class HelpCommand extends Command {
           guildDatabase
         )}help <command>\`.`,
         thumbnail: {
-          url: OpenBump.instance.client.user?.displayAvatarURL()
+          url: this.instance.client.user?.displayAvatarURL()
         },
         fields: [
           {

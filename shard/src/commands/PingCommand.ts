@@ -28,6 +28,9 @@ export default class PingCommand extends Command {
       title: `${
         danger ? Utils.Emojis.IMPORTANTNOTICE : Utils.Emojis.INFORMATION
       } Ping`,
+      thumbnail: {
+        url: this.instance.client.user?.displayAvatarURL()
+      },
       fields: [
         {
           name: "Websocket Hearthbeat",

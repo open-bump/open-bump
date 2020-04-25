@@ -30,6 +30,9 @@ export default class AboutCommand extends Command {
     const embed = {
       color: Utils.Colors.BLUE,
       title: `${this.instance.client.user?.username} | Discord Bump Bot`,
+      thumbnail: {
+        url: this.instance.client.user?.displayAvatarURL()
+      },
       fields: Object.keys(items).map((key) => ({
         name: key,
         value: `\`\`\`${items[key]}\`\`\``,

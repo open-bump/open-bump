@@ -27,6 +27,9 @@ export default class InviteCommand extends Command {
 
     const embed = {
       color: Utils.Colors.BLUE,
+      thumbnail: {
+        url: this.instance.client.user?.displayAvatarURL()
+      },
       fields: Object.keys(items).map((key) => ({
         name: key,
         value: `${items[key]}`,

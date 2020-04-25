@@ -31,7 +31,10 @@ export default class PrefixCommand extends Command {
       const embed = {
         color: Utils.Colors.GREEN,
         title: `${Utils.Emojis.CHECK} Prefix`,
-        description
+        description,
+        thumbnail: {
+          url: this.instance.client.user?.displayAvatarURL()
+        }
       };
       return void (await channel.send({ embed }));
     } else if (args.length === 1) {
