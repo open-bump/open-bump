@@ -19,7 +19,7 @@ export default class HelpCommand extends Command {
       const prefix = Utils.getPrefix(guildDatabase);
       const embed = {
         color: Utils.Colors.GREEN,
-        title: `PYS Bump | Discord Bump Bot`,
+        title: `${this.instance.client.user?.username} | Discord Bump Bot`,
         description: `To view more information - \`${Utils.getPrefix(
           guildDatabase
         )}help <command>\`.`,
@@ -53,7 +53,7 @@ export default class HelpCommand extends Command {
           }
         ],
         footer: {
-          text: `Shard #${OpenBump.instance.networkManager.id} | Shard Guilds: ${OpenBump.instance.client.guilds.cache.size} | Shard Latency: ${OpenBump.instance.client.ws.ping}`
+          text: Utils.getCommonFooter()
         },
         timestamp: Date.now()
       };

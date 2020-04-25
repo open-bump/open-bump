@@ -20,6 +20,7 @@
     "type": "git",
     "url": "git+https://github.com/lyne/open-bump.git"
   },
+  "owner": "Director",
   "author": "Looat",
   "license": "ISC",
   "bugs": {

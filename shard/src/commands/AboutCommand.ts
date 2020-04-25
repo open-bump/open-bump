@@ -1,6 +1,6 @@
 import { ParsedMessage } from "discord-command-parser";
+import Discord from "discord.js";
 import Command from "../Command";
-import config from "../config";
 import Guild from "../models/Guild";
 import Utils, { GuildMessage } from "../Utils";
 
@@ -18,15 +18,27 @@ export default class AboutCommand extends Command {
   ) {
     const { channel } = message;
     const packageJson = Utils.getPackageJson();
+
+    const items: { [name: string]: string } = {
+      "Bot Library": "Discord.js",
+      "Library Version": Discord.version,
+      "Bot Version": packageJson.version,
+      Owner: packageJson.owner,
+      Author: packageJson.author,
+      "Shard Count": `${this.instance.networkManager.total} shards`
+    };
+
     const embed = {
       color: Utils.Colors.BLUE,
-      title: `${Utils.Emojis.INFORMATION} About ${this.instance.client.user?.username}`,
-      description:
-        `**Version:** ${packageJson.version}\n` +
-        `**Author:** ${packageJson.author}\n` +
-        `**Description:** ${packageJson.description}\n` +
-        `**Invite this bot:** [Click Here](${Utils.getInviteLink()})\n` +
-        `**Support Server:** [Click Here](${config.settings.support})`
+      title: `${this.instance.client.user?.username} | Discord Bump Bot`,
+      fields: Object.keys(items).map((key) => ({
+        name: key,
+        value: `\`\`\`${items[key]}\`\`\``,
+        inline: true
+      })),
+      footer: {
+        text: Utils.getCommonFooter()
+      }
     };
     return void (await channel.send({ embed }));
   }
