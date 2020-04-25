@@ -16,6 +16,7 @@ interface IConfig extends config.IConfig {
   discord: {
     token: string;
     shard?: number;
+    admins: Array<string>;
   };
   settings: {
     hub: string;
@@ -34,7 +35,11 @@ interface IConfig extends config.IConfig {
     patreon: string;
     meta: {
       radioXInvite: string;
-    }
+    };
+    servermate: {
+      user: string;
+      trigger: string;
+    };
   };
   lists: {
     topgg: {

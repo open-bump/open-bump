@@ -770,7 +770,25 @@ export default class Utils {
     UNITEDSERVER: "<:UnitedServer:622845429435858955>",
     EARLYSUPPORTER: "<:EarlySupporter:622852038031835137>",
     AFFILIATEDSERVER: "<:AffiliatedServer:622857526924279848>",
-    BUMPCHANNEL: "<:BumpChannel:632703590632390686>"
+    BUMPCHANNEL: "<:BumpChannel:632703590632390686>",
+    getRaw: (emoji: string) => {
+      const regex = /<a?:.{0,}:([0-9]{10,20})>/gim;
+      let m;
+
+      while ((m = regex.exec(emoji)) !== null) {
+        if (m.index === regex.lastIndex) {
+          regex.lastIndex++;
+        }
+
+        let res: string | null = null;
+        m.forEach((match, groupIndex) => {
+          if (groupIndex === 1) res = match;
+        });
+        return res || emoji;
+      }
+
+      return emoji;
+    }
   };
 }
 

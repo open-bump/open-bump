@@ -109,9 +109,9 @@ export default class BumpCommand extends Command {
         bumpEmbed = await Utils.Bump.getEmbed(guild, guildDatabase);
       } catch (error) {
         if (error instanceof EmbedError) {
-          return void (await loadingMessage.edit({
-            embed: error.toEmbed()
-          }));
+          guildDatabase.lastBumpedAt = null;
+          await guildDatabase.save();
+          return void (await loadingMessage.edit({ embed: error.toEmbed() }));
         } else throw error;
       }
 
