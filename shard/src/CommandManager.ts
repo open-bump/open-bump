@@ -17,6 +17,7 @@ import SetColorCommand from "./commands/SetColorCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
 import SetInviteCommand from "./commands/SetInviteCommand";
 import StatsCommand from "./commands/StatsCommand";
+import VoteCommand from "./commands/VoteCommand";
 import config from "./config";
 import OpenBump from "./OpenBump";
 import Utils, { EmbedError, GuildMessage } from "./Utils";
@@ -122,6 +123,7 @@ export default class CommandManager {
     this.registerCommand(new SetDescriptionCommand(this.instance));
     this.registerCommand(new SetInviteCommand(this.instance));
     this.registerCommand(new PreviewCommand(this.instance));
+    this.registerCommand(new VoteCommand(this.instance));
   }
 
   private registerCommand(command: Command) {

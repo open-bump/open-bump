@@ -7,7 +7,6 @@ import Command from "../Command";
 import config from "../config";
 import BumpData from "../models/BumpData";
 import Guild from "../models/Guild";
-import OpenBump from "../OpenBump";
 import Utils, { EmbedError, GuildMessage } from "../Utils";
 
 export default class BumpCommand extends Command {
@@ -63,7 +62,7 @@ export default class BumpCommand extends Command {
               `You don't want to wait ${ms(cooldown, {
                 long: true
               })} until you can bump? Vote for our bot!\n` +
-              `You can vote at https://top.gg/bot/${OpenBump.instance.client.user?.id}/vote. ` +
+              `You can vote at ${Utils.Lists.getLinkTopGG()}. ` +
               `It will decrease your cooldown by ${ms(cooldown - voteCooldown, {
                 long: true
               })} for 12 hours.`
