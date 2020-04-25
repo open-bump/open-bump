@@ -107,10 +107,21 @@ export default class NetworkManager {
   }
 
   public async requestStats() {
+    if (!this.connected) return [];
     const stats = await new Promise<IStatsData>((resolve) =>
       this.socket.emit("stats", resolve)
     );
     return stats;
+  }
+
+  public async requestTotalServerCount() {
+    const statsData = await this.requestStats();
+    return Object.keys(statsData)
+      .map((id) => {
+        const stats = statsData[Number(id)];
+        return typeof stats === "object" ? stats.guilds : 0;
+      })
+      .reduce((total, num) => total + num, 0);
   }
 
   public async setReady() {
