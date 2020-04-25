@@ -1,4 +1,5 @@
 import { ParsedMessage } from "discord-command-parser";
+import Discord from "discord.js";
 import Command from "../Command";
 import Guild from "../models/Guild";
 import OpenBump from "../OpenBump";
