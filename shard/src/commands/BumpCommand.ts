@@ -8,14 +8,17 @@ import config from "../config";
 import BumpData from "../models/BumpData";
 import Guild from "../models/Guild";
 import OpenBump from "../OpenBump";
-import Utils, { EmbedError } from "../Utils";
+import Utils, { EmbedError, GuildMessage } from "../Utils";
 
 export default class BumpCommand extends Command {
   public name = "bump";
   public syntax = "bump";
   public description = "Bump your server";
 
-  public async run({ message }: ParsedMessage, guildDatabase: Guild) {
+  public async run(
+    { message }: ParsedMessage<GuildMessage>,
+    guildDatabase: Guild
+  ) {
     const { channel, guild, author } = message;
 
     if (

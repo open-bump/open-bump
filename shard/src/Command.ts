@@ -2,7 +2,7 @@ import { ParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
-import Utils from "./Utils";
+import Utils, { GuildMessage, UserPermissionError } from "./Utils";
 
 export default abstract class Command {
   public abstract name: string;
@@ -27,12 +27,12 @@ export default abstract class Command {
   }
 
   public abstract async run(
-    parsed: ParsedMessage,
+    parsed: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ): Promise<void>;
 
   public async calculatePermissions(
-    parsed: ParsedMessage,
+    parsed: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ): Promise<Discord.PermissionResolvable> {
     return this.permissions;
@@ -51,5 +51,13 @@ export default abstract class Command {
       }`
     };
     return void (await message.channel.send({ embed }));
+  }
+
+  protected requireUserPemission(
+    permission: Discord.PermissionResolvable,
+    member: Discord.GuildMember
+  ) {
+    if (!member.hasPermission(permission))
+      throw new UserPermissionError(permission, member.permissions.bitfield);
   }
 }

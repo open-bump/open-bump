@@ -18,7 +18,7 @@ import SetInviteCommand from "./commands/SetInviteCommand";
 import StatsCommand from "./commands/StatsCommand";
 import config from "./config";
 import OpenBump from "./OpenBump";
-import Utils from "./Utils";
+import Utils, { EmbedError, GuildMessage } from "./Utils";
 
 export default class CommandManager {
   private commands: { [name: string]: Command } = {};
@@ -27,7 +27,7 @@ export default class CommandManager {
     this.registerCommands();
   }
 
-  public async run(message: Discord.Message) {
+  public async run(message: GuildMessage) {
     if (
       !message.author ||
       message.author.bot ||
@@ -98,7 +98,8 @@ export default class CommandManager {
       } catch (error) {
         const embed = Utils.errorToEmbed(error);
         await message.channel.send({ embed });
-        console.error(`Catched error while command execution!`, error);
+        if (!(error instanceof EmbedError))
+          console.error(`Catched error while command execution!`, error);
       }
     }
   }

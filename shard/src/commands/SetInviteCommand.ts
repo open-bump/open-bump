@@ -1,5 +1,4 @@
 import { ParsedMessage } from "discord-command-parser";
-import Discord from "discord.js";
 import Command from "../Command";
 import Guild from "../models/Guild";
 import OpenBump from "../OpenBump";
@@ -19,7 +18,9 @@ export default class SetInviteCommand extends Command {
     { message }: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
-    const { channel, author } = message;
+    const { channel, author, member } = message;
+
+    this.requireUserPemission(["MANAGE_GUILD"], member);
 
     const invite = await channel.createInvite({
       maxAge: 0,

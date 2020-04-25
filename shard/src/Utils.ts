@@ -1,6 +1,6 @@
 import Color from "color";
 import DBL from "dblapi.js";
-import Discord, { MessageEmbedOptions, PermissionString, TextChannel } from "discord.js";
+import Discord, { MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import fetch from "node-fetch";
@@ -44,6 +44,8 @@ class Notifications {
 
 export type GuildMessage = Discord.Message & {
   channel: Discord.GuildChannel & Discord.TextBasedChannelFields;
+  member: Discord.GuildMember;
+  guild: Discord.Guild;
 };
 
 class Bump {
@@ -648,19 +650,17 @@ export default class Utils {
     return config.settings.prefix;
   }
 
-  public static getPermissionIdentifiers(bits: number) {
-    const permissions = new Discord.Permissions(bits);
+  public static getPermissionIdentifiers(
+    permission: Discord.PermissionResolvable
+  ): Discord.PermissionString[] {
+    const permissions = new Discord.Permissions(permission);
+    if (permissions.has(Discord.Permissions.FLAGS.ADMINISTRATOR))
+      return ["ADMINISTRATOR"];
     return permissions.toArray();
   }
 
-  public static translatePermission(
-    permission: Array<Discord.PermissionString> | Discord.PermissionString
-  ) {
-    if (Array.isArray(permission)) {
-      return permission.map((id) => Utils.PermissionsNames[id]);
-    } else {
-      return Utils.PermissionsNames[permission];
-    }
+  public static translatePermission(permission: Discord.PermissionString) {
+    return Utils.PermissionsNames[permission];
   }
 
   public static PermissionsNames: {
@@ -861,6 +861,37 @@ export class RestrictedFeatureError extends EmbedError {
         `Use the command \`${Utils.getPrefix(
           this.guild
         )}premium\` to view more information about premium.`
+    };
+  }
+}
+
+export class UserPermissionError extends EmbedError {
+  public required: Discord.Permissions;
+  public missing: Discord.Permissions;
+
+  constructor(
+    required: Discord.PermissionResolvable,
+    has?: Discord.PermissionResolvable
+  ) {
+    super("You do not have enough permissions to execute this command");
+    this.required = new Discord.Permissions(required);
+    if (has) {
+      this.missing = new Discord.Permissions(
+        this.required.bitfield & ~new Discord.Permissions(has).bitfield
+      );
+    } else this.missing = new Permissions(required);
+  }
+
+  public toEmbed() {
+    const identifiers = Utils.getPermissionIdentifiers(this.missing);
+    return {
+      color: Utils.Colors.RED,
+      title: `${Utils.Emojis.XMARK} Missing Access`,
+      description: `To execute this command, you need to have the permission${
+        identifiers.length === 1 ? "" : "s"
+      } ${Utils.niceList(
+        identifiers.map(Utils.translatePermission).map((name) => `\`${name}\``)
+      )}.`
     };
   }
 }

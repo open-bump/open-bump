@@ -2,7 +2,7 @@ import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
 import config from "../config";
 import Guild from "../models/Guild";
-import Utils from "../Utils";
+import Utils, { GuildMessage } from "../Utils";
 
 export default class AboutCommand extends Command {
   public name = "about";
@@ -11,7 +11,10 @@ export default class AboutCommand extends Command {
   public description = "View information about this bot";
   public vanished = true;
 
-  public async run({ message }: ParsedMessage, guildDatabase: Guild) {
+  public async run(
+    { message }: ParsedMessage<GuildMessage>,
+    _guildDatabase: Guild
+  ) {
     const { channel } = message;
     const packageJson = Utils.getPackageJson();
     const embed = {

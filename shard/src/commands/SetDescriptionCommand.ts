@@ -1,7 +1,7 @@
 import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
 import Guild from "../models/Guild";
-import Utils from "../Utils";
+import Utils, { GuildMessage } from "../Utils";
 
 export default class SetDescriptionCommand extends Command {
   public name = "setdescription";
@@ -16,10 +16,12 @@ export default class SetDescriptionCommand extends Command {
   public description = "Set the description for your server";
 
   public async run(
-    { message, arguments: args, body }: ParsedMessage,
+    { message, arguments: args, body }: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
-    const { channel } = message;
+    const { channel, member } = message;
+
+    this.requireUserPemission(["MANAGE_GUILD"], member);
 
     if (args.length >= 1) {
       if (
