@@ -135,6 +135,13 @@ export default class Patreon {
         )
         .reduce((current, accumulator) => current + accumulator, 0);
       if (totalEntitledCents) donatorIds.push(id);
+      if (!userDatabase.donator) await userDatabase.$create("donator", {});
+      if (!userDatabase.donator) {
+        console.error(
+          "Unexpected flow, this error should never happen. [273872]"
+        );
+        continue;
+      }
       userDatabase.donator.patreon = totalEntitledCents;
       if (userDatabase.donator.changed()) await userDatabase.donator.save();
     }
@@ -160,6 +167,13 @@ export default class Patreon {
       (user) => !donatorIds.includes(user.id)
     );
     for (const user of formerPatreonUserDatabases) {
+      if (!user.donator) await user.$create("donator", {});
+      if (!user.donator) {
+        console.error(
+          "Unexpected flow, this error should never happen. [283948]"
+        );
+        continue;
+      }
       user.donator.patreon = 0;
       await user.donator.save();
       console.log(
