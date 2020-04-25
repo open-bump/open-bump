@@ -2,7 +2,7 @@ import Discord, { ClientEvents } from "discord.js";
 import ms from "ms";
 import config from "../config";
 import Event from "../Event";
-import Utils, { GuildMessage, InviteNotValidError } from "../Utils";
+import Utils, { EmbedError, GuildMessage } from "../Utils";
 
 export default class MessageEvent extends Event {
   public name: keyof ClientEvents = "message";
@@ -93,7 +93,7 @@ export default class MessageEvent extends Event {
     } catch (error) {
       let response = `Bump request denied, unknown error.`;
 
-      if (error instanceof InviteNotValidError) {
+      if (error instanceof EmbedError) {
         guildDatabase.lastBumpedAt = null;
         await guildDatabase.save();
 
