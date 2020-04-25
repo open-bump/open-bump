@@ -9,7 +9,7 @@
     "build:prepare": "rm -rf dist/build && mkdir -p dist/build",
     "build:copy": "cp -r src/* dist/build && mkdir -p config && cp -r config dist/build/ && cp package.json dist/build",
     "build:tsc": "tsc --project . --outDir dist/build",
-    "build:cleanup": "rm -r dist/build/*.ts && rm -r dist/build/**/*.ts"
+    "build:cleanup": "rm -r dist/build/*.ts && rm -r dist/build/**/*.ts && rm dist/build/auth.json"
   },
   "repository": {
     "type": "git",
