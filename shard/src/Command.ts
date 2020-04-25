@@ -2,7 +2,7 @@ import { ParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
-import Utils from "./Utils";
+import Utils, { GuildMessage, UserPermissionError } from "./Utils";
 
 export default abstract class Command {
   public abstract name: string;
@@ -11,17 +11,29 @@ export default abstract class Command {
   public abstract description: string;
   public abstract general: boolean;
   public vanished = false;
-  protected permissions = [];
+  private permissions: Discord.PermissionResolvable = [
+    Discord.Permissions.FLAGS.SEND_MESSAGES,
+    Discord.Permissions.FLAGS.VIEW_CHANNEL,
+    Discord.Permissions.FLAGS.EMBED_LINKS
+  ];
 
-  constructor(protected instance: OpenBump) {}
+  constructor(
+    protected instance: OpenBump,
+    permissions?: Discord.PermissionResolvable
+  ) {
+    if (permissions)
+      this.permissions =
+        new Discord.Permissions(this.permissions).bitfield |
+        new Discord.Permissions(permissions).bitfield;
+  }
 
   public abstract async run(
-    parsed: ParsedMessage,
+    parsed: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ): Promise<void>;
 
   public async calculatePermissions(
-    parsed: ParsedMessage,
+    parsed: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ): Promise<Discord.PermissionResolvable> {
     return this.permissions;
@@ -40,5 +52,13 @@ export default abstract class Command {
       }`
     };
     return void (await message.channel.send({ embed }));
+  }
+
+  protected requireUserPemission(
+    permission: Discord.PermissionResolvable,
+    member: Discord.GuildMember
+  ) {
+    if (!member.hasPermission(permission))
+      throw new UserPermissionError(permission, member.permissions.bitfield);
   }
 }

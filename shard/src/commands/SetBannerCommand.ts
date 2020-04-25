@@ -14,10 +14,12 @@ export default class SetBannerCommand extends Command {
     { message, arguments: args }: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
-    const { channel } = message;
+    const { channel, member } = message;
 
     if (!guildDatabase.getFeatures().includes(Utils.Feature.BANNER))
       throw new RestrictedFeatureError(Utils.Feature.BANNER, guildDatabase);
+
+    this.requireUserPemission(["MANAGE_GUILD"], member);
 
     if (args.length >= 1) {
       if (

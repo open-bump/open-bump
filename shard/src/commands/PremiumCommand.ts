@@ -7,7 +7,7 @@ import Donator from "../models/Donator";
 import Guild from "../models/Guild";
 import PremiumTier from "../models/PremiumTier";
 import User from "../models/User";
-import Utils from "../Utils";
+import Utils, { GuildMessage } from "../Utils";
 
 export default class PremiumCommand extends Command {
   public name = "premium";
@@ -17,7 +17,7 @@ export default class PremiumCommand extends Command {
   public general = true;
 
   public async run(
-    { message, arguments: args }: ParsedMessage,
+    { message, arguments: args }: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
     const { channel, author, guild } = message;

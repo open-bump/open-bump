@@ -2,7 +2,7 @@ import { ParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import Command from "../Command";
 import Guild from "../models/Guild";
-import Utils from "../Utils";
+import Utils, { GuildMessage } from "../Utils";
 
 export default class SetChannelCommand extends Command {
   public name = "setchannel";
@@ -12,10 +12,13 @@ export default class SetChannelCommand extends Command {
   public general = false;
 
   public async run(
-    { message, arguments: args }: ParsedMessage,
+    { message, arguments: args }: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
-    const { channel, guild } = message;
+    const { channel, guild, member } = message;
+
+    this.requireUserPemission(["MANAGE_GUILD"], member);
+
     if (args.length === 1) {
       if (!(args[0] === "reset" || args[0] === "default")) {
         const newChannel = Utils.findChannel(args[0], guild, [

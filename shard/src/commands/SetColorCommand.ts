@@ -1,7 +1,11 @@
 import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
 import Guild from "../models/Guild";
-import Utils, { RestrictedFeatureError, TitleError } from "../Utils";
+import Utils, {
+  GuildMessage,
+  RestrictedFeatureError,
+  TitleError
+} from "../Utils";
 
 export default class SetColorCommand extends Command {
   public name = "setcolor";
@@ -11,13 +15,15 @@ export default class SetColorCommand extends Command {
   public general = false;
 
   public async run(
-    { message, arguments: args }: ParsedMessage,
+    { message, arguments: args }: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
-    const { channel } = message;
+    const { channel, member } = message;
 
     if (!guildDatabase.getFeatures().includes(Utils.Feature.COLOR))
       throw new RestrictedFeatureError(Utils.Feature.COLOR, guildDatabase);
+
+    this.requireUserPemission(["MANAGE_GUILD"], member);
 
     if (args.length >= 1) {
       if (

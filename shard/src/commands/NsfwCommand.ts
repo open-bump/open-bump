@@ -1,7 +1,7 @@
 import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
 import Guild from "../models/Guild";
-import Utils from "../Utils";
+import Utils, { GuildMessage } from "../Utils";
 
 export default class NsfwCommand extends Command {
   public name = "nsfw";
@@ -11,10 +11,13 @@ export default class NsfwCommand extends Command {
   public general = false;
 
   public async run(
-    { message, arguments: args }: ParsedMessage,
+    { message, arguments: args }: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
-    const { channel } = message;
+    const { channel, member } = message;
+
+    this.requireUserPemission(["MANAGE_GUILD"], member);
+
     if (args.length === 1) {
       if (args[0] === "enable" || args[0] === "on" || args[0] === "true") {
         guildDatabase.nsfw = true;

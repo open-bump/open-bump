@@ -1,7 +1,7 @@
 import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
 import Guild from "../models/Guild";
-import Utils, { RestrictedFeatureError } from "../Utils";
+import Utils, { GuildMessage, RestrictedFeatureError } from "../Utils";
 
 export default class PrefixCommand extends Command {
   public name = "prefix";
@@ -11,10 +11,10 @@ export default class PrefixCommand extends Command {
   public general = true;
 
   public async run(
-    { message, arguments: args }: ParsedMessage,
+    { message, arguments: args }: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
-    const { channel } = message;
+    const { channel, member } = message;
 
     if (args.length === 0) {
       let description = `__**Current Prefix:**__ ${Utils.getPrefix(
@@ -37,6 +37,8 @@ export default class PrefixCommand extends Command {
     } else if (args.length === 1) {
       if (!guildDatabase.getFeatures().includes(Utils.Feature.PREFIX))
         throw new RestrictedFeatureError(Utils.Feature.PREFIX, guildDatabase);
+
+      this.requireUserPemission(["MANAGE_GUILD"], member);
 
       const newPrefix =
         args[0] === "reset" || args[0] === "default" ? null : args[0];

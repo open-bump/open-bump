@@ -2,7 +2,7 @@ import { ParsedMessage } from "discord-command-parser";
 import ms from "ms";
 import Command from "../Command";
 import Guild from "../models/Guild";
-import Utils, { RestrictedFeatureError } from "../Utils";
+import Utils, { GuildMessage, RestrictedFeatureError } from "../Utils";
 
 export default class AutobumpCommand extends Command {
   public name = "autobump";
@@ -17,10 +17,12 @@ export default class AutobumpCommand extends Command {
   public general = false;
 
   public async run(
-    { message, arguments: args }: ParsedMessage,
+    { message, arguments: args }: ParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
-    const { channel } = message;
+    const { channel, member } = message;
+
+    this.requireUserPemission(["MANAGE_GUILD"], member);
 
     if (!guildDatabase.getFeatures().includes(Utils.Feature.AUTOBUMP))
       throw new RestrictedFeatureError(Utils.Feature.AUTOBUMP, guildDatabase);

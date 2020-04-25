@@ -2,7 +2,7 @@ import { ParsedMessage } from "discord-command-parser";
 import ms from "ms";
 import Command from "../Command";
 import Guild from "../models/Guild";
-import Utils from "../Utils";
+import Utils, { GuildMessage } from "../Utils";
 
 export default class StatsCommand extends Command {
   public name = "stats";
@@ -10,7 +10,10 @@ export default class StatsCommand extends Command {
   public description = "View the bot's stats";
   public general = true;
 
-  public async run({ message }: ParsedMessage, guildDatabase: Guild) {
+  public async run(
+    { message }: ParsedMessage<GuildMessage>,
+    _guildDatabase: Guild
+  ) {
     const { channel } = message;
 
     const connected = this.instance.networkManager.connected;
