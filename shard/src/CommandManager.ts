@@ -16,6 +16,7 @@ import SetColorCommand from "./commands/SetColorCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
 import SetInviteCommand from "./commands/SetInviteCommand";
 import StatsCommand from "./commands/StatsCommand";
+import SupportCommand from "./commands/SupportCommand";
 import VoteCommand from "./commands/VoteCommand";
 import config from "./config";
 import OpenBump from "./OpenBump";
@@ -121,6 +122,7 @@ export default class CommandManager {
     this.registerCommand(new SetDescriptionCommand(this.instance));
     this.registerCommand(new SetInviteCommand(this.instance));
     this.registerCommand(new StatsCommand(this.instance));
+    this.registerCommand(new SupportCommand(this.instance));
     this.registerCommand(new VoteCommand(this.instance));
   }
 
