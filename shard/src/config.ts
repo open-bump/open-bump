@@ -18,6 +18,7 @@ interface IConfig extends config.IConfig {
     shard?: number;
   };
   settings: {
+    hub: string;
     prefix: string;
     support: string;
     cooldown: {
