@@ -40,7 +40,29 @@ export default class PremiumCommand extends Command {
     )
       userDatabase.donator = undefined;
 
-    if (
+    if (!userDatabase?.donator) {
+      const embed = {
+        color: Utils.Colors.ORANGE,
+        title: `${Utils.Emojis.FEATURED} Premium`,
+        description:
+          `Premium allows you to use additional features and commands. You can buy Premium from Patreon by using the link below:\n` +
+          `${config.settings.patreon}\n` +
+          `\n` +
+          `To view a list of all available tiers, please use the command \`${Utils.getPrefix(
+            guildDatabase
+          )}premium tiers\`.`,
+        thumbnail: {
+          url: this.instance.client.user?.displayAvatarURL()
+        },
+        fields: [
+          {
+            name: `${Utils.Emojis.EXCLAMATION} You are not a Donator`,
+            value: `If you recently became a Donator, it might take up to 5 minutes until you can activate premium for your server.`
+          }
+        ]
+      };
+      return void (await channel.send({ embed }));
+    } else if (
       userDatabase?.donator &&
       (args.length === 0 || (args.length === 1 && args[0] === "view"))
     ) {
@@ -80,28 +102,6 @@ export default class PremiumCommand extends Command {
               `- \`${prefix}premium activate <tier...>\` - Activate Premium on this server\n` +
               `- \`${prefix}premium deactivate [serverId]\` - Deactivate Premium\n` +
               `- \`${prefix}premium tiers\` - List all tiers`
-          }
-        ]
-      };
-      return void (await channel.send({ embed }));
-    } else if (!userDatabase?.donator) {
-      const embed = {
-        color: Utils.Colors.ORANGE,
-        title: `${Utils.Emojis.FEATURED} Premium`,
-        description:
-          `Premium allows you to use additional features and commands. You can buy Premium from Patreon by using the link below:\n` +
-          `${config.settings.patreon}\n` +
-          `\n` +
-          `To view a list of all available tiers, please use the command \`${Utils.getPrefix(
-            guildDatabase
-          )}premium tiers\`.`,
-        thumbnail: {
-          url: this.instance.client.user?.displayAvatarURL()
-        },
-        fields: [
-          {
-            name: `${Utils.Emojis.EXCLAMATION} You are not a Donator`,
-            value: `If you recently became a Donator, it might take up to 5 minutes until you can activate premium for your server.`
           }
         ]
       };
