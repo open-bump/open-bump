@@ -21,6 +21,7 @@ import VoteCommand from "./commands/VoteCommand";
 import config from "./config";
 import OpenBump from "./OpenBump";
 import Utils, { EmbedError, GuildMessage } from "./Utils";
+import SupportCommand from "./commands/SupportCommand";
 
 export default class CommandManager {
   private commands: { [name: string]: Command } = {};
@@ -115,6 +116,7 @@ export default class CommandManager {
     this.registerCommand(new BumpCommand(this.instance));
     this.registerCommand(new AboutCommand(this.instance));
     this.registerCommand(new InviteCommand(this.instance));
+    this.registerCommand(new SupportCommand(this.instance));
     this.registerCommand(new AutobumpCommand(this.instance));
     this.registerCommand(new NsfwCommand(this.instance));
     this.registerCommand(new SetBannerCommand(this.instance));
