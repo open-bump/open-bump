@@ -92,9 +92,7 @@ setTimeout(() => {
     include: [
       {
         model: GuildFeature,
-        as: "features",
-        separate: true,
-        limit: 3
+        as: "features"
       },
       {
         model: BumpData,
