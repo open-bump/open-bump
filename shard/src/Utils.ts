@@ -297,7 +297,7 @@ class Bump {
   ) {
     const feedChannels =
       amount !== 0
-        ? await Guild.findAll({
+        ? await Guild.scope("default").findAll({
             where: {
               feed: {
                 [Op.and]: [
@@ -320,7 +320,7 @@ class Bump {
         : [];
     const hubChannels =
       (hubs && amount >= 0 && feedChannels.length >= amount) || include
-        ? await Guild.findAll({
+        ? await Guild.scope("default").findAll({
             where: {
               [Op.or]: [
                 ...(hubs ? [{ hub: true }] : []),
