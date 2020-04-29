@@ -21,7 +21,20 @@ export default class HelpCommand extends Command {
         description: `To view more information about a command, use the command \`${Utils.getPrefix(
           guildDatabase
         )}help <command>\``,
-        fields: this.instance.commandManager
+        thumbnail: {
+          url: this.instance.client.user?.displayAvatarURL()
+        },
+        fields: [
+          {
+            name: "Command List",
+            value: this.instance.commandManager
+              .getCommands()
+              .filter(({ vanished }) => !vanished)
+              .map((command) => `\`${command.name}\` - ${command.description}`)
+              .join("\n")
+          }
+        ],
+        _fields: this.instance.commandManager
           .getCommands()
           .filter(({ vanished }) => !vanished)
           .map((command) => ({

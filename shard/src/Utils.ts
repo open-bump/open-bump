@@ -710,9 +710,9 @@ export default class Utils {
   public static Colors = {
     BLUE: 0x698cce,
     RED: 0xff0000,
-    GREEN: 0x3dd42c,
+    GREEN: 0xff0000,
     ORANGE: 0xff9900,
-    OPENBUMP: 0x27ad60
+    OPENBUMP: 0x000000
   };
 
   public static Feature = {
@@ -733,7 +733,7 @@ export default class Utils {
     BELL: "🔔",
     STAR: "⭐",
     ARROWRIGHT: "➡",
-    INFORMATION: "ℹ",
+    INFORMATION: "",
     EXCLAMATION: "❗",
     MAILBOX: "📬",
     ADD: "\\✔️",
