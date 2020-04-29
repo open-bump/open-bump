@@ -149,8 +149,12 @@ export default class BumpCommand extends Command {
           })
         : [];
 
+      console.log(
+        `Guild ${guild.name} (${guild.id}) has successfully been bumped to ${amount} servers.`
+      );
+
       let description =
-        `Your server has been bumped to ${amount} servers.\n` +
+        `Your server has successfully been bumped.\n` +
         `You can bump again in ${ms(cooldown, {
           long: true
         })}.`;
