@@ -74,7 +74,9 @@ export default class BumpCommand extends Command {
               `You don't want to wait ${ms(cooldown, {
                 long: true
               })} until you can bump? Upgrade to premium!\n` +
-              `To view more information about premium, use the command \`ob!premium\`.`
+              `To view more information about premium, use the command \`${Utils.getPrefix(
+                guildDatabase
+              )}premium\`.`
           });
 
         const embed = {
