@@ -65,7 +65,8 @@ class Bump {
 
   public static async getEmbed(
     guild: Discord.Guild,
-    guildDatabase: Guild
+    guildDatabase: Guild,
+    authorId?: string
   ): Promise<MessageEmbedOptions> {
     // Check for missing values
     const missing = this.getMissingValues(guild, guildDatabase);
@@ -132,6 +133,10 @@ class Bump {
       `\n` +
       `${guildDatabase.bumpData.description}`;
 
+    // Author
+    if (!authorId) authorId = String(OpenBump.instance.client.user?.id);
+    const author = await OpenBump.instance.client.users.fetch(authorId);
+
     // Create
     return {
       title: `**${guild.name}**`,
@@ -166,7 +171,12 @@ class Bump {
       ],
       image: {
         url: banner
-      }
+      },
+      footer: {
+        icon_url: author.displayAvatarURL(),
+        text: `Bumped by ${author.tag}`
+      },
+      timestamp: Date.now()
     };
   }
 
