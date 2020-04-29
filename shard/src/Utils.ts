@@ -1,11 +1,6 @@
 import Color from "color";
 import DBL from "dblapi.js";
-import Discord, {
-  MessageEmbedOptions,
-  Permissions,
-  PermissionString,
-  TextChannel
-} from "discord.js";
+import Discord, { MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import fetch from "node-fetch";
@@ -65,7 +60,8 @@ class Bump {
 
   public static async getEmbed(
     guild: Discord.Guild,
-    guildDatabase: Guild
+    guildDatabase: Guild,
+    authorId?: string
   ): Promise<MessageEmbedOptions> {
     // Check for missing values
     const missing = this.getMissingValues(guild, guildDatabase);
@@ -132,6 +128,10 @@ class Bump {
       `\n` +
       `${guildDatabase.bumpData.description}`;
 
+    // Author
+    if (!authorId) authorId = String(OpenBump.instance.client.user?.id);
+    const author = await OpenBump.instance.client.users.fetch(authorId);
+
     // Create
     return {
       title: `**${guild.name}**`,
@@ -166,7 +166,12 @@ class Bump {
       ],
       image: {
         url: banner
-      }
+      },
+      footer: {
+        icon_url: author.displayAvatarURL(),
+        text: `Bumped by ${author.tag}`
+      },
+      timestamp: Date.now()
     };
   }
 
@@ -228,8 +233,8 @@ class Bump {
             ) {
               this.justRemoved[guild.id] = Date.now();
 
-              guildDatabase.feed = null;
-              await guildDatabase.save();
+              guildFeed.feed = null;
+              await guildFeed.save();
 
               console.log(
                 `Guild ${guild.name} (${guild.id}) had a bump channel set; but there are permission errors!`
@@ -257,15 +262,18 @@ class Bump {
             }
           }
         } else {
-          // TODO: Inform channel can't be found
           if (
             !this.justRemoved[guild.id] ||
             this.justRemoved[guild.id] <= moment().subtract(30, "s").valueOf()
           ) {
             this.justRemoved[guild.id] = Date.now();
 
-            guildDatabase.feed = null;
-            await guildDatabase.save();
+            guildFeed.feed = null;
+            await guildFeed.save();
+
+            console.log(
+              `Guild ${guild.name} (${guild.id}) had a bump channel set; but we couldn't find it!`
+            );
 
             const embed = {
               color: Utils.Colors.RED,
