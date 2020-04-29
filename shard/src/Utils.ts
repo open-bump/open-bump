@@ -270,7 +270,6 @@ class Bump {
             }
           }
         } else {
-          // TODO: Inform channel can't be found
           if (
             !this.justRemoved[guild.id] ||
             this.justRemoved[guild.id] <= moment().subtract(30, "s").valueOf()
@@ -279,6 +278,10 @@ class Bump {
 
             guildDatabase.feed = null;
             await guildDatabase.save();
+
+            console.log(
+              `Guild ${guild.name} (${guild.id}) had a bump channel set; but we couldn't find it!`
+            );
 
             const embed = {
               color: Utils.Colors.RED,
