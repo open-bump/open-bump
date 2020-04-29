@@ -14,7 +14,10 @@ export default class ReadyEvent extends Event {
       Utils.Lists.start();
       Utils.Bump.startAutobump();
       this.instance.customStatusLoop();
+      await this.instance.premium.init();
     }
+
+    this.instance.ready = true;
 
     this.first = false;
   }

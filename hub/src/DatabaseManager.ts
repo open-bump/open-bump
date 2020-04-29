@@ -1,10 +1,10 @@
 import path from "path";
 import { Sequelize } from "sequelize-typescript";
 import config from "./config";
+import Hub from "./Hub";
 import { MigrationAdapter } from "./migrations/helpers/MigrationAdapter";
 import { Migrator } from "./migrations/helpers/Migrator";
 import Utils from "./Utils";
-import Hub from "./Hub";
 
 export default class DatabaseManager {
   public sequelize: Sequelize;
@@ -17,7 +17,8 @@ export default class DatabaseManager {
     this.sequelize = new Sequelize({
       ...config.database,
       models: [modelDir],
-      logging: false
+      logging: false,
+      isolationLevel: "READ COMMITTED"
     });
 
     this.migrationAdapter = new MigrationAdapter();

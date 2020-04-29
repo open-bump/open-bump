@@ -12,7 +12,8 @@ export default class DatabaseManager {
     this.sequelize = new Sequelize({
       ...config.database,
       models: [modelDir],
-      logging: false
+      logging: false,
+      isolationLevel: "READ COMMITTED"
     });
   }
 
