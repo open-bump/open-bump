@@ -94,7 +94,7 @@ export default class MessageEvent extends Event {
     let bumpEmbed: Discord.MessageEmbedOptions;
 
     try {
-      bumpEmbed = await Utils.Bump.getEmbed(guild, guildDatabase);
+      bumpEmbed = await Utils.Bump.getEmbed(guild, guildDatabase, author.id);
     } catch (error) {
       let response = `Bump request denied, unknown error.`;
 
