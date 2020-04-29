@@ -108,7 +108,7 @@ export default class BumpCommand extends Command {
       let bumpEmbed;
 
       try {
-        bumpEmbed = await Utils.Bump.getEmbed(guild, guildDatabase);
+        bumpEmbed = await Utils.Bump.getEmbed(guild, guildDatabase, author.id);
       } catch (error) {
         if (error instanceof EmbedError) {
           guildDatabase.lastBumpedAt = null;

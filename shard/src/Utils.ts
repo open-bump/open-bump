@@ -64,7 +64,8 @@ class Bump {
 
   public static async getEmbed(
     guild: Discord.Guild,
-    guildDatabase: Guild
+    guildDatabase: Guild,
+    authorId?: string
   ): Promise<MessageEmbedOptions> {
     // Check for missing values
     const missing = this.getMissingValues(guild, guildDatabase);
@@ -134,6 +135,10 @@ class Bump {
       `\n\n` +
       `${Utils.Emojis.SLINK} **[CLICK HERE TO JOIN](${invite})**`;
 
+    // Author
+    if (!authorId) authorId = String(OpenBump.instance.client.user?.id);
+    const author = await OpenBump.instance.client.users.fetch(authorId);
+
     // Create
     return {
       title: `**${guild.name}**`,
@@ -160,15 +165,21 @@ class Bump {
         },
         {
           name: `${Utils.Emojis.EMOJIS} Total Emojis \`${emojis}\``,
-          value: Array.from(guild.emojis.cache.values())
-            .slice(0, 10)
-            .map(String)
-            .join(" ")
+          value:
+            Array.from(guild.emojis.cache.values())
+              .slice(0, 10)
+              .map(String)
+              .join(" ") || "*No Emojis*"
         }
       ],
       image: {
         url: banner
-      }
+      },
+      footer: {
+        icon_url: author.displayAvatarURL(),
+        text: `Bumped by ${author.tag}`
+      },
+      timestamp: Date.now()
     };
   }
 
