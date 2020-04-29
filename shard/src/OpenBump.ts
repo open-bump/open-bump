@@ -16,7 +16,9 @@ export default class OpenBump {
   public eventManager: EventManager;
   public databaseManager: DatabaseManager;
   public networkManager: NetworkManager;
-  private premium: Premium;
+  public premium: Premium;
+
+  public ready = false;
 
   constructor() {
     OpenBump.instance = this;
@@ -53,8 +55,6 @@ export default class OpenBump {
 
     console.log("Logging in to Discord...");
     await this.client.login(config.discord.token);
-
-    await this.premium.init();
   }
 
   public async customStatusLoop() {
