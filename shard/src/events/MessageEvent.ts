@@ -8,6 +8,11 @@ export default class MessageEvent extends Event {
   public name: keyof ClientEvents = "message";
 
   public async run(message: Discord.Message) {
+    if (!this.instance.ready)
+      return void console.log(
+        `Ignoring message event as client isn't ready yet`
+      );
+
     if (!(message.channel && message.channel instanceof Discord.GuildChannel))
       return;
     if (!(message.member && message.member instanceof Discord.GuildMember))

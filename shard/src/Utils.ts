@@ -565,35 +565,34 @@ export default class Utils {
   }
 
   public static async ensureGuild(guild: Discord.Guild): Promise<Guild> {
-    const databaseManager = OpenBump.instance.databaseManager;
-    const transaction = await databaseManager.sequelize.transaction();
+    if (!OpenBump.instance.ready) {
+      console.log("Delaying guild ensuring until client is ready...");
+      while (!OpenBump.instance.ready) {}
+      console.log("Continuing guild ensuring, client is ready now.");
+    }
+
     try {
       const existingGuild = await Guild.scope("default").findOne({
-        where: { id: guild.id },
-        transaction
+        where: { id: guild.id }
       });
       if (existingGuild) {
         existingGuild.name = guild.name;
-        if (existingGuild.changed()) await existingGuild.save({ transaction });
-        await transaction.commit();
+        if (existingGuild.changed()) await existingGuild.save({});
         return existingGuild;
       } else {
-        const newGuild = await Guild.scope("default").create(
-          {
-            id: guild.id,
-            name: guild.name
-          },
-          { transaction }
-        );
-        await transaction.commit();
+        const newGuild = await Guild.scope("default").create({
+          id: guild.id,
+          name: guild.name
+        });
         const finalGuild = await Guild.scope("default").findOne({
           where: { id: guild.id }
         });
         return finalGuild || newGuild; // Use "finalGuild" with more data; and as fallback "newGuild"
       }
     } catch (error) {
-      console.error(`Error while ensuring guild, rolling back...`);
-      await transaction.rollback();
+      console.error(
+        `Error while ensuring guild, no transaction, not rolling back...`
+      );
       throw error;
     }
   }
