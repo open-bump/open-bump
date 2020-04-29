@@ -1,11 +1,6 @@
 import Color from "color";
 import DBL from "dblapi.js";
-import Discord, {
-  MessageEmbedOptions,
-  Permissions,
-  PermissionString,
-  TextChannel
-} from "discord.js";
+import Discord, { MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import fetch from "node-fetch";
@@ -238,8 +233,8 @@ class Bump {
             ) {
               this.justRemoved[guild.id] = Date.now();
 
-              guildDatabase.feed = null;
-              await guildDatabase.save();
+              guildFeed.feed = null;
+              await guildFeed.save();
 
               console.log(
                 `Guild ${guild.name} (${guild.id}) had a bump channel set; but there are permission errors!`
@@ -273,8 +268,8 @@ class Bump {
           ) {
             this.justRemoved[guild.id] = Date.now();
 
-            guildDatabase.feed = null;
-            await guildDatabase.save();
+            guildFeed.feed = null;
+            await guildFeed.save();
 
             console.log(
               `Guild ${guild.name} (${guild.id}) had a bump channel set; but we couldn't find it!`
