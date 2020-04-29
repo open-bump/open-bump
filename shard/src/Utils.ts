@@ -483,7 +483,7 @@ class Lists {
     if (!config.lists?.topgg?.enabled) return;
     this.dbl = new DBL(config.lists.topgg.token, OpenBump.instance.client);
 
-    this.dbl.on("posted", () => console.log("Server cound posted to top.gg"));
+    this.dbl.on("posted", () => console.log("Server count posted to top.gg"));
     this.dbl.on("error", (error) =>
       console.error("Error while posting stats to top.gg:", error)
     );
