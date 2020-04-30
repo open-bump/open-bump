@@ -80,8 +80,12 @@ export default class Premium {
               "Please note, the premium command needs to be executed on your own server and not via DMs. " +
               `If you believe this is an error, please contact **[Support](${config.settings.support})**.\n` +
               `\n` +
-              `**Current Balance:** ${violator.get("totalBalance")} cents\n` +
-              `**Required Balance:** ${violator.get("totalAssigned")} cents`
+              `**Current Balance:** ${Utils.formatCurrency(
+                violator.get("totalBalance") as number
+              )}\n` +
+              `**Required Balance:** ${Utils.formatCurrency(
+                violator.get("totalAssigned") as number
+              )}`
           };
           await user.send({ embed });
           violator.transitionStartInformed = true;
