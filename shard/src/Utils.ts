@@ -1,6 +1,11 @@
 import Color from "color";
 import DBL from "dblapi.js";
-import Discord, { MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js";
+import Discord, {
+  MessageEmbedOptions,
+  Permissions,
+  PermissionString,
+  TextChannel
+} from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import fetch from "node-fetch";
@@ -195,13 +200,22 @@ class Bump {
   ): Promise<Array<Guild>> {
     let guildFeeds: Array<Guild>;
 
+    console.debug(
+      `[DEBUG] Shard ${OpenBump.instance.networkManager.id} is bumping ${guildDatabase.name} (${guildDatabase.id}) (type=${type})`
+    );
+
     if (type === Bump.BumpType.HUBS) {
       guildFeeds = await this.fetchGuildFeeds(0, true, guildDatabase.id);
     } else if (type === Bump.BumpType.CROSS) {
       guildFeeds = await this.fetchGuildFeeds(50, true, guildDatabase.id);
     } else if (type === Bump.BumpType.FULL) {
       guildFeeds = await this.fetchGuildFeeds(-1, true, guildDatabase.id);
-    } else throw new Error("This error should never be thrown.");
+    } else
+      throw new Error("This error should never be thrown; Invalid bump type.");
+
+    console.debug(
+      `[DEBUG] Attempting to bump to ${guildFeeds.length} guilds...`
+    );
 
     guildFeeds = guildFeeds.filter(
       (guildFeed) => Boolean(guildFeed.nsfw) == Boolean(guildDatabase.nsfw)
@@ -293,7 +307,10 @@ class Bump {
             }
           }
         }
-      }
+      } else
+        console.debug(
+          `[DEBUG] Skipping guild ${guildFeed.name} (${guildFeed.id}) because it can't be found in cache.`
+        );
     }
     return bumpedTo;
   }
@@ -307,16 +324,23 @@ class Bump {
       amount !== 0
         ? await Guild.scope("default").findAll({
             where: {
-              feed: {
-                [Op.and]: [
-                  {
-                    [Op.ne]: null
-                  },
-                  {
-                    [Op.ne]: ""
+              [Op.and]: [
+                {
+                  feed: {
+                    [Op.and]: [
+                      {
+                        [Op.ne]: null
+                      },
+                      {
+                        [Op.ne]: ""
+                      }
+                    ]
                   }
-                ]
-              }
+                },
+                Sequelize.literal(
+                  `(\`id\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
+                )
+              ]
             },
             ...(amount >= 0
               ? {
