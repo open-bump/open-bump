@@ -7,27 +7,21 @@ class Notifications {
   public static async postShardConnected(shard: number) {
     return await this.post({
       color: Utils.Colors.ORANGE,
-      description: `${Utils.Emojis.IMPORTANTNOTICE} Shard #${shard} connected`
+      description: `Shard \`#${shard}\` connected`
     });
   }
 
   public static async postShardReady(shard: number) {
     return await this.post({
       color: Utils.Colors.GREEN,
-      description: `${Utils.Emojis.CHECK} Shard #${shard} ready`
+      description: `Shard \`#${shard}\` ready`
     });
   }
 
   public static async postShardDisconnected(shard: number, force = false) {
     return await this.post({
       color: Utils.Colors.RED,
-      description: `${Utils.Emojis.EXCLAMATION} Shard #${shard} disconnected`,
-      fields: [
-        {
-          name: "Disconnected by force",
-          value: String(force)
-        }
-      ]
+      description: `Shard \`#${shard}\` disconnected`
     });
   }
 

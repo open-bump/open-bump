@@ -11,6 +11,10 @@ export default class GuildCreateEvent extends Event {
         `Ignoring message event as client isn't ready yet`
       );
 
+    const guildDatabase = await Utils.ensureGuild(guild);
+    guildDatabase.lastFailedAt = null;
+    if (guildDatabase.changed()) await guildDatabase.save();
+
     await Utils.Notifications.postGuildAdded(guild);
   }
 }
