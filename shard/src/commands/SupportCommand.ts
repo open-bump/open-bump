@@ -24,7 +24,7 @@ export default class SupportCommand extends Command {
     const embed = {
       color: Utils.Colors.BLUE,
       thumbnail: {
-        url: invite.guild?.iconURL()
+        url: invite.guild?.iconURL({ dynamic: true })
       },
       fields: [
         {
