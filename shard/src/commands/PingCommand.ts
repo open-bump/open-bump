@@ -8,6 +8,7 @@ export default class PingCommand extends Command {
   public name = "ping";
   public syntax = "ping";
   public description = "View the bot's ping";
+  public vanished = true;
   public general = true;
 
   public async run(
