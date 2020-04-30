@@ -19,12 +19,12 @@ import OpenBump from "./OpenBump";
 class Notifications {
   public static async postGuildAdded(guild: Discord.Guild) {
     return await this.post(
-      `${Utils.Emojis.ADD} Joined guild **${guild.name}** (${guild.id}) [Shard #${OpenBump.instance.networkManager.id}]`
+      `${Utils.Emojis.ADD} Joined guild **${guild.name}** [ ${guild.id} ] \`[ Now connected to ${OpenBump.instance.client.guilds.cache.size} servers ]\` - Shard **#${OpenBump.instance.networkManager.id}**`
     );
   }
   public static async postGuildRemoved(guild: Discord.Guild) {
     return await this.post(
-      `${Utils.Emojis.REMOVE} Left guild **${guild.name}** (${guild.id}) [Shard #${OpenBump.instance.networkManager.id}]`
+      `${Utils.Emojis.REMOVE} Left guild **${guild.name}** [ ${guild.id} ] \`[ Now connected to ${OpenBump.instance.client.guilds.cache.size} servers ]\` - Shard **#${OpenBump.instance.networkManager.id}**`
     );
   }
 
