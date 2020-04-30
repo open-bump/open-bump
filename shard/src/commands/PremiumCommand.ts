@@ -73,8 +73,8 @@ export default class PremiumCommand extends Command {
         .reduce((acc, cur) => acc + cur, 0);
 
       let description =
-        `**Total Balance:** ${totalBalance} cents\n` +
-        `**Balance Used:** ${totalAssigned} cents`;
+        `**Total Balance:** ${Utils.formatCurrency(totalBalance)}\n` +
+        `**Balance Used:** ${Utils.formatCurrency(totalAssigned)}`;
 
       if (userDatabase.donator.patreon)
         description +=
@@ -93,7 +93,7 @@ export default class PremiumCommand extends Command {
               name: `${assigned.guild.name} | ${assigned.guildId}`,
               value:
                 `**Tier:** ${assigned.premiumTier.name}\n` +
-                `**Cost:** ${assigned.premiumTier.cost} cents`
+                `**Cost:** ${Utils.formatCurrency(assigned.premiumTier.cost)}`
             };
           }),
           {
@@ -120,7 +120,9 @@ export default class PremiumCommand extends Command {
           guildDatabase
         )}premium activate <tier...>\` to activate premium on this server.`,
         fields: premiumTiers.map((premiumTier) => ({
-          name: `${premiumTier.name} | ${premiumTier.cost} cents`,
+          name: `${premiumTier.name} | ${Utils.formatCurrency(
+            premiumTier.cost
+          )}`,
           value: premiumTier.features
             .map((feature) => `- ${feature.feature}`)
             .join("\n")
@@ -205,9 +207,11 @@ export default class PremiumCommand extends Command {
             title: `${Utils.Emojis.XMARK} Insufficient balance`,
             description:
               `Your balance is not able to cover the cost for the ${tier.name} tier.\n` +
-              `The tier costs ${tier.cost} cents but you only have ${
+              `The tier costs ${Utils.formatCurrency(
+                tier.cost
+              )} but you only have ${Utils.formatCurrency(
                 totalBalance - totalAssignedOthers
-              } cents left for this server.\n` +
+              )} left for this server.\n` +
               `Get an overview of your currently activated servers using \`${Utils.getPrefix(
                 guildDatabase
               )}premium\`.`

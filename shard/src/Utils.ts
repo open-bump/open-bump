@@ -497,7 +497,23 @@ class Lists {
       console.error("Error while posting stats to top.gg:", error)
     );
 
+    this.loopPostTopGG();
+
     console.log("Started top.gg");
+  }
+
+  private static async loopPostTopGG() {
+    try {
+      await this.dbl?.postStats(
+        OpenBump.instance.client.guilds.cache.size,
+        OpenBump.instance.networkManager.id,
+        OpenBump.instance.networkManager.total
+      );
+      console.log("Successfully posted server count to top.gg");
+    } catch (error) {
+      console.error("Error while posting server count to top.gg:", error);
+    }
+    setTimeout(() => this.loopPostTopGG(), 1000 * 60 * 15);
   }
 
   public static async hasVotedTopGG(user: string): Promise<boolean> {
@@ -627,6 +643,10 @@ export default class Utils {
       array.slice(0, array.length - 1).join(", ") +
       ` and ${array[array.length - 1]}`
     );
+  }
+
+  public static formatCurrency(cents: number) {
+    return `$${(cents / 100).toFixed(2)}`;
   }
 
   public static findChannel(
