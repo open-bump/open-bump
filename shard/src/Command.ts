@@ -1,5 +1,6 @@
 import { ParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
+import CommandManager from "./CommandManager";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
 import Utils, { GuildMessage, UserPermissionError } from "./Utils";
@@ -10,7 +11,7 @@ export default abstract class Command {
   public abstract syntax: string;
   public abstract description: string;
   public vanished = false;
-  public abstract general: boolean;
+  public category: keyof typeof CommandManager.Categories = "GENERAL";
   private permissions: Discord.PermissionResolvable = [
     Discord.Permissions.FLAGS.SEND_MESSAGES,
     Discord.Permissions.FLAGS.VIEW_CHANNEL,

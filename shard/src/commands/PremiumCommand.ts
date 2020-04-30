@@ -1,6 +1,7 @@
 import { ParsedMessage } from "discord-command-parser";
 import { Op } from "sequelize";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import config from "../config";
 import AssignedTier from "../models/AssignedTier";
 import Donator from "../models/Donator";
@@ -14,7 +15,7 @@ export default class PremiumCommand extends Command {
   public aliases = ["patreon", "donate", "donator"];
   public syntax = "premium [tiers|activate <tier...>|deactivate [serverId]]";
   public description = "View information about and manage your premium";
-  public general = true;
+  public category = CommandManager.Categories.GENERAL;
 
   public async run(
     { message, arguments: args }: ParsedMessage<GuildMessage>,

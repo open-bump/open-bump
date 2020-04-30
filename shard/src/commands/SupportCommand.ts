@@ -1,5 +1,6 @@
 import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import config from "../config";
 import Guild from "../models/Guild";
 import Utils, { GuildMessage } from "../Utils";
@@ -8,7 +9,7 @@ export default class SupportCommand extends Command {
   public name = "support";
   public syntax = "support";
   public description = "Get an invite link to the support server";
-  public general = true;
+  public category = CommandManager.Categories.GENERAL;
 
   public async run(
     { message }: ParsedMessage<GuildMessage>,

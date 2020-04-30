@@ -1,5 +1,6 @@
 import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
 import OpenBump from "../OpenBump";
 import Utils, { GuildMessage } from "../Utils";
@@ -9,7 +10,7 @@ export default class SetInviteCommand extends Command {
   public aliases = ["set-invite"];
   public syntax = "setinvite";
   public description = "Set the invite for your server";
-  public general = false;
+  public category = CommandManager.Categories.BUMPSET;
 
   constructor(instance: OpenBump) {
     super(instance, ["CREATE_INSTANT_INVITE"]);

@@ -17,13 +17,19 @@ import SetColorCommand from "./commands/SetColorCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
 import SetInviteCommand from "./commands/SetInviteCommand";
 import StatsCommand from "./commands/StatsCommand";
+import SupportCommand from "./commands/SupportCommand";
 import VoteCommand from "./commands/VoteCommand";
 import config from "./config";
 import OpenBump from "./OpenBump";
 import Utils, { EmbedError, GuildMessage } from "./Utils";
-import SupportCommand from "./commands/SupportCommand";
 
 export default class CommandManager {
+  public static Categories = {
+    GENERAL: "GENERAL" as "GENERAL",
+    BUMPSET: "BUMPSET" as "BUMPSET",
+    PREMIUM: "PREMIUM" as "PREMIUM"
+  };
+
   private commands: { [name: string]: Command } = {};
 
   constructor(private instance: OpenBump) {

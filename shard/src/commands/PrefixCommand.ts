@@ -1,5 +1,6 @@
 import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
 import Utils, { GuildMessage, RestrictedFeatureError } from "../Utils";
 
@@ -8,7 +9,7 @@ export default class PrefixCommand extends Command {
   public aliases = ["setprefix", "set-prefix"];
   public syntax = "prefix [<prefix>|reset]";
   public description = "View and update your prefix";
-  public general = true;
+  public category = CommandManager.Categories.GENERAL;
 
   public async run(
     { message, arguments: args }: ParsedMessage<GuildMessage>,

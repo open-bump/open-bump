@@ -1,5 +1,6 @@
 import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
 import OpenBump from "../OpenBump";
 import Utils, { GuildMessage } from "../Utils";
@@ -8,7 +9,7 @@ export default class HelpCommand extends Command {
   public name = "help";
   public syntax = "help [command]";
   public description = "View a list of available commands";
-  public general = true;
+  public category = CommandManager.Categories.GENERAL;
 
   public async run(
     { message, arguments: args }: ParsedMessage<GuildMessage>,
@@ -27,31 +28,23 @@ export default class HelpCommand extends Command {
           url: this.instance.client.user?.displayAvatarURL()
         },
         fields: [
-          {
-            name: "General Help Plugins",
+          [CommandManager.Categories.GENERAL, "General Plugins Help"],
+          [CommandManager.Categories.BUMPSET, "Bumpset Plugins Commands"],
+          [CommandManager.Categories.PREMIUM, "Premium Plugins Commands"]
+        ].map(([current, title]) => {
+          return {
+            name: title,
             value: this.instance.commandManager
               .getCommands()
               .filter(({ vanished }) => !vanished)
-              .filter(({ general }) => general)
+              .filter(({ category }) => category === current)
               .map(
                 (command) =>
                   `\`${prefix}${command.name}\` - ${command.description}`
               )
               .join("\n")
-          },
-          {
-            name: "Bumpset Help Plugins",
-            value: this.instance.commandManager
-              .getCommands()
-              .filter(({ vanished }) => !vanished)
-              .filter(({ general }) => !general)
-              .map(
-                (command) =>
-                  `\`${prefix}${command.name}\` - ${command.description}`
-              )
-              .join("\n")
-          }
-        ],
+          };
+        }),
         footer: {
           text: Utils.getCommonFooter()
         },

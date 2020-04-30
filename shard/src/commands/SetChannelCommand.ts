@@ -1,6 +1,7 @@
 import { ParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
 import Utils, { GuildMessage } from "../Utils";
 
@@ -9,7 +10,7 @@ export default class SetChannelCommand extends Command {
   public aliases = ["set-channel", "channel"];
   public syntax = "setchannel [channel|reset]";
   public description = "Set the bump feed channel for your server";
-  public general = false;
+  public category = CommandManager.Categories.BUMPSET;
 
   public async run(
     { message, arguments: args }: ParsedMessage<GuildMessage>,

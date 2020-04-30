@@ -4,6 +4,7 @@ import ms from "ms";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import config from "../config";
 import BumpData from "../models/BumpData";
 import Guild from "../models/Guild";
@@ -13,7 +14,7 @@ export default class BumpCommand extends Command {
   public name = "bump";
   public syntax = "bump";
   public description = "Bump your server";
-  public general = false;
+  public category = CommandManager.Categories.BUMPSET;
 
   public async run(
     { message }: ParsedMessage<GuildMessage>,
@@ -113,7 +114,9 @@ export default class BumpCommand extends Command {
         if (error instanceof EmbedError) {
           guildDatabase.lastBumpedAt = null;
           await guildDatabase.save();
-          return void (await loadingMessage.edit({ embed: error.toEmbed() }));
+          return void (await loadingMessage.edit({
+            embed: error.toEmbed()
+          }));
         } else throw error;
       }
 

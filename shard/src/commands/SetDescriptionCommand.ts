@@ -1,5 +1,6 @@
 import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
 import Utils, { GuildMessage } from "../Utils";
 
@@ -14,7 +15,7 @@ export default class SetDescriptionCommand extends Command {
   ];
   public syntax = "setdescription <<description...>|reset>";
   public description = "Set the description for your server";
-  public general = false;
+  public category = CommandManager.Categories.BUMPSET;
 
   public async run(
     { message, arguments: args, body }: ParsedMessage<GuildMessage>,

@@ -1,6 +1,7 @@
 import { ParsedMessage } from "discord-command-parser";
 import ms from "ms";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import config from "../config";
 import Guild from "../models/Guild";
 import Utils, { GuildMessage } from "../Utils";
@@ -9,7 +10,7 @@ export default class VoteCommand extends Command {
   public name = "vote";
   public syntax = "vote";
   public description = `Vote for this bot to get a cooldown reduction`;
-  public general = true;
+  public category = CommandManager.Categories.GENERAL;
 
   public async run(
     { message }: ParsedMessage<GuildMessage>,

@@ -1,6 +1,7 @@
 import { ParsedMessage } from "discord-command-parser";
 import ms from "ms";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
 import Utils, { GuildMessage } from "../Utils";
 
@@ -9,7 +10,7 @@ export default class StatsCommand extends Command {
   public syntax = "stats";
   public description = "View the bot's stats";
   public vanished = true;
-  public general = true;
+  public category = CommandManager.Categories.GENERAL;
 
   public async run(
     { message }: ParsedMessage<GuildMessage>,

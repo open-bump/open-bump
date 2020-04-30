@@ -1,5 +1,6 @@
 import { ParsedMessage } from "discord-command-parser";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
 import Utils, {
   GuildMessage,
@@ -12,7 +13,7 @@ export default class SetColorCommand extends Command {
   public aliases = ["color", "set-color"];
   public syntax = "setcolor <<color>|reset>";
   public description = "Set the bump color for your server";
-  public general = false;
+  public category = CommandManager.Categories.PREMIUM;
 
   public async run(
     { message, arguments: args }: ParsedMessage<GuildMessage>,

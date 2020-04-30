@@ -1,6 +1,7 @@
 import { ParsedMessage } from "discord-command-parser";
 import ms from "ms";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
 import Utils, { GuildMessage, RestrictedFeatureError } from "../Utils";
 
@@ -14,7 +15,7 @@ export default class AutobumpCommand extends Command {
   ];
   public syntax = "autobump [enable|disable]";
   public description = "Enable and disable autobump";
-  public general = false;
+  public category = CommandManager.Categories.PREMIUM;
 
   public async run(
     { message, arguments: args }: ParsedMessage<GuildMessage>,

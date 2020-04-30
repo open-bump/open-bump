@@ -1,6 +1,7 @@
 import { ParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import Command from "../Command";
+import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
 import Utils, { GuildMessage } from "../Utils";
 
@@ -9,7 +10,7 @@ export default class AboutCommand extends Command {
   public aliases = ["info", "information"];
   public syntax = "about";
   public description = "View information about this bot";
-  public general = true;
+  public category = CommandManager.Categories.GENERAL;
 
   public async run(
     { message }: ParsedMessage<GuildMessage>,
