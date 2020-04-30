@@ -486,27 +486,56 @@ class Bump {
     try {
       const autobumpable = await Guild.scope("default").findAll({
         where: {
-          autobump: true
+          [Op.and]: [
+            {
+              autobump: true
+            },
+            Sequelize.literal(
+              `(\`Guild\`.\`id\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
+            )
+          ]
         }
       });
+
+      console.debug(
+        `[DEBUG] Loaded ${autobumpable.length} guilds with autobump enabled`
+      );
 
       for (const guildDatabase of autobumpable) {
         try {
           if (!guildDatabase.getFeatures().includes(Utils.Feature.AUTOBUMP)) {
             guildDatabase.autobump = false;
-            return void (await guildDatabase.save());
+            await guildDatabase.save();
+            continue;
           }
           const cooldown = guildDatabase.getCooldown(true);
           const nextBump = guildDatabase.lastBumpedAt
             ? guildDatabase.lastBumpedAt.valueOf() + cooldown
             : 0;
-          if (nextBump && nextBump > Date.now()) return;
+          if (nextBump && nextBump > Date.now()) {
+            console.debug(
+              `[DEBUG] Guild ${guildDatabase.name} (${
+                guildDatabase.id
+              }) is still on cooldown. (nextBump=${nextBump},displayNextBump=${moment(
+                nextBump
+              ).format()})`
+            );
+            continue;
+          }
+
           const guild = OpenBump.instance.client.guilds.cache.get(
             guildDatabase.id
           );
-          if (!guild) return;
+          if (!guild) {
+            console.debug(
+              `[DEBUG] Guild ${guildDatabase.name} (${guildDatabase.id}) is not cached on shard #${OpenBump.instance.networkManager.id}, continue autobump`
+            );
+            continue;
+          }
 
-          console.log(`Guild ${guildDatabase.id} is now being autobumped...`);
+          console.debug(
+            `[DEBUG] Guild ${guildDatabase.name} (${guildDatabase.id}) is now being autobumped...`
+          );
           await Bump.bump(
             guildDatabase,
             await Bump.getEmbed(guild, guildDatabase)
