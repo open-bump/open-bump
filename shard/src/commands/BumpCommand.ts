@@ -123,6 +123,16 @@ export default class BumpCommand extends Command {
             where: {
               id: {
                 [Op.in]: featured.map(({ id }) => id)
+              },
+              name: {
+                [Op.and]: [
+                  {
+                    [Op.ne]: null
+                  },
+                  {
+                    [Op.ne]: ""
+                  }
+                ]
               }
             },
             include: [
@@ -130,6 +140,16 @@ export default class BumpCommand extends Command {
                 model: BumpData,
                 where: {
                   invite: {
+                    [Op.and]: [
+                      {
+                        [Op.ne]: null
+                      },
+                      {
+                        [Op.ne]: ""
+                      }
+                    ]
+                  },
+                  name: {
                     [Op.and]: [
                       {
                         [Op.ne]: null

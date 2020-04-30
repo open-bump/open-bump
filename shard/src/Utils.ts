@@ -1,6 +1,11 @@
 import Color from "color";
 import DBL from "dblapi.js";
-import Discord, { MessageEmbedOptions, Permissions, PermissionString, TextChannel } from "discord.js";
+import Discord, {
+  MessageEmbedOptions,
+  Permissions,
+  PermissionString,
+  TextChannel
+} from "discord.js";
 import moment from "moment";
 import ms from "ms";
 import fetch from "node-fetch";
@@ -136,7 +141,7 @@ class Bump {
     return {
       title: `**${guild.name}**`,
       thumbnail: {
-        url: guild.iconURL() || undefined
+        url: guild.iconURL({ dynamic: true }) || undefined
       },
       color,
       description,
@@ -168,7 +173,7 @@ class Bump {
         url: banner
       },
       footer: {
-        icon_url: author.displayAvatarURL(),
+        icon_url: author.displayAvatarURL({ dynamic: true }),
         text: `Bumped by ${author.tag}`
       },
       timestamp: Date.now()
@@ -195,13 +200,22 @@ class Bump {
   ): Promise<Array<Guild>> {
     let guildFeeds: Array<Guild>;
 
+    console.debug(
+      `[DEBUG] Shard ${OpenBump.instance.networkManager.id} is bumping ${guildDatabase.name} (${guildDatabase.id}) (type=${type})`
+    );
+
     if (type === Bump.BumpType.HUBS) {
       guildFeeds = await this.fetchGuildFeeds(0, true, guildDatabase.id);
     } else if (type === Bump.BumpType.CROSS) {
       guildFeeds = await this.fetchGuildFeeds(50, true, guildDatabase.id);
     } else if (type === Bump.BumpType.FULL) {
       guildFeeds = await this.fetchGuildFeeds(-1, true, guildDatabase.id);
-    } else throw new Error("This error should never be thrown.");
+    } else
+      throw new Error("This error should never be thrown; Invalid bump type.");
+
+    console.debug(
+      `[DEBUG] Attempting to bump to ${guildFeeds.length} guilds...`
+    );
 
     guildFeeds = guildFeeds.filter(
       (guildFeed) => Boolean(guildFeed.nsfw) == Boolean(guildDatabase.nsfw)
@@ -293,6 +307,12 @@ class Bump {
             }
           }
         }
+      } else {
+        guildFeed.lastFailedAt = new Date();
+        await guildFeed.save();
+        console.debug(
+          `[DEBUG] Skipped and marked guild ${guildFeed.name} (${guildFeed.id}) because it can't be found in cache.`
+        );
       }
     }
     return bumpedTo;
@@ -307,16 +327,33 @@ class Bump {
       amount !== 0
         ? await Guild.scope("default").findAll({
             where: {
-              feed: {
-                [Op.and]: [
-                  {
-                    [Op.ne]: null
+              [Op.and]: [
+                {
+                  feed: {
+                    [Op.and]: [
+                      {
+                        [Op.ne]: null
+                      },
+                      {
+                        [Op.ne]: ""
+                      }
+                    ]
                   },
-                  {
-                    [Op.ne]: ""
-                  }
-                ]
-              }
+                  [Op.or]: [
+                    {
+                      lastFailedAt: null
+                    },
+                    {
+                      lastFailedAt: {
+                        [Op.lte]: moment().subtract(1, "day").valueOf()
+                      }
+                    }
+                  ]
+                },
+                Sequelize.literal(
+                  `(\`id\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
+                )
+              ]
             },
             ...(amount >= 0
               ? {
@@ -330,23 +367,30 @@ class Bump {
       (hubs && amount >= 0 && feedChannels.length >= amount) || include
         ? await Guild.scope("default").findAll({
             where: {
-              [Op.or]: [
-                ...(hubs ? [{ hub: true }] : []),
-                ...(include ? [{ id: include }] : [])
-              ],
-              id: {
-                [Op.notIn]: feedChannels.map(({ id }) => id)
-              },
-              feed: {
-                [Op.and]: [
-                  {
-                    [Op.ne]: null
+              [Op.and]: [
+                {
+                  [Op.or]: [
+                    ...(hubs ? [{ hub: true }] : []),
+                    ...(include ? [{ id: include }] : [])
+                  ],
+                  id: {
+                    [Op.notIn]: feedChannels.map(({ id }) => id)
                   },
-                  {
-                    [Op.ne]: ""
+                  feed: {
+                    [Op.and]: [
+                      {
+                        [Op.ne]: null
+                      },
+                      {
+                        [Op.ne]: ""
+                      }
+                    ]
                   }
-                ]
-              }
+                },
+                Sequelize.literal(
+                  `(\`Guild\`.\`id\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
+                )
+              ]
             }
           })
         : [];
@@ -439,27 +483,56 @@ class Bump {
     try {
       const autobumpable = await Guild.scope("default").findAll({
         where: {
-          autobump: true
+          [Op.and]: [
+            {
+              autobump: true
+            },
+            Sequelize.literal(
+              `(\`Guild\`.\`id\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
+            )
+          ]
         }
       });
+
+      console.debug(
+        `[DEBUG] Loaded ${autobumpable.length} guilds with autobump enabled`
+      );
 
       for (const guildDatabase of autobumpable) {
         try {
           if (!guildDatabase.getFeatures().includes(Utils.Feature.AUTOBUMP)) {
             guildDatabase.autobump = false;
-            return void (await guildDatabase.save());
+            await guildDatabase.save();
+            continue;
           }
           const cooldown = guildDatabase.getCooldown(true);
           const nextBump = guildDatabase.lastBumpedAt
             ? guildDatabase.lastBumpedAt.valueOf() + cooldown
             : 0;
-          if (nextBump && nextBump > Date.now()) return;
+          if (nextBump && nextBump > Date.now()) {
+            console.debug(
+              `[DEBUG] Guild ${guildDatabase.name} (${
+                guildDatabase.id
+              }) is still on cooldown. (nextBump=${nextBump},displayNextBump=${moment(
+                nextBump
+              ).format()})`
+            );
+            continue;
+          }
+
           const guild = OpenBump.instance.client.guilds.cache.get(
             guildDatabase.id
           );
-          if (!guild) return;
+          if (!guild) {
+            console.debug(
+              `[DEBUG] Guild ${guildDatabase.name} (${guildDatabase.id}) is not cached on shard #${OpenBump.instance.networkManager.id}, continue autobump`
+            );
+            continue;
+          }
 
-          console.log(`Guild ${guildDatabase.id} is now being autobumped...`);
+          console.debug(
+            `[DEBUG] Guild ${guildDatabase.name} (${guildDatabase.id}) is now being autobumped...`
+          );
           await Bump.bump(
             guildDatabase,
             await Bump.getEmbed(guild, guildDatabase)
@@ -494,7 +567,23 @@ class Lists {
       console.error("Error while posting stats to top.gg:", error)
     );
 
+    this.loopPostTopGG();
+
     console.log("Started top.gg");
+  }
+
+  private static async loopPostTopGG() {
+    try {
+      await this.dbl?.postStats(
+        OpenBump.instance.client.guilds.cache.size,
+        OpenBump.instance.networkManager.id,
+        OpenBump.instance.networkManager.total
+      );
+      console.log("Successfully posted server count to top.gg");
+    } catch (error) {
+      console.error("Error while posting server count to top.gg:", error);
+    }
+    setTimeout(() => this.loopPostTopGG(), 1000 * 60 * 15);
   }
 
   public static async hasVotedTopGG(user: string): Promise<boolean> {
@@ -620,6 +709,10 @@ export default class Utils {
       array.slice(0, array.length - 1).join(", ") +
       ` and ${array[array.length - 1]}`
     );
+  }
+
+  public static formatCurrency(cents: number) {
+    return `$${(cents / 100).toFixed(2)}`;
   }
 
   public static findChannel(
