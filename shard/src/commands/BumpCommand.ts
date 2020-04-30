@@ -123,6 +123,16 @@ export default class BumpCommand extends Command {
             where: {
               id: {
                 [Op.in]: featured.map(({ id }) => id)
+              },
+              name: {
+                [Op.and]: [
+                  {
+                    [Op.ne]: null
+                  },
+                  {
+                    [Op.ne]: ""
+                  }
+                ]
               }
             },
             include: [
