@@ -141,7 +141,7 @@ class Bump {
     return {
       title: `**${guild.name}**`,
       thumbnail: {
-        url: guild.iconURL() || undefined
+        url: guild.iconURL({ dynamic: true }) || undefined
       },
       color,
       description,
@@ -173,7 +173,7 @@ class Bump {
         url: banner
       },
       footer: {
-        icon_url: author.displayAvatarURL(),
+        icon_url: author.displayAvatarURL({ dynamic: true }),
         text: `Bumped by ${author.tag}`
       },
       timestamp: Date.now()
