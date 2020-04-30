@@ -310,10 +310,13 @@ class Bump {
             }
           }
         }
-      } else
+      } else {
+        guildFeed.lastFailedAt = new Date();
+        await guildFeed.save();
         console.debug(
-          `[DEBUG] Skipping guild ${guildFeed.name} (${guildFeed.id}) because it can't be found in cache.`
+          `[DEBUG] Skipped and marked guild ${guildFeed.name} (${guildFeed.id}) because it can't be found in cache.`
         );
+      }
     }
     return bumpedTo;
   }
@@ -338,7 +341,17 @@ class Bump {
                         [Op.ne]: ""
                       }
                     ]
-                  }
+                  },
+                  [Op.or]: [
+                    {
+                      lastFailedAt: null
+                    },
+                    {
+                      lastFailedAt: {
+                        [Op.lte]: moment().subtract(1, "day").valueOf()
+                      }
+                    }
+                  ]
                 },
                 Sequelize.literal(
                   `(\`id\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
@@ -357,23 +370,30 @@ class Bump {
       (hubs && amount >= 0 && feedChannels.length >= amount) || include
         ? await Guild.scope("default").findAll({
             where: {
-              [Op.or]: [
-                ...(hubs ? [{ hub: true }] : []),
-                ...(include ? [{ id: include }] : [])
-              ],
-              id: {
-                [Op.notIn]: feedChannels.map(({ id }) => id)
-              },
-              feed: {
-                [Op.and]: [
-                  {
-                    [Op.ne]: null
+              [Op.and]: [
+                {
+                  [Op.or]: [
+                    ...(hubs ? [{ hub: true }] : []),
+                    ...(include ? [{ id: include }] : [])
+                  ],
+                  id: {
+                    [Op.notIn]: feedChannels.map(({ id }) => id)
                   },
-                  {
-                    [Op.ne]: ""
+                  feed: {
+                    [Op.and]: [
+                      {
+                        [Op.ne]: null
+                      },
+                      {
+                        [Op.ne]: ""
+                      }
+                    ]
                   }
-                ]
-              }
+                },
+                Sequelize.literal(
+                  `(\`Guild\`.\`id\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
+                )
+              ]
             }
           })
         : [];

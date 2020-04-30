@@ -53,6 +53,9 @@ export default class Guild extends Model<Guild> {
   @Column(DataType.DATE)
   lastBumpedAt?: Date | null;
 
+  @Column(DataType.DATE)
+  lastFailedAt?: Date | null;
+
   @Default(0)
   @AllowNull(false)
   @Column(DataType.INTEGER)
