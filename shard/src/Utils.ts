@@ -65,7 +65,8 @@ class Bump {
   public static async getEmbed(
     guild: Discord.Guild,
     guildDatabase: Guild,
-    authorId?: string
+    authorId?: string,
+    preview = false
   ): Promise<MessageEmbedOptions> {
     // Check for missing values
     const missing = this.getMissingValues(guild, guildDatabase);
@@ -177,7 +178,10 @@ class Bump {
       },
       footer: {
         icon_url: author.displayAvatarURL(),
-        text: `Bumped by ${author.tag}`
+        text:
+          author.id !== OpenBump.instance.client.user?.id
+            ? `${!preview ? "Bumped by" : "Preview by"} ${author.tag}`
+            : "Server Being Auto Bumped By The System"
       },
       timestamp: Date.now()
     };

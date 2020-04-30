@@ -15,7 +15,12 @@ export default class PreviewCommand extends Command {
     guildDatabase: Guild
   ) {
     const { channel, guild, author } = message;
-    const embed = await Utils.Bump.getEmbed(guild, guildDatabase, author.id);
+    const embed = await Utils.Bump.getEmbed(
+      guild,
+      guildDatabase,
+      author.id,
+      true
+    );
     return void (await channel.send({ embed }));
   }
 }
