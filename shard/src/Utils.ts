@@ -758,10 +758,10 @@ export default class Utils {
     return Color(input).rgbNumber();
   }
 
-  public static colorToText(input: number): string {
+  public static colorToText(input: number, named = true): string {
     const hex = Color(input).hex();
     const [, name, exact] = ntc.name(hex);
-    return exact ? name : hex;
+    return exact && named ? name : hex;
   }
 
   public static getPrefix(guild?: Guild) {
