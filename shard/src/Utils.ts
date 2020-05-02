@@ -177,7 +177,7 @@ class Bump {
         url: banner
       },
       footer: {
-        icon_url: author.displayAvatarURL({dynamic:true}),
+        icon_url: author.displayAvatarURL({ dynamic: true }),
         text:
           author.id !== OpenBump.instance.client.user?.id
             ? `${!preview ? "Bumped by" : "Preview by"} ${author.tag}`
@@ -560,6 +560,7 @@ class Bump {
 
 class Lists {
   private static dbl?: DBL = undefined;
+  private static dblWeekend = false;
 
   public static start() {
     this.startTopGG();
@@ -581,6 +582,7 @@ class Lists {
 
   private static async loopPostTopGG() {
     try {
+      this.dblWeekend = (await this.dbl?.isWeekend()) || false;
       await this.dbl?.postStats(
         OpenBump.instance.client.guilds.cache.size,
         OpenBump.instance.networkManager.id,
@@ -600,6 +602,10 @@ class Lists {
     } catch (error) {
       return false;
     }
+  }
+
+  public static isWeekendTopGG() {
+    return this.dblWeekend;
   }
 
   public static getLinkTopGG() {

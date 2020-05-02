@@ -26,8 +26,12 @@ export default class BumpCommand extends Command {
       !guildDatabase.getFeatures().includes("AUTOBUMP") ||
       !guildDatabase.autobump
     ) {
+      const votingEnabled = config.lists.topgg.enabled;
       const voted = await Utils.Lists.hasVotedTopGG(author.id);
+      const voteCooldown = guildDatabase.getCooldown(true, true);
       const cooldown = guildDatabase.getCooldown(true, voted);
+      const maxedOut =
+        guildDatabase.getCooldown(false, voted) <= config.settings.cooldown.min;
       const nextBump = guildDatabase.lastBumpedAt
         ? guildDatabase.lastBumpedAt.valueOf() + cooldown
         : 0;
@@ -35,38 +39,35 @@ export default class BumpCommand extends Command {
       if (nextBump && nextBump > Date.now()) {
         const suggestions: Array<Discord.EmbedFieldData> = [];
 
-        const voteCooldown = guildDatabase.getCooldown(true, true);
-        if (
-          !guildDatabase.feed &&
-          guildDatabase.getCooldown() > config.settings.cooldown.min &&
-          Utils.randomInt(2) === 0
-        )
+        if (!guildDatabase.feed && !maxedOut && Utils.randomInt(2) === 0)
           suggestions.push({
             name: `${Utils.Emojis.BELL} Suggestion: Bump Channel`,
             value:
               `You don't want to wait ${ms(cooldown, {
                 long: true
-              })} until you can bump? You can reduce your cooldown by seting your guild a bump channel!\n` +
+              })} until you can bump? Set your guild a bump channel!\n` +
               `To set a bump channel, please use the command \`${Utils.getPrefix(
                 guildDatabase
               )}setchannel <channel>\`.`
           });
         else if (
+          votingEnabled &&
           !voted &&
-          guildDatabase.getCooldown() > config.settings.cooldown.min &&
+          !maxedOut &&
           cooldown > voteCooldown &&
-          Utils.randomInt(3) === 0
+          (Utils.Lists.isWeekendTopGG() || Utils.randomInt(3) === 0)
         )
           suggestions.push({
             name: `${Utils.Emojis.BELL} Suggestion: Vote`,
             value:
               `You don't want to wait ${ms(cooldown, {
                 long: true
-              })} until you can bump? Vote for our bot!\n` +
-              `You can vote at ${Utils.Lists.getLinkTopGG()}. ` +
+              })} until you can bump? **[Vote for ${
+                this.instance.client.user?.username
+              }!](${Utils.Lists.getLinkTopGG()})**\n` +
               `It will decrease your cooldown by ${ms(cooldown - voteCooldown, {
                 long: true
-              })} for 12 hours.`
+              })} for the next 12 hours.`
           });
         else if (!guildDatabase.isPremium() && Utils.randomInt(3) === 0)
           suggestions.push({
@@ -97,13 +98,11 @@ export default class BumpCommand extends Command {
       guildDatabase.totalBumps++;
       await guildDatabase.save();
 
-      const loadingEmbed = {
+      const loadingEmbedEmbed = {
         color: Utils.Colors.BLUE,
-        title: `${Utils.Emojis.LOADING} Your server is being bumped...`
+        title: `${Utils.Emojis.LOADING} Building your server's bump message... [1/2]`
       };
-      const loadingMessage = await channel.send({
-        embed: loadingEmbed
-      });
+      const loadingMessage = await channel.send({ embed: loadingEmbedEmbed });
 
       // TODO: Use correct bump utils function to regulate receivers
       let bumpEmbed;
@@ -119,6 +118,12 @@ export default class BumpCommand extends Command {
           }));
         } else throw error;
       }
+
+      const loadingBumpEmbed = {
+        color: Utils.Colors.BLUE,
+        title: `${Utils.Emojis.LOADING} Pushing your server's bump message to other servers... [2/2]`
+      };
+      await loadingMessage.edit({ embed: loadingBumpEmbed });
 
       let { amount, featured } = await Utils.Bump.bump(
         guildDatabase,
@@ -165,11 +170,11 @@ export default class BumpCommand extends Command {
         : [];
 
       console.log(
-        `Guild ${guild.name} (${guild.id}) has successfully been bumped to ${amount} servers.`
+        `Guild ${guild.name} (${guild.id}) has been successfully bumped to ${amount} servers.`
       );
 
       let description =
-        `Your server has successfully been bumped.\n` +
+        `Your server has been successfully bumped.\n` +
         `You can bump again in ${ms(cooldown, {
           long: true
         })}.`;
@@ -190,7 +195,27 @@ export default class BumpCommand extends Command {
       const successEmbed = {
         color: Utils.Colors.GREEN,
         title: `${Utils.Emojis.CHECK} Success`,
-        description
+        description,
+        fields: [
+          {
+            name: `${Utils.Emojis.BELL} Next Bump`,
+            value: `You can bump again in ${ms(cooldown, {
+              long: true
+            })}.${
+              votingEnabled && !voted && !maxedOut && cooldown > voteCooldown
+                ? `\n` +
+                  `**[Vote for ${
+                    this.instance.client.user?.username
+                  }](${Utils.Lists.getLinkTopGG()})** to reduce your cooldown by ${ms(
+                    cooldown - voteCooldown,
+                    {
+                      long: true
+                    }
+                  )} for the next 12 hours!`
+                : ""
+            }`
+          }
+        ]
       };
       await loadingMessage.edit({ embed: successEmbed });
     } else {
