@@ -126,7 +126,9 @@ export default class Patreon {
     const donatorIds: Array<string> = [];
 
     for (const id of Object.keys(this.cache.discordUserMembers)) {
-      let userDatabase = patreonUserDatabases.find((user) => user.id === id);
+      let userDatabase: User | undefined = patreonUserDatabases.find(
+        (user) => user.id === id
+      );
       if (!userDatabase) userDatabase = await User.create({ id });
       const members = this.cache.discordUserMembers[id];
       const totalEntitledCents = Object.values(members)
@@ -135,7 +137,11 @@ export default class Patreon {
         )
         .reduce((current, accumulator) => current + accumulator, 0);
       if (totalEntitledCents) donatorIds.push(id);
-      if (!userDatabase.donator) await userDatabase.$create("donator", {});
+      if (!userDatabase.donator)
+        userDatabase.donator = await userDatabase.$create<Donator>(
+          "donator",
+          {}
+        );
       if (!userDatabase.donator) {
         console.error(
           "Unexpected flow, this error should never happen. [273872]"
