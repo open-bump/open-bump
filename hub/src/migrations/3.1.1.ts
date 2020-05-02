@@ -33,7 +33,7 @@ const migration: MigrationJS = {
           await queryInterface.bulkInsert(
             "PremiumTierFeature",
             data.features.map((feature) => ({
-              id: require('uuid').v4(),
+              id: require("uuid").v4(),
               premiumTierId: data.id,
               feature: feature
             })),
@@ -44,39 +44,18 @@ const migration: MigrationJS = {
 
       await insertTier({
         id: "122ca791-b19e-4c69-9e06-4554dfcaff67",
-        name: "Wumpus",
-        cost: 100,
-        features: ["COLOR", "BANNER", "PREFIX", "FEATURED", "CROSS"]
+        name: "Bronze",
+        cost: 400,
+        cooldown: 20,
+        features: ["COLOR", "BANNER", "PREFIX", "FEATURED", "CROSS", "AUTOBUMP"]
       });
 
       await insertTier({
         id: "d502d010-925e-4342-ba97-9d001fb35dbe",
-        name: "Boxer",
-        cost: 300,
-        features: ["AUTOBUMP", "PREFIX", "CROSS"]
-      });
-
-      await insertTier({
-        id: "215f4d85-e53e-4fd3-8657-31b46562b63c",
-        name: "Cool Wumpus",
-        cost: 500,
-        features: ["COLOR", "BANNER", "PREFIX", "FEATURED", "AUTOBUMP", "CROSS"]
-      });
-
-      await insertTier({
-        id: "ebc8ce5c-1034-4af1-868b-582c20ef95e8",
-        name: "Fast Boxer",
-        cost: 500,
-        cooldown: 15,
-        features: ["PREFIX", "AUTOBUMP", "CROSS"]
-      });
-
-      await insertTier({
-        id: "dd6328b3-7d54-41f3-8c63-39d350a55cc1",
-        name: "Super Wumpus",
-        cost: 700,
-        cooldown: 15,
-        features: ["COLOR", "BANNER", "PREFIX", "FEATURED", "AUTOBUMP", "CROSS"]
+        name: "Gold",
+        cost: 600,
+        cooldown: 10,
+        features: ["COLOR", "BANNER", "PREFIX", "FEATURED", "CROSS", "AUTOBUMP"]
       });
 
       /* Commit Transaction */
@@ -95,17 +74,18 @@ const migration: MigrationJS = {
       /* Delete Default Premium Tiers */
       const defaultTiers = [
         "122ca791-b19e-4c69-9e06-4554dfcaff67",
-        "d502d010-925e-4342-ba97-9d001fb35dbe",
-        "215f4d85-e53e-4fd3-8657-31b46562b63c",
-        "ebc8ce5c-1034-4af1-868b-582c20ef95e8",
-        "dd6328b3-7d54-41f3-8c63-39d350a55cc1"
+        "d502d010-925e-4342-ba97-9d001fb35dbe"
       ];
 
-      await queryInterface.bulkDelete("PremiumTier", {
-        id: {
-          [op.in]: defaultTiers
-        }
-      }, { transaction });
+      await queryInterface.bulkDelete(
+        "PremiumTier",
+        {
+          id: {
+            [op.in]: defaultTiers
+          }
+        },
+        { transaction }
+      );
 
       /* Commit Transaction */
       await transaction.commit();
