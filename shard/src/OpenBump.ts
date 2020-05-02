@@ -1,4 +1,4 @@
-import Discord, { WebSocketOptions } from "discord.js";
+import Discord from "discord.js";
 import CommandManager from "./CommandManager";
 import config from "./config";
 import DatabaseManager from "./DatabaseManager";
@@ -23,14 +23,7 @@ export default class OpenBump {
   constructor() {
     OpenBump.instance = this;
 
-    this.client = new Discord.Client({
-      ws: {
-        properties: {
-          $browser: "Discord Android",
-          $device: "Discord Android"
-        }
-      } as WebSocketOptions
-    });
+    this.client = new Discord.Client();
 
     this.commandManager = new CommandManager(this);
     this.eventManager = new EventManager(this);
