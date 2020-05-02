@@ -155,16 +155,6 @@ export default class BumpCommand extends Command {
                         [Op.ne]: ""
                       }
                     ]
-                  },
-                  name: {
-                    [Op.and]: [
-                      {
-                        [Op.ne]: null
-                      },
-                      {
-                        [Op.ne]: ""
-                      }
-                    ]
                   }
                 }
               }
