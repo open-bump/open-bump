@@ -174,43 +174,45 @@ export default class BumpCommand extends Command {
           long: true
         })}.`;
 
+      const fields = [];
+
       if (featuredGuildDatabases.length) {
-        description +=
-          `\n\n` +
-          `**Featured servers your server was bumped to:**\n` +
-          Utils.niceList(
+        fields.push({
+          name: `${Utils.Emojis.FEATURED} Featured servers your server was bumped to`,
+          value: Utils.niceList(
             featuredGuildDatabases.map(
               (guild) =>
                 `**[${guild.name}](https://discord.gg/${guild.bumpData.invite})**`
             )
-          );
+          )
+        });
       }
+
+      fields.push({
+        name: `${Utils.Emojis.BELL} Next Bump`,
+        value: `You can bump again in ${ms(cooldown, {
+          long: true
+        })}.${
+          votingEnabled && !voted && !maxedOut && cooldown > voteCooldown
+            ? `\n` +
+              `**[Vote for ${
+                this.instance.client.user?.username
+              }](${Utils.Lists.getLinkTopGG()})** to reduce your cooldown by ${ms(
+                cooldown - voteCooldown,
+                {
+                  long: true
+                }
+              )} for the next 12 hours!`
+            : ""
+        }`
+      });
 
       // TODO: Remove server count
       const successEmbed = {
         color: Utils.Colors.GREEN,
         title: `${Utils.Emojis.CHECK} Success`,
         description,
-        fields: [
-          {
-            name: `${Utils.Emojis.BELL} Next Bump`,
-            value: `You can bump again in ${ms(cooldown, {
-              long: true
-            })}.${
-              votingEnabled && !voted && !maxedOut && cooldown > voteCooldown
-                ? `\n` +
-                  `**[Vote for ${
-                    this.instance.client.user?.username
-                  }](${Utils.Lists.getLinkTopGG()})** to reduce your cooldown by ${ms(
-                    cooldown - voteCooldown,
-                    {
-                      long: true
-                    }
-                  )} for the next 12 hours!`
-                : ""
-            }`
-          }
-        ]
+        fields
       };
       await loadingMessage.edit({ embed: successEmbed });
     } else {
