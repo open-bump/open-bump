@@ -100,7 +100,7 @@ export default class BumpCommand extends Command {
 
       const loadingEmbedEmbed = {
         color: Utils.Colors.BLUE,
-        title: `${Utils.Emojis.LOADING} Building your server's bump message... [1/2]`
+        title: `${Utils.Emojis.LOADING} Bumping your server...`
       };
       const loadingMessage = await channel.send({ embed: loadingEmbedEmbed });
 
@@ -118,12 +118,6 @@ export default class BumpCommand extends Command {
           }));
         } else throw error;
       }
-
-      const loadingBumpEmbed = {
-        color: Utils.Colors.BLUE,
-        title: `${Utils.Emojis.LOADING} Pushing your server's bump message to other servers... [2/2]`
-      };
-      await loadingMessage.edit({ embed: loadingBumpEmbed });
 
       let { amount, featured } = await Utils.Bump.bump(
         guildDatabase,
@@ -179,43 +173,45 @@ export default class BumpCommand extends Command {
           long: true
         })}.`;
 
+      const fields = [];
+
       if (featuredGuildDatabases.length) {
-        description +=
-          `\n\n` +
-          `**Featured servers your server was bumped to:**\n` +
-          Utils.niceList(
+        fields.push({
+          name: `${Utils.Emojis.FEATURED} Featured servers your server was bumped to`,
+          value: Utils.niceList(
             featuredGuildDatabases.map(
               (guild) =>
                 `**[${guild.name}](https://discord.gg/${guild.bumpData.invite})**`
             )
-          );
+          )
+        });
       }
+
+      fields.push({
+        name: `${Utils.Emojis.BELL} Next Bump`,
+        value: `You can bump again in ${ms(cooldown, {
+          long: true
+        })}.${
+          votingEnabled && !voted && !maxedOut && cooldown > voteCooldown
+            ? `\n` +
+              `**[Vote for ${
+                this.instance.client.user?.username
+              }](${Utils.Lists.getLinkTopGG()})** to reduce your cooldown by ${ms(
+                cooldown - voteCooldown,
+                {
+                  long: true
+                }
+              )} for the next 12 hours!`
+            : ""
+        }`
+      });
 
       // TODO: Remove server count
       const successEmbed = {
         color: Utils.Colors.GREEN,
         title: `${Utils.Emojis.CHECK} Success`,
         description,
-        fields: [
-          {
-            name: `${Utils.Emojis.BELL} Next Bump`,
-            value: `You can bump again in ${ms(cooldown, {
-              long: true
-            })}.${
-              votingEnabled && !voted && !maxedOut && cooldown > voteCooldown
-                ? `\n` +
-                  `**[Vote for ${
-                    this.instance.client.user?.username
-                  }](${Utils.Lists.getLinkTopGG()})** to reduce your cooldown by ${ms(
-                    cooldown - voteCooldown,
-                    {
-                      long: true
-                    }
-                  )} for the next 12 hours!`
-                : ""
-            }`
-          }
-        ]
+        fields
       };
       await loadingMessage.edit({ embed: successEmbed });
     } else {
