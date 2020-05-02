@@ -147,7 +147,7 @@ class Bump {
       description,
       fields: [
         {
-          name: `${Utils.Emojis.SLINK} **Invite Link**`,
+          name: `${Utils.Emojis.SLINK} **Join Server**`,
           value: `**${invite}**`
         },
         {
@@ -553,6 +553,7 @@ class Bump {
 
 class Lists {
   private static dbl?: DBL = undefined;
+  private static dblWeekend = false;
 
   public static start() {
     this.startTopGG();
@@ -574,6 +575,7 @@ class Lists {
 
   private static async loopPostTopGG() {
     try {
+      this.dblWeekend = (await this.dbl?.isWeekend()) || false;
       await this.dbl?.postStats(
         OpenBump.instance.client.guilds.cache.size,
         OpenBump.instance.networkManager.id,
@@ -593,6 +595,10 @@ class Lists {
     } catch (error) {
       return false;
     }
+  }
+
+  public static isWeekendTopGG() {
+    return this.dblWeekend;
   }
 
   public static getLinkTopGG() {
