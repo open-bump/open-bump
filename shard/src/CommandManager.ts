@@ -103,6 +103,21 @@ export default class CommandManager {
         }
       }
 
+      if (guildDatabase.blocked !== null && guildDatabase.blocked !== void 0) {
+        // Guild is blocked
+        const embed = {
+          color: Utils.Colors.RED,
+          title: `${Utils.Emojis.XMARK} Restricted`,
+          description:
+            `This guild has been blocked from executing commands.\n` +
+            `If you believe this is an error, please contact **[Support](${config.settings.support})**.` +
+            (guildDatabase.blocked
+              ? `\n**Reason:** ${guildDatabase.blocked}`
+              : "")
+        };
+        return void (await channel.send({ embed }));
+      }
+
       try {
         await command.run(parsed, guildDatabase);
       } catch (error) {

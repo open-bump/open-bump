@@ -355,7 +355,8 @@ class Bump {
                         [Op.lte]: moment().subtract(1, "day").valueOf()
                       }
                     }
-                  ]
+                  ],
+                  blocked: null
                 },
                 Sequelize.literal(
                   `(\`id\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
@@ -392,7 +393,8 @@ class Bump {
                         [Op.ne]: ""
                       }
                     ]
-                  }
+                  },
+                  blocked: null
                 },
                 Sequelize.literal(
                   `(\`Guild\`.\`id\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
@@ -492,7 +494,8 @@ class Bump {
         where: {
           [Op.and]: [
             {
-              autobump: true
+              autobump: true,
+              blocked: null
             },
             Sequelize.literal(
               `(\`Guild\`.\`id\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
