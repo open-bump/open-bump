@@ -67,6 +67,9 @@ export default class Guild extends Model<Guild> {
   @Column(DataType.BOOLEAN)
   hub!: boolean;
 
+  @Column(DataType.STRING)
+  blocked!: string;
+
   public getFeatures() {
     const defaultFeatures = config.settings.features;
     const guildFeatures =
