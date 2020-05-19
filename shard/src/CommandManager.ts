@@ -1,4 +1,4 @@
-import parser from "discord-command-parser";
+import * as parser from "discord-command-parser";
 import Discord from "discord.js";
 import Command from "./Command";
 import AboutCommand from "./commands/AboutCommand";
