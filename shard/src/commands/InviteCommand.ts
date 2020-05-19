@@ -20,7 +20,7 @@ export default class InviteCommand extends Command {
     const items: { [name: string]: string } = {
       "Add PYS Bump": `**[Click Here](${Utils.getInviteLink()})**`,
       "Upvote The Bot": `**[Click Here](${Utils.Lists.getLinkTopGG()})**`,
-      "Bot Guild": "Coming Soon!",
+      "Bot Guide": `**[Click Here](${config.settings.meta.guide})**`,
       "Support Server": `**[Click Here](${config.settings.support})**`,
       "Add Radio X": `**[Click Here](${config.settings.meta.radioXInvite})**`,
       "Buy Premium": `**[Click Here](${config.settings.patreon})**`

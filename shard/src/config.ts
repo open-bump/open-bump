@@ -35,6 +35,7 @@ interface IConfig extends config.IConfig {
     patreon: string;
     meta: {
       radioXInvite: string;
+      guide: string;
     };
     servermate: {
       user: string;
