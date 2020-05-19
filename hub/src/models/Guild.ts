@@ -66,6 +66,9 @@ export default class Guild extends Model<Guild> {
   @Column(DataType.BOOLEAN)
   hub!: boolean;
 
+  @Column(DataType.STRING)
+  blocked!: string;
+
   public getFeatures() {
     const guildFeatures = this.features
       .filter(({ feature }) => Boolean(feature))
