@@ -1,2 +1,5 @@
 ﻿dist
 migrations/pys_bump_v1/database.json
+node_modules
+config
+auth.json
