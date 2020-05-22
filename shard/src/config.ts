@@ -33,6 +33,10 @@ interface IConfig extends config.IConfig {
       guilds: string;
     };
     patreon: string;
+    nitroboost?: {
+      server: string;
+      bonus: number;
+    };
     servermate: {
       user: string;
       trigger: string;

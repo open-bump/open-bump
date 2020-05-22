@@ -10,6 +10,7 @@ import {
   PrimaryKey,
   Table
 } from "sequelize-typescript";
+import config from "../config";
 import AssignedTier from "./AssignedTier";
 import User from "./User";
 
@@ -40,6 +41,11 @@ export default class Donator extends Model<Donator> {
   @Column(DataType.INTEGER)
   bonus!: number;
 
+  @Default(false)
+  @AllowNull(false)
+  @Column(DataType.BOOLEAN)
+  nitroBoost!: boolean;
+
   @HasMany(() => AssignedTier)
   assignedTiers!: Array<AssignedTier>;
 
@@ -62,6 +68,7 @@ export default class Donator extends Model<Donator> {
     let amount = 0;
     if (this.patreon) amount += this.patreon;
     if (this.bonus) amount += this.bonus;
+    if (this.nitroBoost) amount += config.settings.nitroboost?.bonus || 0;
     return amount;
   }
 }
