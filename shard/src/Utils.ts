@@ -172,10 +172,6 @@ class Bump {
       image: {
         url: banner
       },
-      footer: {
-        icon_url: author.displayAvatarURL({ dynamic: true }),
-        text: `Bumped by ${author.tag}`
-      },
       timestamp: Date.now()
     };
   }
