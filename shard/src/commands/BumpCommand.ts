@@ -39,6 +39,8 @@ export default class BumpCommand extends Command {
       if (nextBump && nextBump > Date.now()) {
         const suggestions: Array<Discord.EmbedFieldData> = [];
 
+        let integrationSuggestion;
+
         if (!guildDatabase.feed && !maxedOut && Utils.randomInt(2) === 0)
           suggestions.push({
             name: `${Utils.Emojis.BELL} Suggestion: Bump Channel`,
@@ -80,6 +82,19 @@ export default class BumpCommand extends Command {
                 guildDatabase
               )}premium\`.`
           });
+        else if (
+          Utils.randomInt(2) === 0 &&
+          (integrationSuggestion = await this.instance.integration.getBotSuggestion(
+            guild
+          ))
+        ) {
+          const integrationSuggestionField = {
+            name: `${Utils.Emojis.BELL} Bot Suggestion: ${integrationSuggestion.name}`,
+
+            value: `Bump bots are most effective when used together. **[Start using ${integrationSuggestion.name} today!](${integrationSuggestion.invite})**`
+          };
+          suggestions.push(integrationSuggestionField);
+        }
 
         const embed = {
           color: Utils.Colors.RED,
@@ -187,8 +202,20 @@ export default class BumpCommand extends Command {
         });
       }
 
+      const integrationSuggestion = await this.instance.integration.getBotSuggestion(
+        guild
+      );
+
+      const integrationSuggestionField = integrationSuggestion && {
+        name: `${Utils.Emojis.BELL} Bot Suggestion: ${integrationSuggestion.name}`,
+
+        value: `Bump bots are most effective when used together. **[Start using ${integrationSuggestion.name} today!](${integrationSuggestion.invite})**`
+      };
+
+      if (integrationSuggestionField) fields.push(integrationSuggestionField);
+
       fields.push({
-        name: `${Utils.Emojis.BELL} Next Bump`,
+        name: `${Utils.Emojis.CLOCK} Next Bump`,
         value: `You can bump again in ${ms(cooldown, {
           long: true
         })}.${
