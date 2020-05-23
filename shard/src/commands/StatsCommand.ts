@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import ms from "ms";
 import Command from "../Command";
 import CommandManager from "../CommandManager";
@@ -13,7 +13,7 @@ export default class StatsCommand extends Command {
   public category = CommandManager.Categories.GENERAL;
 
   public async run(
-    { message }: ParsedMessage<GuildMessage>,
+    { message }: SuccessfulParsedMessage<GuildMessage>,
     _guildDatabase: Guild
   ) {
     const { channel } = message;

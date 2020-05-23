@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import Command from "../Command";
 import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
@@ -17,7 +17,7 @@ export default class SetInviteCommand extends Command {
   }
 
   public async run(
-    { message }: ParsedMessage<GuildMessage>,
+    { message }: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
     const { channel, author, member } = message;

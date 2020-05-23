@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import ms from "ms";
 import Command from "../Command";
 import CommandManager from "../CommandManager";
@@ -18,7 +18,7 @@ export default class AutobumpCommand extends Command {
   public category = CommandManager.Categories.PREMIUM;
 
   public async run(
-    { message, arguments: args }: ParsedMessage<GuildMessage>,
+    { message, arguments: args }: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
     const { channel, member } = message;

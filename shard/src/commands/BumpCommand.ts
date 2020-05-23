@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import ms from "ms";
 import { Op } from "sequelize";
@@ -17,7 +17,7 @@ export default class BumpCommand extends Command {
   public category = CommandManager.Categories.BUMPSET;
 
   public async run(
-    { message }: ParsedMessage<GuildMessage>,
+    { message }: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
     const { channel, guild, author } = message;

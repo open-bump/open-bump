@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import { Op } from "sequelize";
 import Command from "../Command";
 import CommandManager from "../CommandManager";
@@ -18,7 +18,7 @@ export default class PremiumCommand extends Command {
   public category = CommandManager.Categories.GENERAL;
 
   public async run(
-    { message, arguments: args }: ParsedMessage<GuildMessage>,
+    { message, arguments: args }: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
     const { channel, author, guild } = message;

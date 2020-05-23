@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import Command from "../Command";
 import CommandManager from "../CommandManager";
@@ -13,7 +13,7 @@ export default class AboutCommand extends Command {
   public category = CommandManager.Categories.GENERAL;
 
   public async run(
-    { message }: ParsedMessage<GuildMessage>,
+    { message }: SuccessfulParsedMessage<GuildMessage>,
     _guildDatabase: Guild
   ) {
     const { channel } = message;

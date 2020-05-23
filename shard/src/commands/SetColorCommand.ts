@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import Command from "../Command";
 import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
@@ -16,7 +16,7 @@ export default class SetColorCommand extends Command {
   public category = CommandManager.Categories.PREMIUM;
 
   public async run(
-    { message, arguments: args }: ParsedMessage<GuildMessage>,
+    { message, arguments: args }: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
     const { channel, member } = message;

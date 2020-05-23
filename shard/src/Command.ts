@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import CommandManager from "./CommandManager";
 import Guild from "./models/Guild";
@@ -29,12 +29,12 @@ export default abstract class Command {
   }
 
   public abstract async run(
-    parsed: ParsedMessage<GuildMessage>,
+    parsed: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ): Promise<void>;
 
   public async calculatePermissions(
-    parsed: ParsedMessage<GuildMessage>,
+    parsed: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ): Promise<Discord.PermissionResolvable> {
     return this.permissions;
