@@ -46,6 +46,11 @@ export default class Donator extends Model<Donator> {
   @Column(DataType.BOOLEAN)
   nitroBoost!: boolean;
 
+  @Default(false)
+  @AllowNull(false)
+  @Column(DataType.BOOLEAN)
+  nitroBoostInformed!: boolean;
+
   @HasMany(() => AssignedTier)
   assignedTiers!: Array<AssignedTier>;
 
