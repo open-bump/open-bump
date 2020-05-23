@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import Command from "../Command";
 import Guild from "../models/Guild";
 import Utils, {
@@ -14,7 +14,7 @@ export default class SetColorCommand extends Command {
   public description = "Set the bump color for your server";
 
   public async run(
-    { message, arguments: args }: ParsedMessage<GuildMessage>,
+    { message, arguments: args }: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
     const { channel, member } = message;

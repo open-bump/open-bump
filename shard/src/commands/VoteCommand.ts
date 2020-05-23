@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import ms from "ms";
 import Command from "../Command";
 import config from "../config";
@@ -11,7 +11,7 @@ export default class VoteCommand extends Command {
   public description = `Vote for this bot to get a cooldown reduction`;
 
   public async run(
-    { message }: ParsedMessage<GuildMessage>,
+    { message }: SuccessfulParsedMessage<GuildMessage>,
     _guildDatabase: Guild
   ) {
     const { channel, author } = message;
