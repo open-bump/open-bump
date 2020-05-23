@@ -781,6 +781,23 @@ export default class Utils {
     return Utils.PermissionsNames[permission];
   }
 
+  public static shuffleArray<T>(array: Array<T>) {
+    let currentIndex = array.length,
+      temporaryValue,
+      randomIndex;
+
+    while (0 !== currentIndex) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+  }
+
   public static PermissionsNames: {
     [id in Discord.PermissionString]: string;
   } = {
@@ -842,6 +859,7 @@ export default class Utils {
     ZAP: "⚡",
     BELL: "🔔",
     STAR: "⭐",
+    CLOCK: "🕐",
     ARROWRIGHT: "➡",
     INFORMATION: "",
     EXCLAMATION: "❗",
