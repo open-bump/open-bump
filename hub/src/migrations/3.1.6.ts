@@ -19,6 +19,18 @@ const migration: MigrationJS = {
         { transaction }
       );
 
+      /* Add "nitroBoostInformed" Column To "Donator" */
+      await queryInterface.addColumn(
+        "Donator",
+        "nitroBoostInformed",
+        {
+          defaultValue: false,
+          allowNull: false,
+          type: datatypes.BOOLEAN
+        },
+        { transaction }
+      );
+
       /* Commit Transaction */
       await transaction.commit();
     } catch (error) {
@@ -34,6 +46,11 @@ const migration: MigrationJS = {
 
       /* Remove "nitroBoost" Column From "Donator" */
       await queryInterface.removeColumn("Donator", "nitroBoost", {
+        transaction
+      });
+
+      /* Remove "nitroBoostInformed" Column From "Donator" */
+      await queryInterface.removeColumn("Donator", "nitroBoostInformed", {
         transaction
       });
 
