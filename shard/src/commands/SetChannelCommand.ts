@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import Command from "../Command";
 import Guild from "../models/Guild";
@@ -11,7 +11,7 @@ export default class SetChannelCommand extends Command {
   public description = "Set the bump feed channel for your server";
 
   public async run(
-    { message, arguments: args }: ParsedMessage<GuildMessage>,
+    { message, arguments: args }: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
     const { channel, guild, member } = message;

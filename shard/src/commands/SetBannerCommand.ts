@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import Command from "../Command";
 import Guild from "../models/Guild";
 import Utils, { GuildMessage, RestrictedFeatureError } from "../Utils";
@@ -10,7 +10,7 @@ export default class SetBannerCommand extends Command {
   public description = "Set the bump banner for your server";
 
   public async run(
-    { message, arguments: args }: ParsedMessage<GuildMessage>,
+    { message, arguments: args }: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
     const { channel, member } = message;

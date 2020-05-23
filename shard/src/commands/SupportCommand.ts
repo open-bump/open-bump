@@ -1,4 +1,4 @@
-import { ParsedMessage } from "discord-command-parser";
+import { SuccessfulParsedMessage } from "discord-command-parser";
 import Command from "../Command";
 import config from "../config";
 import Guild from "../models/Guild";
@@ -11,7 +11,7 @@ export default class SupportCommand extends Command {
   public general = true;
 
   public async run(
-    { message }: ParsedMessage<GuildMessage>,
+    { message }: SuccessfulParsedMessage<GuildMessage>,
     _guildDatabase: Guild
   ) {
     const { channel } = message;
