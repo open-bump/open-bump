@@ -6,6 +6,7 @@ import EventManager from "./EventManager";
 import Integration from "./Integration";
 import NetworkManager from "./NetworkManager";
 import Premium from "./Premium";
+import SBLP from "./SBLP";
 
 export default class OpenBump {
   public static instance: OpenBump;
@@ -19,6 +20,7 @@ export default class OpenBump {
   public networkManager: NetworkManager;
   public premium: Premium;
   public integration: Integration;
+  public sblp: SBLP;
 
   public ready = false;
 
@@ -33,6 +35,7 @@ export default class OpenBump {
     this.networkManager = new NetworkManager(this);
     this.premium = new Premium(this);
     this.integration = new Integration(this);
+    this.sblp = new SBLP(this);
 
     this.init();
   }
