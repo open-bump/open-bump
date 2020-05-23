@@ -3,6 +3,7 @@ import CommandManager from "./CommandManager";
 import config from "./config";
 import DatabaseManager from "./DatabaseManager";
 import EventManager from "./EventManager";
+import Integration from "./Integration";
 import NetworkManager from "./NetworkManager";
 import Premium from "./Premium";
 
@@ -17,6 +18,7 @@ export default class OpenBump {
   public databaseManager: DatabaseManager;
   public networkManager: NetworkManager;
   public premium: Premium;
+  public integration: Integration;
 
   public ready = false;
 
@@ -30,6 +32,7 @@ export default class OpenBump {
     this.databaseManager = new DatabaseManager(this);
     this.networkManager = new NetworkManager(this);
     this.premium = new Premium(this);
+    this.integration = new Integration(this);
 
     this.init();
   }

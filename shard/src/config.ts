@@ -46,6 +46,13 @@ interface IConfig extends config.IConfig {
       user: string;
       trigger: string;
     };
+    integration?: {
+      suggestions: Array<{
+        bot: string;
+        name: string;
+        invite: string;
+      }>;
+    };
   };
   lists: {
     topgg: {
