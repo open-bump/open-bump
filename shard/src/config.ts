@@ -37,6 +37,10 @@ interface IConfig extends config.IConfig {
       radioXInvite: string;
       guide: string;
     };
+    nitroboost?: {
+      server: string;
+      bonus: number;
+    };
     servermate: {
       user: string;
       trigger: string;

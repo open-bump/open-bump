@@ -34,8 +34,7 @@ export default class PremiumCommand extends Command {
 
     if (
       userDatabase?.donator &&
-      !userDatabase.donator.patreon &&
-      !userDatabase.donator.bonus &&
+      !userDatabase.donator.getAmount() &&
       (!userDatabase.donator.assignedTiers ||
         userDatabase.donator.assignedTiers.length === 0)
     )
@@ -67,8 +66,7 @@ export default class PremiumCommand extends Command {
       userDatabase?.donator &&
       (args.length === 0 || (args.length === 1 && args[0] === "view"))
     ) {
-      const totalBalance =
-        userDatabase.donator.patreon + userDatabase?.donator.bonus;
+      const totalBalance = userDatabase.donator.getAmount();
       const totalAssigned = userDatabase.donator.assignedTiers
         .map((assigned) => assigned.premiumTier.cost)
         .reduce((acc, cur) => acc + cur, 0);
@@ -179,8 +177,7 @@ export default class PremiumCommand extends Command {
         }
       });
       if (tier) {
-        const totalBalance =
-          userDatabase.donator.patreon + userDatabase?.donator.bonus;
+        const totalBalance = userDatabase.donator.getAmount();
         const totalAssignedOthers = userDatabase.donator.assignedTiers
           .filter((assigned) => assigned.guildId !== guild.id)
           .map((assigned) => assigned.premiumTier.cost)
