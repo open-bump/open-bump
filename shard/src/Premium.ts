@@ -4,6 +4,7 @@ import { Sequelize } from "sequelize-typescript";
 import config from "./config";
 import AssignedTier from "./models/AssignedTier";
 import Donator from "./models/Donator";
+import Guild from "./models/Guild";
 import PremiumTier from "./models/PremiumTier";
 import User from "./models/User";
 import OpenBump from "./OpenBump";
@@ -18,9 +19,104 @@ export default class Premium {
 
   private async premiumLoop() {
     console.log("Running premium loop...");
-    // SELECT `userId`, (`patreon` + `bonus`+ case when `nitroBoost` = 1 then 500 else 0 end) AS totalBalance FROM `Donator`
-
     // TODO: Make sure there are no conflicts with other shards checking premiums at the same time
+
+    // Check Nitro Booster State
+    if (config.settings.nitroboost?.server) {
+      const nitroBoosterGuild = this.instance.client.guilds.cache.get(
+        config.settings.nitroboost.server
+      );
+      if (nitroBoosterGuild) {
+        const confirmedNitroBoosters: Array<string> = [];
+
+        // This is the shard with the nitro booster guild on
+        for (const member of nitroBoosterGuild.members.cache.values())
+          if (member.premiumSince)
+            if (!confirmedNitroBoosters.includes(member.user.id))
+              confirmedNitroBoosters.push(member.user.id);
+
+        for (const donatorId of confirmedNitroBoosters) {
+          let userDatabase = await User.scope("default").findOne({
+            where: {
+              id: donatorId
+            }
+          });
+          if (!userDatabase)
+            userDatabase = await User.scope("default").create({
+              id: donatorId
+            });
+          if (!userDatabase.donator)
+            userDatabase.donator = await userDatabase.$create<Donator>(
+              "donator",
+              {}
+            );
+          userDatabase.donator.nitroBoost = true;
+          if (userDatabase.changed()) await userDatabase.save();
+          if (userDatabase.donator.changed()) await userDatabase.donator.save();
+        }
+
+        await Donator.update(
+          { nitroBoost: false },
+          {
+            where: {
+              nitroBoost: true,
+              userId: { [Op.notIn]: confirmedNitroBoosters }
+            }
+          }
+        );
+
+        console.log(
+          `[Premium] Updated ${confirmedNitroBoosters.length} boosters of guild ${nitroBoosterGuild.name} (${nitroBoosterGuild.id})`
+        );
+      }
+    }
+
+    // Go through donators where nitro boost informed state is different
+    const recents = await Donator.findAll({
+      where: {
+        nitroBoost: { [Op.ne]: Sequelize.col("nitroBoostInformed") }
+      }
+    });
+
+    const boosterGuild = config.settings.nitroboost?.server
+      ? await Guild.findOne({
+          where: { id: config.settings.nitroboost?.server }
+        })
+      : null;
+
+    for (const recent of recents) {
+      const enabled = recent.nitroBoost;
+      try {
+        recent.nitroBoostInformed = recent.nitroBoost;
+        if (recent.changed()) await recent.save();
+        const user = await this.instance.client.users.fetch(recent.userId);
+        const embed = {
+          color: enabled ? Utils.Colors.GREEN : Utils.Colors.ORANGE,
+          title: enabled
+            ? `${Utils.Emojis.CHECK} Boost power activated`
+            : `${Utils.Emojis.IMPORTANTNOTICE} Boost power deactivated`,
+          description: enabled
+            ? `Hey there, thank you for boosting ${
+                boosterGuild?.name || "our server"
+              }. ` +
+              `As a thank you, you have received a bonus of ${Utils.formatCurrency(
+                config.settings.nitroboost?.bonus || 0
+              )} to use with ${
+                this.instance.client.user?.username || "this bot"
+              }. ` +
+              `To start using it, use the command \`${Utils.getPrefix()}premium\` in your server. ` +
+              `It will tell you more information about how to use your boost power.`
+            : `Hey there, we noticed you removed your boost from ${
+                boosterGuild?.name || "our server"
+              }. ` +
+              `Please note that you lost your bonus of ${Utils.formatCurrency(
+                config.settings.nitroboost?.bonus || 0
+              )}. ` +
+              `In case of a negative account balance, you may recieve further messages from this bot.`
+        };
+        await user.send({ embed });
+      } catch (error) {}
+    }
 
     // Go through new and current violators
     const violators = await Donator.findAll({
@@ -69,58 +165,6 @@ export default class Premium {
         }
       }
     });
-
-    // Check Nitro Booster State
-    if (config.settings.nitroboost?.server) {
-      const nitroBoosterGuild = this.instance.client.guilds.cache.get(
-        config.settings.nitroboost.server
-      );
-      if (nitroBoosterGuild) {
-        const confirmedNitroBoosters: Array<string> = [];
-
-        // This is the shard with the nitro booster guild on
-        for (const member of nitroBoosterGuild.members.cache.values()) {
-          if (member.premiumSince) {
-            if (!confirmedNitroBoosters.includes(member.user.id))
-              confirmedNitroBoosters.push(member.user.id);
-          }
-        }
-
-        for (const donatorId of confirmedNitroBoosters) {
-          let userDatabase = await User.scope("default").findOne({
-            where: {
-              id: donatorId
-            }
-          });
-          if (!userDatabase)
-            userDatabase = await User.scope("default").create({
-              id: donatorId
-            });
-          if (!userDatabase.donator)
-            userDatabase.donator = await userDatabase.$create<Donator>(
-              "donator",
-              {}
-            );
-          userDatabase.donator.nitroBoost = true;
-          if (userDatabase.changed()) await userDatabase.save();
-          if (userDatabase.donator.changed()) await userDatabase.donator.save();
-        }
-
-        await Donator.update(
-          { nitroBoost: false },
-          {
-            where: {
-              nitroBoost: true,
-              userId: { [Op.notIn]: confirmedNitroBoosters }
-            }
-          }
-        );
-
-        console.log(
-          `[Premium] Updated ${confirmedNitroBoosters} boosters of guild ${nitroBoosterGuild.name} (${nitroBoosterGuild.id})`
-        );
-      }
-    }
 
     for (const violator of violators) {
       if (!violator.transitionStartedAt) {
