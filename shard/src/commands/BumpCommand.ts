@@ -182,11 +182,7 @@ export default class BumpCommand extends Command {
         `Guild ${guild.name} (${guild.id}) has been successfully bumped to ${amount} servers.`
       );
 
-      let description =
-        `Your server has been successfully bumped.\n` +
-        `You can bump again in ${ms(cooldown, {
-          long: true
-        })}.`;
+      let description = `Your server has been successfully bumped.`;
 
       const fields = [];
 
