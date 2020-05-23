@@ -328,7 +328,65 @@ export default class Premium {
       if (ex.changed()) await ex.save();
     }
 
-    // Only for debug reasons
+    // Check roles
+    if (config.settings.patreonRoles) {
+      const donators = await Donator.findAll({
+        where: { patreon: { [Op.gt]: 0 } }
+      });
+
+      const guilds = config.settings.patreonRoles.reduce(
+        (reduced, current) =>
+          reduced.includes(current.guild)
+            ? reduced
+            : [...reduced, current.guild],
+        [] as Array<string>
+      );
+
+      for (const guildId of guilds) {
+        const guild = this.instance.client.guilds.cache.get(guildId);
+        if (guild) {
+          const guildRoles = config.settings.patreonRoles
+            .filter((patreonRole) => patreonRole.guild === guild.id)
+            .sort((a, b) => b.cost - a.cost);
+          for (const donator of donators) {
+            const member = guild.members.cache.get(donator.userId);
+            if (member) {
+              const patreonBalance = donator.patreon;
+              const role = guildRoles.find(
+                (role) => role.cost <= patreonBalance
+              );
+              const otherRoles = guildRoles.filter(
+                (otherRole) => otherRole.role !== role?.role
+              );
+              for (const otherRole of otherRoles) {
+                const guildRole = guild.roles.cache.get(otherRole.role);
+                if (guildRole)
+                  if (member.roles.cache.has(guildRole.id))
+                    await member.roles
+                      .remove(guildRole)
+                      .catch(
+                        (error) =>
+                          `[Error] Couldn't give role ${guildRole.name} (${guildRole.id}) on guild ${guild.name} (${guild.id}) to user ${member.user.tag} (${member.user.id}): ${error}`
+                      );
+              }
+              if (role) {
+                const guildRole = guild.roles.cache.get(role.role);
+                if (guildRole)
+                  if (!member.roles.cache.has(guildRole.id))
+                    await member.roles
+                      .add(guildRole)
+                      .catch(
+                        (error) =>
+                          `[Error] Couldn't give role ${guildRole.name} (${guildRole.id}) on guild ${guild.name} (${guild.id}) to user ${member.user.tag} (${member.user.id}): ${error}`
+                      );
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Output for debug reasons
     console.log(
       "violators",
       violators.map(
