@@ -7,9 +7,10 @@ import OpenBump from "./OpenBump";
 import {
   BumpErrorResponse,
   BumpFinishedResponse,
-  BumpStartedResponse
+  BumpStartedResponse,
+  SBLPPayload
 } from "./SBLP";
-import Utils from "./Utils";
+import Utils, { RawGuildMessage } from "./Utils";
 
 interface ISetupData {
   id: number;
@@ -127,9 +128,10 @@ export default class NetworkManager {
 
   public async emitSBLPOutside(
     provider: string,
-    payload: BumpStartedResponse | BumpFinishedResponse | BumpErrorResponse
+    payload: SBLPPayload,
+    message: RawGuildMessage
   ) {
-    this.socket.emit("sblpOutside", provider, payload);
+    this.socket.emit("sblpOutside", provider, payload, message);
   }
 
   public async requestStats() {
@@ -190,9 +192,10 @@ export default class NetworkManager {
 
   private async onSBLPOutside(
     provider: string,
-    payload: BumpStartedResponse | BumpFinishedResponse | BumpErrorResponse
+    payload: BumpStartedResponse | BumpFinishedResponse | BumpErrorResponse,
+    message: RawGuildMessage
   ) {
-    this.instance.sblp.onPayload(provider, payload);
+    this.instance.sblp.onPayload(provider, payload, message);
   }
 
   private async onStats(callback: (data: IStatsShardData) => void) {
