@@ -14,6 +14,8 @@ export enum MessageType {
 export enum ErrorCode {
   "MISSING_SETUP" = "MISSING_SETUP",
   "COOLDOWN" = "COOLDOWN",
+  "AUTOBUMP" = "AUTOBUMP",
+  "NOT_FOUND" = "NOT_FOUND",
   "OTHER" = "OTHER"
 }
 
@@ -123,6 +125,10 @@ export class SBLPBumpEntity {
         }
       } else if (lastPayload.code === ErrorCode.MISSING_SETUP) {
         message = `Not setup yet`;
+      } else if (lastPayload.code === ErrorCode.AUTOBUMP) {
+        message = `Autobump enabled`;
+      } else if (lastPayload.code === ErrorCode.NOT_FOUND) {
+        message = `Guild not found`;
       } else {
         if (lastPayload.message) {
           message = `Error: ${
@@ -184,7 +190,7 @@ export class SBLPBumpEntity {
     if (!guild)
       return sblp.createBumpErrorResponse(
         id,
-        ErrorCode.OTHER,
+        ErrorCode.NOT_FOUND,
         undefined,
         "Guild not found"
       );
@@ -197,7 +203,7 @@ export class SBLPBumpEntity {
     )
       return sblp.createBumpErrorResponse(
         id,
-        ErrorCode.OTHER,
+        ErrorCode.AUTOBUMP,
         undefined,
         "Autobump enabled"
       );
@@ -222,7 +228,7 @@ export class SBLPBumpEntity {
         id,
         ErrorCode.MISSING_SETUP,
         undefined,
-        `Missing Setup`
+        `Not setup yet`
       );
 
     // TODO: lastBumpedWith
@@ -240,7 +246,8 @@ export class SBLPBumpEntity {
       return sblp.createBumpErrorResponse(
         id,
         ErrorCode.MISSING_SETUP,
-        undefined
+        undefined,
+        "Not setup yet"
       );
     }
 
@@ -517,7 +524,7 @@ export default class SBLP {
         if (!payload.response || typeof payload.response !== "string")
           throw new SBLPSchemaError("payload.response");
         if (!payload.code || !Object.keys(ErrorCode).includes(payload.code))
-          throw new SBLPSchemaError("payload.code");
+          payload.code = ErrorCode.OTHER;
         if (payload.nextBump && typeof payload.nextBump !== "number")
           throw new SBLPSchemaError("payload.nextBump");
         if (payload.code === ErrorCode.COOLDOWN && !payload.nextBump)
