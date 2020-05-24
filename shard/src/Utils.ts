@@ -876,6 +876,7 @@ export default class Utils {
     INFORMATION: "ℹ",
     EXCLAMATION: "❗",
     MAILBOX: "📬",
+    SBLP: "🌀",
     ADD: "\\✔️",
     REMOVE: "\\➖",
     THUMBSUP: "<:thumbsup:631606538598875174>",
