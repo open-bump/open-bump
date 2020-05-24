@@ -28,6 +28,8 @@ export default class MessageEvent extends Event {
       await this.backgroundBump(message as GuildMessage);
     }
     await this.instance.commandManager.run(message as GuildMessage);
+
+    this.instance.sblp.onMessage(message);
   }
 
   private async backgroundBump(message: GuildMessage) {

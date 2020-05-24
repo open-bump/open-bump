@@ -57,7 +57,10 @@ interface IConfig extends config.IConfig {
         invite: string;
       }>;
       sblp: {
-        post: string;
+        post: {
+          guild: string;
+          channel: string;
+        };
         receive: Array<string>;
       };
     };

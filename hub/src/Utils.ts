@@ -85,6 +85,11 @@ export default class Utils {
     throw new Error(`Can't load package.json!`);
   }
 
+  public static getShardId(guildId: string, shards: number) {
+    const nGuildId = BigInt(guildId);
+    return Number((nGuildId >> BigInt(22)) % BigInt(shards));
+  }
+
   public static Colors = {
     BLUE: 0x698cce,
     RED: 0xff0000,

@@ -52,6 +52,10 @@ export default class ShardManager {
     return filtered;
   }
 
+  public getShardById(id: number): Shard | undefined {
+    return this.shards[id];
+  }
+
   private register() {
     this.io.on("connection", async (socket) => {
       const requestedId: number | undefined = await new Promise((resolve) =>

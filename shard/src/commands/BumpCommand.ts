@@ -8,6 +8,7 @@ import CommandManager from "../CommandManager";
 import config from "../config";
 import BumpData from "../models/BumpData";
 import Guild from "../models/Guild";
+import { SBLPBumpEntity } from "../SBLP";
 import Utils, { EmbedError, GuildMessage } from "../Utils";
 
 export default class BumpCommand extends Command {
@@ -112,6 +113,20 @@ export default class BumpCommand extends Command {
       guildDatabase.lastBumpedBy = author.id;
       guildDatabase.totalBumps++;
       await guildDatabase.save();
+
+      // Start SBLP (async)
+      const sblp = async () => {
+        if (!config.settings.integration?.sblp.post) return;
+        new SBLPBumpEntity(
+          null,
+          this.instance.client.user as Discord.User,
+          config.settings.integration.sblp.post,
+          guild.id,
+          channel.id,
+          message.author.id
+        );
+      };
+      sblp();
 
       const loadingEmbedEmbed = {
         color: Utils.Colors.BLUE,
