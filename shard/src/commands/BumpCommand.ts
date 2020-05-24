@@ -97,13 +97,32 @@ export default class BumpCommand extends Command {
           suggestions.push(integrationSuggestionField);
         }
 
+        let description =
+          `**Total Cooldown:** ${ms(cooldown, { long: true })}\n` +
+          `**Next Bump:** In ${ms(remaining, { long: true })}`;
+
+        if (
+          guildDatabase.lastBumpedWith &&
+          guildDatabase.lastBumpedWith !== this.instance.client.user?.id
+        ) {
+          // Last bump via SBLP
+          const provider = await this.instance.client.users
+            .fetch(guildDatabase.lastBumpedWith)
+            .catch(() => {});
+          if (provider) {
+            description =
+              `**Your server has been automatically bumped!**\n` +
+              `You have recently bumped your server using the \`${provider.tag}\` bump bot.\n` +
+              `${this.instance.client.user?.username} has been informed about that and automatically bumped your server with ${this.instance.client.user?.username} too!\n` +
+              `\n` +
+              description;
+          }
+        }
+
         const embed = {
           color: Utils.Colors.RED,
           title: `${Utils.Emojis.XMARK} You are on cooldown!`,
-          description:
-            `**Total Cooldown:** ${ms(cooldown, {
-              long: true
-            })}\n` + `**Next Bump:** In ${ms(remaining, { long: true })}`,
+          description,
           fields: suggestions
         };
         return void (await channel.send({ embed }));
@@ -111,6 +130,7 @@ export default class BumpCommand extends Command {
 
       guildDatabase.lastBumpedAt = new Date();
       guildDatabase.lastBumpedBy = author.id;
+      guildDatabase.lastBumpedWith = this.instance.client.user?.id;
       guildDatabase.totalBumps++;
       await guildDatabase.save();
 

@@ -550,6 +550,7 @@ class Bump {
 
           guildDatabase.lastBumpedAt = new Date();
           guildDatabase.lastBumpedBy = OpenBump.instance.client.user?.id;
+          guildDatabase.lastBumpedWith = OpenBump.instance.client.user?.id;
           await guildDatabase.save();
         } catch (error) {
           console.error(`Error while autobumping ${guildDatabase?.id}:`, error);

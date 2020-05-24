@@ -7,9 +7,7 @@ import OpenBump from "./OpenBump";
 import {
   BumpErrorResponse,
   BumpFinishedResponse,
-  BumpStartedResponse,
-  SBLPBumpEntity,
-  SBLPPayload
+  BumpStartedResponse
 } from "./SBLP";
 import Utils from "./Utils";
 
@@ -89,7 +87,6 @@ export default class NetworkManager {
 
     this.socket.on("message", this.onMessage.bind(this));
     this.socket.on("bump", this.onBump.bind(this));
-    this.socket.on("sblpInside", this.onSBLPInside.bind(this));
     this.socket.on("sblpOutside", this.onSBLPOutside.bind(this));
     this.socket.on("stats", this.onStats.bind(this));
     this.socket.on("disconnect", this.onDisconnect.bind(this));
@@ -126,13 +123,6 @@ export default class NetworkManager {
       this.socket.emit("bump", guild, embed, type, resolve)
     );
     return amount;
-  }
-
-  public async emitSBLPInside(id: string, guildId: string, userId: string) {
-    const payload = await new Promise((resolve) =>
-      this.socket.emit("sblpInside", id, guildId, userId, resolve)
-    );
-    return payload;
   }
 
   public async emitSBLPOutside(
@@ -196,20 +186,6 @@ export default class NetworkManager {
     if (!guildDatabase) return;
     const amount = await Utils.Bump.bumpToThisShard(guildDatabase, embed, type);
     callback(amount.length);
-  }
-
-  private async onSBLPInside(
-    id: string,
-    guildId: string,
-    userId: string,
-    resolve: (payload: SBLPPayload) => void
-  ) {
-    const payload = await SBLPBumpEntity.handleOutsideSharded(
-      id,
-      guildId,
-      userId
-    );
-    return void resolve(payload);
   }
 
   private async onSBLPOutside(
