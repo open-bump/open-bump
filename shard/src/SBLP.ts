@@ -239,9 +239,8 @@ export class SBLPBumpEntity {
     } catch (error) {
       return sblp.createBumpErrorResponse(
         id,
-        ErrorCode.OTHER,
-        undefined,
-        "Unexpected Error"
+        ErrorCode.MISSING_SETUP,
+        undefined
       );
     }
 
