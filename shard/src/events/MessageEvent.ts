@@ -90,6 +90,7 @@ export default class MessageEvent extends Event {
 
     guildDatabase.lastBumpedAt = new Date();
     guildDatabase.lastBumpedBy = author.id;
+    guildDatabase.lastBumpedWith = this.instance.client.user?.id;
     guildDatabase.totalBumps++;
     await guildDatabase.save();
 

@@ -93,6 +93,7 @@ export class SBLPBumpEntity {
     // Start bumping
     const payload = await SBLPBumpEntity.handleOutsideSharded(
       this.id,
+      this.provider.id,
       this.guild,
       this.user
     );
@@ -103,6 +104,7 @@ export class SBLPBumpEntity {
 
   public static async handleOutsideSharded(
     id: string,
+    provider: string,
     guildId: string,
     userId: string
   ) {
@@ -157,6 +159,7 @@ export class SBLPBumpEntity {
     // TODO: lastBumpedWith
     guildDatabase.lastBumpedAt = new Date();
     guildDatabase.lastBumpedBy = userId;
+    guildDatabase.lastBumpedWith = provider;
     guildDatabase.totalBumps++;
     await guildDatabase.save();
 
