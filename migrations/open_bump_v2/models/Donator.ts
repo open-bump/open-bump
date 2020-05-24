@@ -40,6 +40,11 @@ export default class Donator extends Model<Donator> {
   @Column(DataType.INTEGER)
   bonus!: number;
 
+  @Default(false)
+  @AllowNull(false)
+  @Column(DataType.BOOLEAN)
+  nitroBoost!: boolean;
+
   @HasMany(() => AssignedTier)
   assignedTiers!: Array<AssignedTier>;
 

@@ -1,7 +1,7 @@
 export const environment_ = process.argv.length >= 3 ? process.argv[2] : 'production';
 const config = require(`../config.${environment_}.json`)
 
-module.exports.tiers = {
+export const tiers = {
   /*bumpchannel: {
     cooldown: 45,
     features: ['BUMP_CHANNEL']
