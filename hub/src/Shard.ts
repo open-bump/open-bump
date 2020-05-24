@@ -33,7 +33,6 @@ export default class Shard {
     socket.on("ready", this.onReady.bind(this));
     socket.on("message", this.onMessage.bind(this));
     socket.on("bump", this.onBump.bind(this));
-    socket.on("sblpInside", this.onSBLPInside.bind(this));
     socket.on("sblpOutside", this.onSBLPOutside.bind(this));
     socket.on("stats", this.onStats.bind(this));
 
@@ -107,20 +106,6 @@ export default class Shard {
     return void callback(
       total.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
     );
-  }
-
-  private async onSBLPInside(
-    id: string,
-    guildId: string,
-    userId: string,
-    resolve: (payload: unknown) => void
-  ) {
-    const shardId = Utils.getShardId(guildId, this.shardManager.total);
-    const targetShard = this.shardManager.getShardById(shardId);
-    if (targetShard) {
-      // Check if target shard found. If not, let request time out.
-      targetShard.socket.emit("sblpInside", id, guildId, userId, resolve);
-    }
   }
 
   private async onSBLPOutside(provider: string, payload: unknown) {
