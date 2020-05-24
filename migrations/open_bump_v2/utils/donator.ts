@@ -1,6 +1,5 @@
-const environment = process.argv.length >= 3 ? process.argv[2] : 'production';
-module.exports.environment = environment
-const config = require(`../config.${environment}.json`)
+export const environment_ = process.argv.length >= 3 ? process.argv[2] : 'production';
+const config = require(`../config.${environment_}.json`)
 
 module.exports.tiers = {
   /*bumpchannel: {
