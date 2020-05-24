@@ -1,9 +1,16 @@
 import bcrypt from "bcryptjs";
-import { MessageEmbedOptions } from "discord.js";
+import { MessageEmbedOptions, TextChannel } from "discord.js";
 import io from "socket.io-client";
 import config from "./config";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
+import {
+  BumpErrorResponse,
+  BumpFinishedResponse,
+  BumpStartedResponse,
+  SBLPBumpEntity,
+  SBLPPayload
+} from "./SBLP";
 import Utils from "./Utils";
 
 interface ISetupData {
@@ -80,7 +87,10 @@ export default class NetworkManager {
       console.log("Setup data verified, connected again.");
     });
 
+    this.socket.on("message", this.onMessage.bind(this));
     this.socket.on("bump", this.onBump.bind(this));
+    this.socket.on("sblpInside", this.onSBLPInside.bind(this));
+    this.socket.on("sblpOutside", this.onSBLPOutside.bind(this));
     this.socket.on("stats", this.onStats.bind(this));
     this.socket.on("disconnect", this.onDisconnect.bind(this));
   }
@@ -95,6 +105,18 @@ export default class NetworkManager {
     this.connected = false;
   }
 
+  public async emitMessage(
+    guild: string,
+    channel: string,
+    content: string
+  ): Promise<string | null> {
+    const id = await new Promise((resolve) =>
+      this.socket.emit("message", guild, channel, content, resolve)
+    );
+    if (typeof id === "string") return id;
+    return null;
+  }
+
   public async emitBump(
     guild: string,
     embed: MessageEmbedOptions,
@@ -104,6 +126,20 @@ export default class NetworkManager {
       this.socket.emit("bump", guild, embed, type, resolve)
     );
     return amount;
+  }
+
+  public async emitSBLPInside(id: string, guildId: string, userId: string) {
+    const payload = await new Promise((resolve) =>
+      this.socket.emit("sblpInside", id, guildId, userId, resolve)
+    );
+    return payload;
+  }
+
+  public async emitSBLPOutside(
+    provider: string,
+    payload: BumpStartedResponse | BumpFinishedResponse | BumpErrorResponse
+  ) {
+    this.socket.emit("sblpOutside", provider, payload);
   }
 
   public async requestStats() {
@@ -129,6 +165,23 @@ export default class NetworkManager {
     this.socket.emit("ready");
   }
 
+  private async onMessage(
+    guildId: string,
+    channelId: string,
+    content: string,
+    resolve: (id: string | null) => void
+  ) {
+    const guild = this.instance.client.guilds.cache.get(guildId);
+    if (guild) {
+      const channel = guild.channels.cache.get(channelId);
+      if (channel && channel instanceof TextChannel) {
+        const message = await channel.send(content);
+        return void resolve(message.id);
+      }
+    }
+    return void resolve(null);
+  }
+
   private async onBump(
     guild: string,
     embed: object,
@@ -143,6 +196,27 @@ export default class NetworkManager {
     if (!guildDatabase) return;
     const amount = await Utils.Bump.bumpToThisShard(guildDatabase, embed, type);
     callback(amount.length);
+  }
+
+  private async onSBLPInside(
+    id: string,
+    guildId: string,
+    userId: string,
+    resolve: (payload: SBLPPayload) => void
+  ) {
+    const payload = await SBLPBumpEntity.handleOutsideSharded(
+      id,
+      guildId,
+      userId
+    );
+    return void resolve(payload);
+  }
+
+  private async onSBLPOutside(
+    provider: string,
+    payload: BumpStartedResponse | BumpFinishedResponse | BumpErrorResponse
+  ) {
+    this.instance.sblp.onPayload(provider, payload);
   }
 
   private async onStats(callback: (data: IStatsShardData) => void) {

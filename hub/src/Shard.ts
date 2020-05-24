@@ -31,7 +31,10 @@ export default class Shard {
     socket.on("disconnect", this.onDisconnect.bind(this));
     socket.on("setup", this.onSetup.bind(this));
     socket.on("ready", this.onReady.bind(this));
+    socket.on("message", this.onMessage.bind(this));
     socket.on("bump", this.onBump.bind(this));
+    socket.on("sblpInside", this.onSBLPInside.bind(this));
+    socket.on("sblpOutside", this.onSBLPOutside.bind(this));
     socket.on("stats", this.onStats.bind(this));
 
     socket.emit("identified", {
@@ -58,6 +61,23 @@ export default class Shard {
       id: this.id,
       total: this.shardManager.total
     });
+  }
+
+  private async onMessage(
+    guild: string,
+    channel: string,
+    content: string,
+    resolve: (id: string | null) => void
+  ) {
+    const shardId = Utils.getShardId(guild, this.shardManager.total);
+    const targetShard = this.shardManager.getShardById(shardId);
+    if (targetShard) {
+      // Shard has been found
+      targetShard.socket.emit("message", guild, channel, content, resolve);
+    } else {
+      // Shard not found; return null
+      return void resolve(null);
+    }
   }
 
   private async onBump(
@@ -87,6 +107,27 @@ export default class Shard {
     return void callback(
       total.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
     );
+  }
+
+  private async onSBLPInside(
+    id: string,
+    guildId: string,
+    userId: string,
+    resolve: (payload: unknown) => void
+  ) {
+    const shardId = Utils.getShardId(guildId, this.shardManager.total);
+    const targetShard = this.shardManager.getShardById(shardId);
+    if (targetShard) {
+      // Check if target shard found. If not, let request time out.
+      targetShard.socket.emit("sblpInside", id, guildId, userId, resolve);
+    }
+  }
+
+  private async onSBLPOutside(provider: string, payload: unknown) {
+    const shards = this.shardManager.getOtherShards();
+    for (const shard of shards) {
+      shard.socket.emit("sblpOutside", provider, payload);
+    }
   }
 
   private async onStats(callback: (data: IStatsData) => void) {

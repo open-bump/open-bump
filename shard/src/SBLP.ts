@@ -1,7 +1,7 @@
 import Discord, { ClientUser } from "discord.js";
 import config from "./config";
 import OpenBump from "./OpenBump";
-import Utils from "./Utils";
+import Utils, { GuildMessage } from "./Utils";
 
 export enum MessageType {
   "REQUEST" = "REQUEST",
@@ -61,18 +61,18 @@ export class SBLPBumpEntity {
 
   public id!: string;
   private mine: boolean;
-  private outsides: { [id: string]: SBLPPayload } = {};
+  private providers: { [id: string]: SBLPPayload } = {};
 
   constructor(
-    id: string | null = null,
-    private issuer: Discord.User,
-    private communication: Discord.TextChannel,
+    id: string | null,
+    private provider: Discord.User,
+    private communication: { guild: string; channel: string },
     private guild: string,
     private channel: string,
     private user: string
   ) {
     if (id) this.id = id;
-    this.mine = issuer instanceof Discord.ClientUser;
+    this.mine = provider instanceof Discord.ClientUser;
     if (!this.mine && !id)
       throw new Error(
         "Invalid input to SBLPBumpEntity: Others requests need an ID passed."
@@ -91,7 +91,14 @@ export class SBLPBumpEntity {
     await this.postBumpStartedResponse();
 
     // Start bumping
-    await SBLPBumpEntity.handleOutsideSharded(this.id, this.guild, this.user);
+    const payload = await SBLPBumpEntity.handleOutsideSharded(
+      this.id,
+      this.guild,
+      this.user
+    );
+
+    // Post payload
+    await this.post(payload);
   }
 
   public static async handleOutsideSharded(
@@ -177,28 +184,28 @@ export class SBLPBumpEntity {
   }
 
   public async receivePayload(
-    author: string,
+    provider: string,
     payload: BumpStartedResponse | BumpFinishedResponse | BumpErrorResponse
   ) {
     if (payload.type === MessageType.START) {
       // Another bump bot has started handling this request
-      if (this.outsides[author])
+      if (this.providers[provider])
         return void console.log(
-          "[SBLP] Ignoring a started payload from an in-progress-bot"
+          "[SBLP] Ignoring a started payload from an already in-progress-bot"
         );
-      this.outsides[author] = payload;
+      this.providers[provider] = payload;
       // TODO: Toggle event
     } else if (payload.type === MessageType.FINISHED) {
       // Another bump bot has finished handling this request
-      if (!this.outsides[author])
+      if (!this.providers[provider])
         return void console.log(
           "[SBPL] Received a finished payload from a not-in-progress-bot"
         );
-      this.outsides[author] = payload;
+      this.providers[provider] = payload;
       // TODO: Toggle event
     } else if (payload.type === MessageType.ERROR) {
       // Another bump bot experied an error handling this request
-      this.outsides[author] = payload;
+      this.providers[provider] = payload;
       // TODO: Toggle event
     }
   }
@@ -210,7 +217,7 @@ export class SBLPBumpEntity {
       this.user
     );
     const message = await this.post(bumpRequest);
-    this.id = message.id;
+    this.id = message || this.id;
     return;
   }
 
@@ -220,7 +227,23 @@ export class SBLPBumpEntity {
   }
 
   private async post(payload: SBLPPayload) {
-    return await this.communication.send(JSON.stringify(payload, undefined, 2));
+    if (payload.type === MessageType.ERROR) {
+      // TODO: Abort
+      this.sblp.unregisterEntity(this);
+      console.log(
+        `[SBLP] Sent Error (message=${payload.message},id=${payload.response})`
+      );
+    } else if (payload.type === MessageType.FINISHED) {
+      // TODO: Finish
+      this.sblp.unregisterEntity(this);
+      console.log(`[SBLP] Sent Finish (id=${payload.response})`);
+    }
+
+    return await OpenBump.instance.networkManager.emitMessage(
+      this.communication.guild,
+      this.communication.channel,
+      JSON.stringify(payload, undefined, 2)
+    );
   }
 }
 
@@ -236,6 +259,13 @@ export default class SBLP {
     return this;
   }
 
+  public unregisterEntity(entity: SBLPBumpEntity) {
+    const index = this.entities.indexOf(entity);
+    if (index > -1) {
+      this.entities.splice(index, 1);
+    }
+  }
+
   public getEntityById(id: string) {
     return this.entities.find((entity) => entity.id === id);
   }
@@ -247,8 +277,9 @@ export default class SBLP {
    */
   public onMessage(message: Discord.Message) {
     const author = message.author;
-    if (!author.bot) return; // Only allow bots
+    if (!author.bot && !config.discord.admins.includes(author.id)) return; // Only allow bots and bot admins (debug)
     if (author instanceof ClientUser) return; // Ignore own messages
+    if (!message.guild) return; // Only allow guild messages
     if (message.channel.type !== "text") return; // Only allow text channels
     if (
       config.settings.integration?.sblp.receive.includes(message.channel.id)
@@ -271,7 +302,7 @@ export default class SBLP {
         if (error instanceof SBLPSchemaError) {
           // Invalid schema
           return void console.log(
-            `[SBLP] Invalid schema received from ${author.tag} (${author.id}).`
+            `[SBLP] Invalid schema received from ${author.tag} (${author.id}): ${error.message}`
           );
         } else {
           // Unknown error
@@ -280,29 +311,43 @@ export default class SBLP {
           );
         }
       }
-      if (payload.type === MessageType.REQUEST) {
+      this.onPayload(message.author.id, payload, message as GuildMessage);
+    }
+  }
+
+  public onPayload(
+    provider: string,
+    payload: SBLPPayload,
+    message: GuildMessage
+  ): void;
+  public onPayload(
+    provider: string,
+    payload: BumpStartedResponse | BumpFinishedResponse | BumpErrorResponse,
+    message?: undefined
+  ): void;
+  public onPayload(
+    provider: string,
+    payload: SBLPPayload,
+    message?: GuildMessage
+  ): void {
+    if (payload.type === MessageType.REQUEST) {
+      if (message) {
         // Another bump bot is requesting this bot to bump a guild
         new SBLPBumpEntity(
           message.id,
           message.author,
-          message.channel,
+          { guild: message.guild?.id, channel: message.channel.id },
           payload.guild,
           payload.channel,
           payload.user
         );
-      } else if (payload.type === MessageType.START) {
-        // Another bump bot has started bumping a guild as requested by this bot
-        const entity = this.getEntityById(payload.response);
-        if (entity) entity.receivePayload(author.id, payload);
-      } else if (payload.type === MessageType.FINISHED) {
-        // Another bump bot has finished
-        const entity = this.getEntityById(payload.response);
-        if (entity) entity.receivePayload(author.id, payload);
-      } else if (payload.type === MessageType.ERROR) {
-        // Another bump bot has experienced an error during a SBLP related operation
-        const entity = this.getEntityById(payload.response);
-        if (entity) entity.receivePayload(author.id, payload);
       }
+    } else {
+      // Another bump bot has started bumping a guild as requested by this bot
+      const entity = this.getEntityById(payload.response);
+      if (entity) entity.receivePayload(provider, payload);
+      else if (message)
+        this.instance.networkManager.emitSBLPOutside(provider, payload); // Only emit to other shards if message set (this = primary)
     }
   }
 
