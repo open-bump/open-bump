@@ -108,11 +108,10 @@ export default class Shard {
     );
   }
 
-  private async onSBLPOutside(provider: string, payload: unknown) {
-    const shards = this.shardManager.getOtherShards();
-    for (const shard of shards) {
-      shard.socket.emit("sblpOutside", provider, payload);
-    }
+  private async onSBLPOutside(provider: string, payload: any, message: any) {
+    const shardId = Utils.getShardId(payload["guild"], this.shardManager.total);
+    const targetShard = this.shardManager.getShardById(shardId);
+    targetShard?.socket.emit("sblpOutside", provider, payload, message);
   }
 
   private async onStats(callback: (data: IStatsData) => void) {
