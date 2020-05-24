@@ -2,7 +2,7 @@ import Discord, { ClientUser } from "discord.js";
 import ms from "ms";
 import config from "./config";
 import OpenBump from "./OpenBump";
-import Utils, { GuildMessage } from "./Utils";
+import Utils, { GuildMessage, RawGuildMessage } from "./Utils";
 
 export enum MessageType {
   "REQUEST" = "REQUEST",
@@ -68,14 +68,14 @@ export class SBLPBumpEntity {
 
   constructor(
     id: string | null,
-    private provider: Discord.User,
+    private provider: string,
     private communication: { guild: string; channel: string },
     private guild: string,
     private channel: string,
     private user: string
   ) {
     if (id) this.id = id;
-    this.mine = provider instanceof Discord.ClientUser;
+    this.mine = provider === OpenBump.instance.client.user?.id;
     if (!this.mine && !id)
       throw new Error(
         "Invalid input to SBLPBumpEntity: Others requests need an ID passed."
@@ -162,7 +162,7 @@ export class SBLPBumpEntity {
     // Start bumping
     const payload = await SBLPBumpEntity.handleOutsideSharded(
       this.id,
-      this.provider.id,
+      this.provider,
       this.guild,
       this.user
     );
@@ -386,35 +386,39 @@ export default class SBLP {
           );
         }
       }
-      this.onPayload(message.author.id, payload, message as GuildMessage);
+      this.onPayload(
+        message.author.id,
+        payload,
+        Utils.guildMessageToRaw(message as GuildMessage)
+      );
     }
   }
 
-  public onPayload(
+  public async onPayload(
     provider: string,
     payload: SBLPPayload,
-    message: GuildMessage
-  ): void;
-  public onPayload(
-    provider: string,
-    payload: BumpStartedResponse | BumpFinishedResponse | BumpErrorResponse,
-    message?: undefined
-  ): void;
-  public onPayload(
-    provider: string,
-    payload: SBLPPayload,
-    message?: GuildMessage
-  ): void {
+    message: RawGuildMessage
+  ): Promise<void> {
     if (payload.type === MessageType.REQUEST) {
-      if (message) {
+      const targetShardId = Utils.getShardId(
+        payload.guild,
+        this.instance.networkManager.total
+      );
+      if (this.instance.networkManager.id === targetShardId) {
         // Another bump bot is requesting this bot to bump a guild
         new SBLPBumpEntity(
           message.id,
-          message.author,
-          { guild: message.guild?.id, channel: message.channel.id },
+          message.author.id,
+          { guild: message?.guild?.id, channel: String(message?.channel?.id) },
           payload.guild,
           payload.channel,
           payload.user
+        );
+      } else {
+        this.instance.networkManager.emitSBLPOutside(
+          provider,
+          payload,
+          message
         );
       }
     } else {
@@ -422,7 +426,11 @@ export default class SBLP {
       const entity = this.getEntityById(payload.response);
       if (entity) entity.receivePayload(provider, payload);
       else if (message)
-        this.instance.networkManager.emitSBLPOutside(provider, payload); // Only emit to other shards if message set (this = primary)
+        this.instance.networkManager.emitSBLPOutside(
+          provider,
+          payload,
+          message
+        ); // Only emit to other shards if message set (this = primary)
     }
   }
 
