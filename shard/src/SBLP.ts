@@ -1,4 +1,5 @@
 import Discord, { ClientUser } from "discord.js";
+import ms from "ms";
 import config from "./config";
 import OpenBump from "./OpenBump";
 import Utils, { GuildMessage } from "./Utils";
@@ -80,6 +81,47 @@ export class SBLPBumpEntity {
     this.sblp = OpenBump.instance.sblp.registerEntity(this);
     if (this.mine) this.handleInside();
     else this.handleOutside();
+  }
+
+  public getProviderStates() {
+    return Object.keys(this.providers).map((provider) => {
+      let message = "Unknown";
+      const lastPayload = this.providers[provider];
+      if (lastPayload.type === MessageType.START) {
+        message = "Bumping...";
+      } else if (lastPayload.type === MessageType.FINISHED) {
+        if (lastPayload.amount) {
+          message = `Successfully bumped [${lastPayload.amount} servers]`;
+        } else {
+          message = `Successfully bumped`;
+        }
+      } else if (lastPayload.type === MessageType.ERROR) {
+        if (lastPayload.code === ErrorCode.COOLDOWN) {
+          if (lastPayload.nextBump) {
+            message = `Cooldown left [${ms(lastPayload.nextBump - Date.now(), {
+              long: true
+            })}]`;
+          } else {
+            message = `Cooldown left`;
+          }
+        } else if (lastPayload.code === ErrorCode.MISSING_SETUP) {
+          message = `Not setup yet`;
+        } else {
+          if (lastPayload.message) {
+            message = `Error: ${
+              lastPayload.message.length > 24
+                ? `${lastPayload.message.substring(0, 24)}...`
+                : lastPayload.message
+            }`;
+          } else {
+            message = `Unknown error`;
+          }
+        }
+      } else {
+        message = `Invalid state`;
+      }
+      return { provider, message };
+    });
   }
 
   public async handleInside() {
