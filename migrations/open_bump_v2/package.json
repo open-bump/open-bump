@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node-dev index.ts"
   },
   "repository": {
     "type": "git",
@@ -27,7 +27,15 @@
     "mongoose": "^5.8.1",
     "mongoose-findorcreate": "^3.0.0",
     "ms": "^2.1.2",
+    "mysql2": "^2.1.0",
     "node-fetch": "^2.6.0",
-    "patreon": "^0.4.1"
+    "patreon": "^0.4.1",
+    "reflect-metadata": "^0.1.13",
+    "sequelize": "^5.21.10",
+    "sequelize-typescript": "^1.1.0"
+  },
+  "devDependencies": {
+    "ts-node-dev": "^1.0.0-pre.44",
+    "typescript": "^3.9.3"
   }
 }

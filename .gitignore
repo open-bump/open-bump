@@ -1,5 +1,6 @@
 ﻿dist
 migrations/open_bump_v2/config.*.json
+migrations/open_bump_v2/database.json
 node_modules
 config
 auth.json
