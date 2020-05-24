@@ -35,6 +35,8 @@
     "sequelize-typescript": "^1.1.0"
   },
   "devDependencies": {
+    "@types/node": "^14.0.5",
+    "@types/sequelize": "^4.28.9",
     "ts-node-dev": "^1.0.0-pre.44",
     "typescript": "^3.9.3"
   }
