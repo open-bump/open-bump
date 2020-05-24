@@ -49,6 +49,9 @@ export default class Guild extends Model<Guild> {
   @Column(DataType.STRING(20))
   lastBumpedBy!: string;
 
+  @Column(DataType.STRING(20))
+  lastBumpedWith!: string;
+
   @Column(DataType.DATE)
   lastBumpedAt?: Date | null;
 
