@@ -63,6 +63,8 @@ export class SBLPBumpEntity {
   public id!: string;
   private mine: boolean;
   private providers: { [id: string]: SBLPPayload } = {};
+  private updateHandlers: Array<() => void> = [];
+  public timeout = false;
 
   constructor(
     id: string | null,
@@ -83,49 +85,74 @@ export class SBLPBumpEntity {
     else this.handleOutside();
   }
 
+  public onUpdate(handler: () => void) {
+    if (!this.updateHandlers.includes(handler))
+      this.updateHandlers.push(handler);
+  }
+
+  private triggerUpdate() {
+    for (const handler of this.updateHandlers) handler();
+  }
+
   public getProviderStates() {
-    return Object.keys(this.providers).map((provider) => {
-      let message = "Unknown";
-      const lastPayload = this.providers[provider];
-      if (lastPayload.type === MessageType.START) {
-        message = "Bumping...";
-      } else if (lastPayload.type === MessageType.FINISHED) {
-        if (lastPayload.amount) {
-          message = `Successfully bumped [${lastPayload.amount} servers]`;
-        } else {
-          message = `Successfully bumped`;
-        }
-      } else if (lastPayload.type === MessageType.ERROR) {
-        if (lastPayload.code === ErrorCode.COOLDOWN) {
-          if (lastPayload.nextBump) {
-            message = `Cooldown left [${ms(lastPayload.nextBump - Date.now(), {
-              long: true
-            })}]`;
-          } else {
-            message = `Cooldown left`;
-          }
-        } else if (lastPayload.code === ErrorCode.MISSING_SETUP) {
-          message = `Not setup yet`;
-        } else {
-          if (lastPayload.message) {
-            message = `Error: ${
-              lastPayload.message.length > 24
-                ? `${lastPayload.message.substring(0, 24)}...`
-                : lastPayload.message
-            }`;
-          } else {
-            message = `Unknown error`;
-          }
-        }
+    return Object.keys(this.providers).map((provider) => ({
+      provider,
+      message: this.getProviderState(provider)
+    }));
+  }
+
+  public getProviderState(provider: string) {
+    let message = this.timeout ? "Timeout" : "Unknown";
+    const lastPayload = this.providers[provider];
+    if (lastPayload.type === MessageType.START && !this.timeout) {
+      message = "Bumping...";
+    } else if (lastPayload.type === MessageType.FINISHED) {
+      if (lastPayload.amount) {
+        message = `Successfully bumped [${lastPayload.amount} servers]`;
       } else {
-        message = `Invalid state`;
+        message = `Successfully bumped`;
       }
-      return { provider, message };
-    });
+    } else if (lastPayload.type === MessageType.ERROR) {
+      if (lastPayload.code === ErrorCode.COOLDOWN) {
+        if (lastPayload.nextBump) {
+          message = `Cooldown left [${ms(lastPayload.nextBump - Date.now(), {
+            long: true
+          })}]`;
+        } else {
+          message = `Cooldown left`;
+        }
+      } else if (lastPayload.code === ErrorCode.MISSING_SETUP) {
+        message = `Not setup yet`;
+      } else {
+        if (lastPayload.message) {
+          message = `Error: ${
+            lastPayload.message.length > 24
+              ? `${lastPayload.message.substring(0, 24)}...`
+              : lastPayload.message
+          }`;
+        } else {
+          message = `Unknown error`;
+        }
+      }
+    } else if (!this.timeout) {
+      message = `Loading...`;
+    }
+    return message;
   }
 
   public async handleInside() {
     await this.postBumpRequest();
+
+    setTimeout(() => {
+      if (this.sblp.isRegistered(this)) {
+        // Timeout after 60 seconds
+        this.timeout = true;
+        this.triggerUpdate();
+        this.updateHandlers = [];
+        this.sblp.unregisterEntity(this);
+        console.log("[SBLP] Unregistered entity after 60 seconds");
+      }
+    }, 60 * 1000);
   }
 
   private async handleOutside() {
@@ -239,7 +266,7 @@ export class SBLPBumpEntity {
           "[SBLP] Ignoring a started payload from an already in-progress-bot"
         );
       this.providers[provider] = payload;
-      // TODO: Toggle event
+      this.triggerUpdate();
     } else if (payload.type === MessageType.FINISHED) {
       // Another bump bot has finished handling this request
       if (!this.providers[provider])
@@ -247,11 +274,11 @@ export class SBLPBumpEntity {
           "[SBPL] Received a finished payload from a not-in-progress-bot"
         );
       this.providers[provider] = payload;
-      // TODO: Toggle event
+      this.triggerUpdate();
     } else if (payload.type === MessageType.ERROR) {
       // Another bump bot experied an error handling this request
       this.providers[provider] = payload;
-      // TODO: Toggle event
+      this.triggerUpdate();
     }
   }
 
@@ -296,6 +323,10 @@ export default class SBLP {
   private entities: Array<SBLPBumpEntity> = [];
 
   constructor(private instance: OpenBump) {}
+
+  public isRegistered(entity: SBLPBumpEntity) {
+    return this.entities.includes(entity);
+  }
 
   public registerEntity(entity: SBLPBumpEntity) {
     if (!this.entities.includes(entity)) {

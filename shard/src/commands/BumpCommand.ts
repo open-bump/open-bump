@@ -273,26 +273,42 @@ export default class BumpCommand extends Command {
           if (providerMember) effectiveProviderStates.push(entry);
         }
 
-      if (effectiveProviderStates.length) {
-        description +=
-          `\n` +
-          `${this.instance.client.user?.username} is also bumping other bump bots you have on your server. ` +
-          `Check the list below to get a detailed view of which other bump bots are being bumped.`;
-
-        fields.unshift({
-          name: `${Utils.Emojis.SBLP} Other bump bots`,
-          value: effectiveProviderStates
-            .map(({ provider, message }) => `<@${provider}>: \`${message}\``)
-            .join("\n")
-        });
-      }
-
       const successEmbed = {
         color: Utils.Colors.GREEN,
         title: `${Utils.Emojis.CHECK} Success`,
         description,
         fields
       };
+
+      if (sblp && effectiveProviderStates.length) {
+        successEmbed.description +=
+          `\n\n` +
+          `${this.instance.client.user?.username} is also bumping other bump bots you have on your server. ` +
+          `Check the list below to get a detailed view of which other bump bots are being bumped.`;
+
+        const sblpField = {
+          name: `${Utils.Emojis.SBLP} Other bump bots`,
+          value: effectiveProviderStates
+            .map(({ provider, message }) => `<@${provider}>: \`${message}\``)
+            .join("\n")
+        };
+
+        sblp.onUpdate(async () => {
+          const before = JSON.stringify(sblpField);
+          sblpField.value = effectiveProviderStates
+            .map(
+              ({ provider }) =>
+                `<@${provider}>: \`${sblp.getProviderState(provider)}\``
+            )
+            .join("\n");
+          const after = JSON.stringify(sblpField);
+          if (before !== after)
+            await loadingMessage.edit({ embed: successEmbed });
+        });
+
+        fields.unshift(sblpField);
+      }
+
       await loadingMessage.edit({ embed: successEmbed });
     } else {
       const embed = {
