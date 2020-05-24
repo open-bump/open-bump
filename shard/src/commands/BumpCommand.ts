@@ -133,8 +133,8 @@ export default class BumpCommand extends Command {
       await guildDatabase.save();
 
       // Start SBLP (async)
-      const sblp = async () => {
-        if (!config.settings.integration?.sblp.post) return;
+      const sblp =
+        config.settings.integration?.sblp.post &&
         new SBLPBumpEntity(
           null,
           this.instance.client.user as Discord.User,
@@ -143,8 +143,6 @@ export default class BumpCommand extends Command {
           channel.id,
           message.author.id
         );
-      };
-      sblp();
 
       const loadingEmbedEmbed = {
         color: Utils.Colors.BLUE,
@@ -219,8 +217,6 @@ export default class BumpCommand extends Command {
         `Guild ${guild.name} (${guild.id}) has been successfully bumped to ${amount} servers.`
       );
 
-      let description = `Your server has been successfully bumped.`;
-
       const fields = [];
 
       if (featuredGuildDatabases.length) {
@@ -266,7 +262,33 @@ export default class BumpCommand extends Command {
         }`
       });
 
-      // TODO: Remove server count
+      let description = `Your server has been successfully bumped.`;
+
+      const providerStates = sblp?.getProviderStates();
+      const effectiveProviderStates: typeof providerStates = [];
+
+      if (providerStates)
+        for (const entry of providerStates) {
+          const providerMember = await guild.members
+            .fetch(entry.provider)
+            .catch(() => {});
+          if (providerMember) effectiveProviderStates.push(entry);
+        }
+
+      if (effectiveProviderStates.length) {
+        description +=
+          `\n` +
+          `${this.instance.client.user?.username} is also bumping other bump bots you have on your server. ` +
+          `Check the list below to get a detailed view of which other bump bots are being bumped.`;
+
+        fields.unshift({
+          name: `${Utils.Emojis.SBLP} Other bump bots`,
+          value: effectiveProviderStates
+            .map(({ provider, message }) => `<@${provider}>: \`${message}\``)
+            .join("\n")
+        });
+      }
+
       const successEmbed = {
         color: Utils.Colors.GREEN,
         title: `${Utils.Emojis.CHECK} Success`,
