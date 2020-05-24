@@ -139,7 +139,7 @@ export default class BumpCommand extends Command {
         config.settings.integration?.sblp.post &&
         new SBLPBumpEntity(
           null,
-          this.instance.client.user as Discord.User,
+          this.instance.client.user?.id as string,
           config.settings.integration.sblp.post,
           guild.id,
           channel.id,

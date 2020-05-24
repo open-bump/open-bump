@@ -52,6 +52,19 @@ export type GuildMessage = Discord.Message & {
   guild: Discord.Guild;
 };
 
+export interface RawGuildMessage {
+  id: string;
+  author: {
+    id: string;
+  };
+  guild: {
+    id: string;
+  };
+  channel: {
+    id: string;
+  };
+}
+
 class Bump {
   private static justRemoved: { [id: string]: number } = {};
 
@@ -651,6 +664,21 @@ export default class Utils {
     return this.isObject(item) && !Array.isArray(item);
   }
 
+  public static guildMessageToRaw(message: GuildMessage): RawGuildMessage {
+    return {
+      id: message.id,
+      author: {
+        id: message.author.id
+      },
+      guild: {
+        id: message.guild.id
+      },
+      channel: {
+        id: message.channel.id
+      }
+    };
+  }
+
   /**
    * Random number inclusive 0 and exclusive range
    */
@@ -711,6 +739,11 @@ export default class Utils {
 
   public static getInviteLink() {
     return `https://discordapp.com/api/oauth2/authorize?client_id=${OpenBump.instance.client.user?.id}&permissions=379969&scope=bot`;
+  }
+
+  public static getShardId(guildId: string, shards: number) {
+    const nGuildId = BigInt(guildId);
+    return Number((nGuildId >> BigInt(22)) % BigInt(shards));
   }
 
   public static errorToEmbed(error: Error): MessageEmbedOptions {
