@@ -124,9 +124,6 @@ const migration: MigrationJS = {
       await queryInterface.removeColumn("Donator", "transitionEndedAt", {
         transaction
       });
-      await queryInterface.removeColumn("Donator", "transitionEndInformed", {
-        transaction
-      });
       await queryInterface.removeColumn("Donator", "transitionShard", {
         transaction
       });
