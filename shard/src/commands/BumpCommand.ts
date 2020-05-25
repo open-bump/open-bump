@@ -117,7 +117,7 @@ export default class BumpCommand extends Command {
           if (provider && lastTrigger) {
             description =
               `**This server was bumped to multiple bots using SBLP!**\n` +
-              `${lastTrigger.tag} has recently bumped this server using ${provider.tag}.\n` +
+              `\`${lastTrigger.tag}\` has recently bumped this server using \`${provider.tag}\`.\n` +
               `${this.instance.client.user?.username} has been informed about that and bumped your server with ${this.instance.client.user?.username} too!\n` +
               `\n` +
               description;
