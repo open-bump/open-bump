@@ -27,7 +27,7 @@ export default class BadgesCommand extends Command {
         `${Utils.Emojis.AUTOBUMP} - Auto Bump Feature Enabled\n` +
         `${Utils.Emojis.FEATURED} - Featured Server\n` +
         `${Utils.Emojis.BOOST_3} - Server Boosted Level 3\n` +
-        `${Utils.Emojis.BOOST_2} - Sever Boosted Level 2\n` +
+        `${Utils.Emojis.BOOST_2} - Server Boosted Level 2\n` +
         `${Utils.Emojis.BOOST_1} - Server Boosted Level 1`,
       thumbnail: {
         url: this.instance.client.user?.displayAvatarURL()
