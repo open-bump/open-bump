@@ -138,7 +138,7 @@ class Bump {
     const region = regions.get(guild.region);
 
     // Description
-    const description =
+    let description =
       `${Utils.Emojis.OWNER} **Owner:** \`${guild.owner?.user.tag}\`\n` +
       `${Utils.Emojis.REGION} **Region:** \`${region?.name}\`\n` +
       `${Utils.Emojis.CREATED} **Created:** \`${moment(
@@ -152,6 +152,32 @@ class Bump {
     // Author
     if (!authorId) authorId = String(OpenBump.instance.client.user?.id);
     const author = await OpenBump.instance.client.users.fetch(authorId);
+
+    // Badges
+    const features = guildDatabase.getFeatures();
+    const badges = [];
+    if (features.includes(Utils.Feature.SUPPORT_SERVER))
+      badges.push(Utils.Emojis.SUPPORT_SERVER);
+    if (guild.verified) badges.push(Utils.Emojis.VERIFIED_SERVER);
+    if (guild.partnered) badges.push(Utils.Emojis.PARTNERED_SERVER);
+    if (features.includes(Utils.Feature.BOOSTER_PREMIUM))
+      badges.push(Utils.Emojis.BOOSTER_PREMIUM);
+    if (features.includes(Utils.Feature.PREMIUM))
+      badges.push(Utils.Emojis.PREMIUM);
+    if (features.includes(Utils.Feature.AUTOBUMP) && guildDatabase.autobump)
+      badges.push(Utils.Emojis.AUTOBUMP);
+    if (features.includes(Utils.Feature.FEATURED))
+      badges.push(Utils.Emojis.FEATURED);
+    if ((guild.premiumSubscriptionCount || 0) >= 30)
+      badges.push(Utils.Emojis.BOOST_3);
+    else if ((guild.premiumSubscriptionCount || 0) >= 15)
+      badges.push(Utils.Emojis.BOOST_2);
+    else if ((guild.premiumSubscriptionCount || 0) >= 2)
+      badges.push(Utils.Emojis.BOOST_1);
+
+    if (badges.length) {
+      description = badges.join(" ") + `\n\n` + description;
+    }
 
     // Create
     return {
@@ -894,7 +920,10 @@ export default class Utils {
     FEATURED: "FEATURED" as "FEATURED",
     CROSS: "CROSS" as "CROSS",
     RESTRICTED_CHANNEL: "RESTRICTED_CHANNEL" as "RESTRICTED_CHANNEL",
-    AUTOBUMP: "AUTOBUMP" as "AUTOBUMP"
+    AUTOBUMP: "AUTOBUMP" as "AUTOBUMP",
+    SUPPORT_SERVER: "SUPPORT_SERVER" as "SUPPORT_SERVER",
+    BOOSTER_PREMIUM: "BOOSTER_PREMIUM" as "BOOSTER_PREMIUM",
+    PREMIUM: "PREMIUM" as "PREMIUM"
   };
 
   public static Emojis = {
@@ -933,11 +962,20 @@ export default class Utils {
     UNSET: "<:neutral:621063802028294155>",
     NEUTRAL: "<:neutral:621063205854380057>",
     IMPORTANTNOTICE: "⚠️",
-    FEATURED: "<:FeaturedServer:622845429045919745>",
+    FEATURED: "<:featured:707640423895662753>",
     UNITEDSERVER: "<:UnitedServer:622845429435858955>",
     EARLYSUPPORTER: "<:EarlySupporter:622852038031835137>",
     AFFILIATEDSERVER: "<:AffiliatedServer:622857526924279848>",
     BUMPCHANNEL: "<:BumpChannel:632703590632390686>",
+    SUPPORT_SERVER: "<:official_support:707638686724128880>",
+    VERIFIED_SERVER: "<:verified:707638692885430422>",
+    PARTNERED_SERVER: "<:partner:707638685742661714>",
+    BOOSTER_PREMIUM: "<a:extream_premium:707638690188624010>",
+    PREMIUM: "<:premium:707638689869856768>",
+    AUTOBUMP: "<:autobump:707638684123660366>",
+    BOOST_3: "<:boost_3:707638684555411578>",
+    BOOST_2: "<:boost_2:707638684530507907>",
+    BOOST_1: "<:boost_1:707638684358410271>",
     getRaw: (emoji: string) => {
       const regex = /<a?:.{0,}:([0-9]{10,20})>/gim;
       let m;
