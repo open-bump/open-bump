@@ -104,14 +104,19 @@ export default class BumpCommand extends Command {
           guildDatabase.lastBumpedWith !== this.instance.client.user?.id
         ) {
           // Last bump via SBLP
-          const provider = await this.instance.client.users
-            .fetch(guildDatabase.lastBumpedWith)
-            .catch(() => {});
-          if (provider) {
+          const provider =
+            (await this.instance.client.users
+              .fetch(guildDatabase.lastBumpedWith)
+              .catch(() => {})) || undefined;
+          const lastTrigger =
+            (await this.instance.client.users
+              .fetch(String(guildDatabase.lastBumpedBy))
+              .catch(() => {})) || undefined;
+          if (provider && lastTrigger) {
             description =
-              `**Your server has been automatically bumped!**\n` +
-              `You have recently bumped your server using the \`${provider.tag}\` bump bot.\n` +
-              `${this.instance.client.user?.username} has been informed about that and automatically bumped your server with ${this.instance.client.user?.username} too!\n` +
+              `**This server was bumped to multiple bots using SBLP!**\n` +
+              `${lastTrigger.tag} has recently bumped this server using ${provider.tag}.\n` +
+              `${this.instance.client.user?.username} has been informed about that and bumped your server with ${this.instance.client.user?.username} too!\n` +
               `\n` +
               description;
           }
