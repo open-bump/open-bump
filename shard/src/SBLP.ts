@@ -268,16 +268,16 @@ export class SBLPBumpEntity {
     if (payload.type === MessageType.START) {
       // Another bump bot has started handling this request
       if (this.providers[provider])
-        return void console.log(
-          "[SBLP] Ignoring a started payload from an already in-progress-bot"
+        return void this.debug(
+          "[DEBUG] Ignoring a started payload from an already in-progress-bot"
         );
       this.providers[provider] = payload;
       this.triggerUpdate();
     } else if (payload.type === MessageType.FINISHED) {
       // Another bump bot has finished handling this request
       if (!this.providers[provider])
-        return void console.log(
-          "[SBPL] Received a finished payload from a not-in-progress-bot"
+        return void this.debug(
+          "[DEBUG] Ignoring a finished payload from a not-in-progress-bot"
         );
       this.providers[provider] = payload;
       this.triggerUpdate();
@@ -321,6 +321,14 @@ export class SBLPBumpEntity {
       this.communication.guild,
       this.communication.channel,
       JSON.stringify(payload, undefined, 2)
+    );
+  }
+
+  private async debug(message: string) {
+    return await OpenBump.instance.networkManager.emitMessage(
+      this.communication.guild,
+      this.communication.channel,
+      message
     );
   }
 }
@@ -383,8 +391,9 @@ export default class SBLP {
       } catch (error) {
         if (error instanceof SBLPSchemaError) {
           // Invalid schema
-          return void console.log(
-            `[SBLP] Invalid schema received from ${author.tag} (${author.id}): ${error.message}`
+          return void this.debug(
+            message.channel,
+            `[DEBUG] Invalid schema received: ${error.message}`
           );
         } else {
           // Unknown error
@@ -399,6 +408,10 @@ export default class SBLP {
         Utils.guildMessageToRaw(message as GuildMessage)
       );
     }
+  }
+
+  private async debug(channel: Discord.TextChannel, message: string) {
+    return await channel.send(message);
   }
 
   public async onPayload(
