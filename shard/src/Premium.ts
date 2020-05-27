@@ -200,7 +200,7 @@ export default class Premium {
         if (violator.changed()) await violator.save();
       } else if (
         violator.transitionStartedAt &&
-        moment(violator.transitionStartedAt).isBefore(moment().subtract(1, "m")) // TODO: Update to 3 days
+        moment(violator.transitionStartedAt).isBefore(moment().subtract(3, "d"))
       ) {
         // Transition due
         await AssignedTier.destroy({ where: { donatorId: violator.id } });
