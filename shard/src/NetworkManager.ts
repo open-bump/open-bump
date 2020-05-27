@@ -195,7 +195,7 @@ export default class NetworkManager {
     payload: BumpStartedResponse | BumpFinishedResponse | BumpErrorResponse,
     message: RawGuildMessage
   ) {
-    this.instance.sblp.onPayload(provider, payload, message);
+    this.instance.sblp.onPayload(provider, payload, message, true);
   }
 
   private async onStats(callback: (data: IStatsShardData) => void) {
