@@ -268,17 +268,13 @@ export class SBLPBumpEntity {
     if (payload.type === MessageType.START) {
       // Another bump bot has started handling this request
       if (this.providers[provider])
-        return void this.debug(
-          "[DEBUG] Ignoring a started payload from an already in-progress-bot"
+        return void console.log(
+          `[DEBUG] Ignoring a started payload from an already in-progress-bot (bot=${provider},payload.type)${payload.type})`
         );
       this.providers[provider] = payload;
       this.triggerUpdate();
     } else if (payload.type === MessageType.FINISHED) {
       // Another bump bot has finished handling this request
-      if (!this.providers[provider])
-        return void this.debug(
-          "[DEBUG] Ignoring a finished payload from a not-in-progress-bot"
-        );
       this.providers[provider] = payload;
       this.triggerUpdate();
     } else if (payload.type === MessageType.ERROR) {
@@ -405,7 +401,8 @@ export default class SBLP {
       this.onPayload(
         message.author.id,
         payload,
-        Utils.guildMessageToRaw(message as GuildMessage)
+        Utils.guildMessageToRaw(message as GuildMessage),
+        false
       );
     }
   }
@@ -417,7 +414,8 @@ export default class SBLP {
   public async onPayload(
     provider: string,
     payload: SBLPPayload,
-    message: RawGuildMessage
+    message: RawGuildMessage,
+    broadcasted: boolean
   ): Promise<void> {
     if (payload.type === MessageType.REQUEST) {
       const targetShardId = Utils.getShardId(
@@ -435,17 +433,18 @@ export default class SBLP {
           payload.user
         );
       } else {
-        this.instance.networkManager.emitSBLPOutside(
-          provider,
-          payload,
-          message
-        );
+        if (!broadcasted)
+          this.instance.networkManager.emitSBLPOutside(
+            provider,
+            payload,
+            message
+          );
       }
     } else {
       // Another bump bot has started bumping a guild as requested by this bot
       const entity = this.getEntityById(payload.response);
       if (entity) entity.receivePayload(provider, payload);
-      else if (message)
+      else if (!broadcasted)
         this.instance.networkManager.emitSBLPOutside(
           provider,
           payload,
