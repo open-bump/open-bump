@@ -579,7 +579,11 @@ class Bump {
           guildDatabase.lastBumpedWith = OpenBump.instance.client.user?.id;
           await guildDatabase.save();
         } catch (error) {
-          console.error(`Error while autobumping ${guildDatabase?.id}:`, error);
+          if (!(error instanceof InviteNotValidError))
+            console.error(
+              `Error while autobumping ${guildDatabase?.id}:`,
+              error
+            );
         }
       }
     } catch (error) {
