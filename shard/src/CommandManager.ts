@@ -13,6 +13,7 @@ import PingCommand from "./commands/PingCommand";
 import PrefixCommand from "./commands/PrefixCommand";
 import PremiumCommand from "./commands/PremiumCommand";
 import PreviewCommand from "./commands/PreviewCommand";
+import SandboxCommand from "./commands/SandboxCommand";
 import SetBannerCommand from "./commands/SetBannerCommand";
 import SetChannelCommand from "./commands/SetChannelCommand";
 import SetColorCommand from "./commands/SetColorCommand";
@@ -120,6 +121,13 @@ export default class CommandManager {
       }
 
       try {
+        if (guildDatabase.sandbox)
+          await channel.send(
+            `${Utils.Emojis.IMPORTANTNOTICE} This guild is on **Sandbox Mode**!\n` +
+              `Use \`${Utils.getPrefix(
+                guildDatabase
+              )}sandbox toggle\` to disable.`
+          );
         await command.run(parsed, guildDatabase);
       } catch (error) {
         const embed = Utils.errorToEmbed(error);
@@ -150,6 +158,7 @@ export default class CommandManager {
     this.registerCommand(new SetDescriptionCommand(this.instance));
     this.registerCommand(new SetInviteCommand(this.instance));
     this.registerCommand(new PreviewCommand(this.instance));
+    this.registerCommand(new SandboxCommand(this.instance));
     this.registerCommand(new VoteCommand(this.instance));
   }
 
