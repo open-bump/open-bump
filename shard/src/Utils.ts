@@ -973,6 +973,7 @@ export default class Utils {
     EXCLAMATION: "❗",
     MAILBOX: "📬",
     SBLP: "🌀",
+    WAVE: "👋",
     ADD: "\\✔️",
     REMOVE: "\\➖",
     THUMBSUP: "<:thumbsup:631606538598875174>",
