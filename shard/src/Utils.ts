@@ -210,15 +210,25 @@ class Bump {
   }
 
   public static async bump(guildDatabase: Guild, embed: MessageEmbedOptions) {
+    const sandbox = guildDatabase.sandbox;
     const cross = guildDatabase.getFeatures().includes(Utils.Feature.CROSS);
     const [internal, external] = await Promise.all([
-      this.bumpToThisShard(guildDatabase, embed, this.BumpType.CROSS),
+      this.bumpToThisShard(
+        guildDatabase,
+        embed,
+        sandbox ? this.BumpType.SANDBOX : this.BumpType.CROSS
+      ),
       OpenBump.instance.networkManager.emitBump(
         guildDatabase.id,
         embed,
-        cross ? this.BumpType.CROSS : this.BumpType.HUBS
+        sandbox
+          ? this.BumpType.SANDBOX
+          : cross
+          ? this.BumpType.CROSS
+          : this.BumpType.HUBS
       )
     ]);
+    if (sandbox) await new Promise((resolve) => setTimeout(resolve, 1000 * 10));
     return { amount: internal.length + external, featured: internal };
   }
 
@@ -239,6 +249,8 @@ class Bump {
       guildFeeds = await this.fetchGuildFeeds(50, true, guildDatabase.id);
     } else if (type === Bump.BumpType.FULL) {
       guildFeeds = await this.fetchGuildFeeds(-1, true, guildDatabase.id);
+    } else if (type === Bump.BumpType.SANDBOX) {
+      guildFeeds = await this.fetchGuildFeeds(0, false, guildDatabase.id);
     } else
       throw new Error("This error should never be thrown; Invalid bump type.");
 
@@ -497,7 +509,8 @@ class Bump {
   public static BumpType = {
     HUBS: "HUBS" as "HUBS",
     CROSS: "CROSS" as "CROSS",
-    FULL: "FULL" as "FULL"
+    FULL: "FULL" as "FULL",
+    SANDBOX: "SANDBOX" as "SANDBOX"
   };
 
   public static startAutobump() {
@@ -894,6 +907,10 @@ export default class Utils {
     GREEN: 0x3dd42c,
     ORANGE: 0xff9900,
     OPENBUMP: 0x27ad60
+  };
+
+  public static BumpProvider = {
+    SANDBOX: "SANDBOX" as "SANDBOX"
   };
 
   public static Feature = {
