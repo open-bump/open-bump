@@ -104,21 +104,29 @@ export default class BumpCommand extends Command {
           guildDatabase.lastBumpedWith !== this.instance.client.user?.id
         ) {
           // Last bump via SBLP
-          const provider =
-            (await this.instance.client.users
-              .fetch(guildDatabase.lastBumpedWith)
-              .catch(() => {})) || undefined;
-          const lastTrigger =
-            (await this.instance.client.users
-              .fetch(String(guildDatabase.lastBumpedBy))
-              .catch(() => {})) || undefined;
-          if (provider && lastTrigger) {
+          if (guildDatabase.lastBumpedWith === Utils.BumpProvider.SANDBOX) {
             description =
-              `**This server was bumped to multiple bots using SBLP!**\n` +
-              `${lastTrigger.tag} has recently bumped this server using ${provider.tag}.\n` +
-              `${this.instance.client.user?.username} has been informed about that and bumped your server with ${this.instance.client.user?.username} too!\n` +
+              `**This server was recently used with Sandbox Mode enabled!**\n` +
+              `After using Sandbox Mode, the cooldown is restarted.\n` +
               `\n` +
               description;
+          } else {
+            const provider =
+              (await this.instance.client.users
+                .fetch(guildDatabase.lastBumpedWith)
+                .catch(() => {})) || undefined;
+            const lastTrigger =
+              (await this.instance.client.users
+                .fetch(String(guildDatabase.lastBumpedBy))
+                .catch(() => {})) || undefined;
+            if (provider && lastTrigger) {
+              description =
+                `**This server was bumped to multiple bots using SBLP!**\n` +
+                `${lastTrigger.tag} has recently bumped this server using ${provider.tag}.\n` +
+                `${this.instance.client.user?.username} has been informed about that and bumped your server with ${this.instance.client.user?.username} too!\n` +
+                `\n` +
+                description;
+            }
           }
         }
 
