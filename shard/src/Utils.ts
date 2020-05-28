@@ -228,7 +228,7 @@ class Bump {
         sandbox
           ? this.BumpType.SANDBOX
           : cross
-          ? this.BumpType.CROSS
+          ? this.BumpType.DISTRIBUTED
           : this.BumpType.HUBS
       )
     ]);
@@ -247,10 +247,22 @@ class Bump {
       `[DEBUG] Shard ${OpenBump.instance.networkManager.id} is bumping ${guildDatabase.name} (${guildDatabase.id}) (type=${type})`
     );
 
+    const baseAmount = 50;
+    const shards = OpenBump.instance.networkManager.total;
     if (type === Bump.BumpType.HUBS) {
       guildFeeds = await this.fetchGuildFeeds(0, true, guildDatabase.id);
     } else if (type === Bump.BumpType.CROSS) {
-      guildFeeds = await this.fetchGuildFeeds(50, true, guildDatabase.id);
+      guildFeeds = await this.fetchGuildFeeds(
+        baseAmount,
+        true,
+        guildDatabase.id
+      );
+    } else if (type === Bump.BumpType.DISTRIBUTED) {
+      guildFeeds = await this.fetchGuildFeeds(
+        Math.round(baseAmount / (shards - 1)),
+        true,
+        guildDatabase.id
+      );
     } else if (type === Bump.BumpType.FULL) {
       guildFeeds = await this.fetchGuildFeeds(-1, true, guildDatabase.id);
     } else if (type === Bump.BumpType.SANDBOX) {
@@ -513,6 +525,7 @@ class Bump {
   public static BumpType = {
     HUBS: "HUBS" as "HUBS",
     CROSS: "CROSS" as "CROSS",
+    DISTRIBUTED: "DISTRIBUTED" as "DISTRIBUTED",
     FULL: "FULL" as "FULL",
     SANDBOX: "SANDBOX" as "SANDBOX"
   };
