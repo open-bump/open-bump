@@ -368,7 +368,11 @@ export default class SBLP {
     if (!message.guild) return; // Only allow guild messages
     if (message.channel.type !== "text") return; // Only allow text channels
     if (
-      config.settings.integration?.sblp.receive.includes(message.channel.id)
+      config.settings.integration?.sblp.receive.includes(message.channel.id) ||
+      (message.channel.parentID &&
+        config.settings.integration?.sblp.receive.includes(
+          message.channel.parentID
+        ))
     ) {
       // Channel is a SBLP channel
       // Note: Open Bump will not use a whitelist system as it expects that only granted bots have access to the SBLP channel(s)
