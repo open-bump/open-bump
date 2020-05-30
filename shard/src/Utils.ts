@@ -967,7 +967,7 @@ export default class Utils {
             ? guildDatabase.lastBumpedAt.valueOf() + cooldown
             : 0;
           if (!nextBump || nextBump <= Date.now()) {
-            await Reminder.destroy({ where: { guildId } });
+            await reminder.destroy();
             const guild = OpenBump.instance.client.guilds.cache.get(guildId);
             if (!guild) continue;
             const channel = guild.channels.cache.get(reminder.channel);
