@@ -1,5 +1,5 @@
 import { SuccessfulParsedMessage } from "discord-command-parser";
-import Discord from "discord.js";
+import Discord, { ClientUser } from "discord.js";
 import ms from "ms";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
@@ -8,6 +8,8 @@ import CommandManager from "../CommandManager";
 import config from "../config";
 import BumpData from "../models/BumpData";
 import Guild from "../models/Guild";
+import User from "../models/User";
+import OpenBump from "../OpenBump";
 import { SBLPBumpEntity } from "../SBLP";
 import Utils, { EmbedError, GuildMessage } from "../Utils";
 
@@ -38,7 +40,7 @@ export default class BumpCommand extends Command {
         : 0;
       const remaining = nextBump - Date.now();
       if (nextBump && nextBump > Date.now()) {
-        const suggestions: Array<Discord.EmbedFieldData> = [];
+        const suggestions: Array<Partial<Discord.EmbedFieldData>> = [];
 
         let integrationSuggestion;
 
@@ -132,13 +134,65 @@ export default class BumpCommand extends Command {
           }
         }
 
+        const reminderField: Partial<Discord.EmbedFieldData> = {
+          name: `${Utils.Emojis.REMINDER} Reminder`,
+          value:
+            `Do you want to be reminded when you can bump again? ` +
+            `React with ${Utils.Emojis.REMINDER} to this message and ${this.instance.client.user?.username} will let you know once the cooldown is over.`
+        };
+
+        const reminderFieldIndex = suggestions.push(reminderField) - 1;
+
         const embed = {
           color: Utils.Colors.RED,
           title: `${Utils.Emojis.XMARK} You are on cooldown!`,
           description,
           fields: suggestions
         };
-        return void (await channel.send({ embed }));
+
+        const cooldownMessage = await channel.send({ embed });
+
+        const reminderReaction = await cooldownMessage
+          .react(Utils.Emojis.REMINDER)
+          .catch(() => {});
+
+        const reminded: Array<string> = [];
+        await cooldownMessage.awaitReactions(
+          (reaction: Discord.MessageReaction, user: Discord.User) => {
+            (async () => {
+              if (user instanceof ClientUser || user.bot) return;
+              if (
+                reaction.emoji.name !== Utils.Emojis.REMINDER &&
+                reaction.emoji.id !== Utils.Emojis.getRaw(Utils.Emojis.REMINDER)
+              )
+                return;
+
+              if (reminded.includes(user.id)) return;
+              reminded.push(user.id);
+
+              const [userDatabase] = await User.findOrCreate({
+                where: { id: user.id },
+                defaults: { id: user.id }
+              });
+
+              await Utils.remind(userDatabase, guildDatabase, channel.id);
+
+              await channel.send(
+                `${Utils.Emojis.CHECK} Will remind \`${user.tag}\` once this server can be bumped again.`
+              );
+            })();
+            return false;
+          },
+          { time: 30000 }
+        );
+
+        if (reminderReaction)
+          await reminderReaction.users
+            .remove(OpenBump.instance.client.user?.id)
+            .catch(() => {});
+
+        embed.fields.splice(reminderFieldIndex, 1);
+        return void (await cooldownMessage.edit({ embed }));
       }
 
       guildDatabase.lastBumpedAt = new Date();
@@ -228,7 +282,7 @@ export default class BumpCommand extends Command {
         `Guild ${guild.name} (${guild.id}) has been successfully bumped to ${amount} servers.`
       );
 
-      const fields = [];
+      const fields: Array<Partial<Discord.EmbedFieldData>> = [];
 
       if (featuredGuildDatabases.length) {
         fields.push({
@@ -254,9 +308,10 @@ export default class BumpCommand extends Command {
 
       if (integrationSuggestionField) fields.push(integrationSuggestionField);
 
-      fields.push({
-        name: `${Utils.Emojis.CLOCK} Next Bump`,
-        value: `You can bump again in ${ms(cooldown, {
+      const nextBumpField: Partial<Discord.EmbedFieldData> = {};
+      const buildNextBumpField = (reminder: boolean) => {
+        nextBumpField.name = `${Utils.Emojis.CLOCK} Next Bump`;
+        nextBumpField.value = `You can bump again in ${ms(cooldown, {
           long: true
         })}.${
           votingEnabled && !voted && !maxedOut && cooldown > voteCooldown
@@ -270,8 +325,16 @@ export default class BumpCommand extends Command {
                 }
               )} for the next 12 hours!`
             : ""
-        }`
-      });
+        }${
+          reminder
+            ? `\n\n` +
+              `Do you want to be reminded when you can bump again? ` +
+              `React with ${Utils.Emojis.REMINDER} to this message and ${this.instance.client.user?.username} will let you know once the cooldown is over.`
+            : ""
+        }`;
+      };
+      buildNextBumpField(true);
+      fields.push(nextBumpField);
 
       let description = `Your server has been successfully bumped.`;
 
@@ -322,6 +385,48 @@ export default class BumpCommand extends Command {
         fields.unshift(sblpField);
       }
 
+      await loadingMessage.edit({ embed: successEmbed });
+
+      const reminderReaction = await loadingMessage
+        .react(Utils.Emojis.REMINDER)
+        .catch(() => {});
+
+      const reminded: Array<string> = [];
+      await loadingMessage.awaitReactions(
+        (reaction: Discord.MessageReaction, user: Discord.User) => {
+          (async () => {
+            if (user instanceof ClientUser || user.bot) return;
+            if (
+              reaction.emoji.name !== Utils.Emojis.REMINDER &&
+              reaction.emoji.id !== Utils.Emojis.getRaw(Utils.Emojis.REMINDER)
+            )
+              return;
+
+            if (reminded.includes(user.id)) return;
+            reminded.push(user.id);
+
+            const [userDatabase] = await User.findOrCreate({
+              where: { id: user.id },
+              defaults: { id: user.id }
+            });
+
+            await Utils.remind(userDatabase, guildDatabase, channel.id);
+
+            await channel.send(
+              `${Utils.Emojis.CHECK} Will remind \`${user.tag}\` once this server can be bumped again.`
+            );
+          })();
+          return false;
+        },
+        { time: 30000 }
+      );
+
+      if (reminderReaction)
+        await reminderReaction.users
+          .remove(OpenBump.instance.client.user?.id)
+          .catch(() => {});
+
+      buildNextBumpField(false);
       await loadingMessage.edit({ embed: successEmbed });
     } else {
       const embed = {
