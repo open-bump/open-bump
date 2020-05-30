@@ -15,6 +15,8 @@ import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
 import config from "./config";
 import Guild from "./models/Guild";
+import Reminder from "./models/Reminder";
+import User from "./models/User";
 import OpenBump from "./OpenBump";
 
 class Notifications {
@@ -882,6 +884,98 @@ export default class Utils {
     return array;
   }
 
+  public static startReminder() {
+    setTimeout(() => {
+      Utils.reminderLoop.bind(this);
+      Utils.startReminder();
+    }, 1000 * 30);
+    Utils.reminderLoop();
+  }
+
+  private static async reminderLoop() {
+    console.log("Running reminder loop...");
+
+    try {
+      const reminders = await Reminder.findAll({
+        where: Sequelize.literal(
+          `(\`guildId\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
+        )
+      });
+
+      const guildMap = reminders.reduce(
+        (guildMap: { [guild: string]: Array<Reminder> }, current) => {
+          if (guildMap[current.guildId]) {
+            guildMap[current.guildId].push(current);
+          } else {
+            guildMap[current.guildId] = [current];
+          }
+          return guildMap;
+        },
+        {}
+      );
+
+      console.debug(
+        `[DEBUG] Loaded ${
+          Object.keys(guildMap).length
+        } guilds with reminders enabled`
+      );
+
+      for (const guildId of Object.keys(guildMap)) {
+        const reminders = guildMap[guildId];
+        const guildDatabase = await Guild.scope("default").findOne({
+          where: { id: guildId }
+        });
+
+        if (!guildDatabase) continue;
+
+        for (const reminder of reminders) {
+          if (typeof reminder.voted !== "boolean") {
+            const cooldown = guildDatabase.getCooldown(true, false);
+            const nextBump = guildDatabase.lastBumpedAt
+              ? guildDatabase.lastBumpedAt.valueOf() + cooldown
+              : 0;
+            const canBump = !nextBump || nextBump <= Date.now();
+            const voteCooldown = guildDatabase.getCooldown(true, true);
+            const voteNextBump = guildDatabase.lastBumpedAt
+              ? guildDatabase.lastBumpedAt.valueOf() + voteCooldown
+              : 0;
+            const voteCanBump = !voteNextBump || voteNextBump <= Date.now();
+            if (voteCanBump && !canBump) {
+              reminder.voted = await Lists.hasVotedTopGG(reminder.userId);
+              await reminder.save();
+            }
+          }
+          const cooldown = guildDatabase.getCooldown(true, reminder.voted);
+          const nextBump = guildDatabase.lastBumpedAt
+            ? guildDatabase.lastBumpedAt.valueOf() + cooldown
+            : 0;
+          if (!nextBump || nextBump <= Date.now()) {
+            await Reminder.destroy({ where: { guildId } });
+            const guild = OpenBump.instance.client.guilds.cache.get(guildId);
+            if (!guild) continue;
+            const channel = guild.channels.cache.get(reminder.channel);
+            if (!channel || !(channel instanceof Discord.TextChannel)) continue;
+            await channel
+              .send(
+                `${Utils.Emojis.REMINDER} <@${reminder.userId}> This guild can be bumped again.`
+              )
+              .catch(() => {});
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Error in general reminder loop:`, error);
+    }
+  }
+
+  public static async remind(user: User, guild: Guild, channel: string) {
+    return await Reminder.upsert({
+      guildId: guild.id,
+      userId: user.id,
+      channel
+    });
+  }
+
   public static PermissionsNames: {
     [id in Discord.PermissionString]: string;
   } = {
@@ -957,6 +1051,7 @@ export default class Utils {
     WAVE: "👋",
     ADD: "\\✔️",
     REMOVE: "\\➖",
+    REMINDER: "⏰",
     THUMBSUP: "<:thumbsup:631606538598875174>",
     THUMBSDOWN: "<:thumbsdown:631606537827123221>",
     OWNER: "<:owner:547102770696814592>",

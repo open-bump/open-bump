@@ -37,7 +37,7 @@ export default class VoteCommand extends Command {
         }, you can reduce your cooldown by up to ${ms(
           config.settings.cooldown.vote * 60 * 1000,
           { long: true }
-        )} for 12 hours.\n` +
+        )} for 12 hours. ` +
         `After 12 hours, just vote again to unlock your super power again!`
     };
     return void (await channel.send({ embed }));
