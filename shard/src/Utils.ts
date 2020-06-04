@@ -102,23 +102,12 @@ class Bump {
     // Prepare data
     let total = 0;
     let online = 0;
-    let dnd = 0;
-    let idle = 0;
-    let offline = 0;
-    let bots = 0;
     let roles = 0;
     let channels = 0;
     let emojis = 0;
 
-    for (const member of guild.members.cache.values()) {
-      if (member.presence?.status === "online") online++;
-      else if (member.presence?.status === "dnd") dnd++;
-      else if (member.presence?.status === "idle") idle++;
-      else offline++;
-      total++;
-      if (member.user.bot) bots++;
-    }
-
+    total = invite.memberCount;
+    online = invite.presenceCount;
     roles = guild.roles.cache.size;
     channels = guild.channels.cache.size;
     emojis = guild.emojis.cache.size;
@@ -189,16 +178,13 @@ class Bump {
           name: `${Utils.Emojis.MEMBERS} **Members [${total}]**`,
           value:
             `${Utils.Emojis.ONLINE} **Online:** ${online}\n` +
-            `${Utils.Emojis.DND} **Do Not Disturb:** ${dnd}\n` +
-            `${Utils.Emojis.IDLE} **Idle:** ${idle}\n` +
-            `${Utils.Emojis.INVISIBLE} **Offline:** ${offline}`,
+            `${Utils.Emojis.INVISIBLE} **Total:** ${total}`,
           inline: true
         },
         {
           name: `${Utils.Emojis.INFO} **Misc**`,
           value:
             `**Roles:** ${roles}\n` +
-            `**Bots:** ${bots}\n` +
             `**Channels:** ${channels}\n` +
             `**Emojis:** ${emojis}`,
           inline: true

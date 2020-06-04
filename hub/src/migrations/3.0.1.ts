@@ -76,11 +76,15 @@ const migration: MigrationJS = {
       );
 
       // Create Unique Constraint
-      await queryInterface.addConstraint("GuildFeature", ["guildId", "feature"], {
-        type: "unique",
-        name: "GuildFeature_guildId_feature_uk",
-        transaction
-      });
+      await queryInterface.addConstraint(
+        "GuildFeature",
+        ["guildId", "feature"],
+        {
+          type: "unique",
+          name: "GuildFeature_guildId_feature_uk",
+          transaction
+        }
+      );
 
       // Add Foreign Key From "GuildFeature" To "Guild"
       await queryInterface.addConstraint("GuildFeature", ["guildId"], {

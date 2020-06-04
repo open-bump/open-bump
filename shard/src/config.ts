@@ -37,11 +37,6 @@ interface IConfig extends config.IConfig {
       server: string;
       bonus: number;
     };
-    patreonRoles?: Array<{
-      guild: string;
-      role: string;
-      cost: number;
-    }>;
     servermate: {
       user: string;
       trigger: string;
