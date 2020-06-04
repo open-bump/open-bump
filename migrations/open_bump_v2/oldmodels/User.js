@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
-const findOrCreate = require('mongoose-findorcreate')
+const mongoose = require("mongoose");
+const findOrCreate = require("mongoose-findorcreate");
 
 const UserSchema = new mongoose.Schema({
   id: {
@@ -49,10 +49,10 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     required: false
   }
-})
+});
 
-UserSchema.plugin(findOrCreate)
+UserSchema.plugin(findOrCreate);
 
-const User = mongoose.model('User', UserSchema)
+const User = mongoose.model("User", UserSchema);
 
-module.exports = User
+module.exports = User;

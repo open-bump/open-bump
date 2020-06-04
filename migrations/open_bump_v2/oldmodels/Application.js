@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
-const findOrCreate = require('mongoose-findorcreate')
+const mongoose = require("mongoose");
+const findOrCreate = require("mongoose-findorcreate");
 
 const ApplicationSchema = new mongoose.Schema({
   tag: {
@@ -37,10 +37,10 @@ const ApplicationSchema = new mongoose.Schema({
     required: true,
     default: []
   }
-})
+});
 
-ApplicationSchema.plugin(findOrCreate)
+ApplicationSchema.plugin(findOrCreate);
 
-const Application = mongoose.model('Application', ApplicationSchema)
+const Application = mongoose.model("Application", ApplicationSchema);
 
-module.exports = Application
+module.exports = Application;

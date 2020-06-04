@@ -33,7 +33,7 @@ const migration: MigrationJS = {
           await queryInterface.bulkInsert(
             "PremiumTierFeature",
             data.features.map((feature) => ({
-              id: require('uuid').v4(),
+              id: require("uuid").v4(),
               premiumTierId: data.id,
               feature: feature
             })),
@@ -101,11 +101,15 @@ const migration: MigrationJS = {
         "dd6328b3-7d54-41f3-8c63-39d350a55cc1"
       ];
 
-      await queryInterface.bulkDelete("PremiumTier", {
-        id: {
-          [op.in]: defaultTiers
-        }
-      }, { transaction });
+      await queryInterface.bulkDelete(
+        "PremiumTier",
+        {
+          id: {
+            [op.in]: defaultTiers
+          }
+        },
+        { transaction }
+      );
 
       /* Commit Transaction */
       await transaction.commit();

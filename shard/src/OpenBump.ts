@@ -27,7 +27,12 @@ export default class OpenBump {
   constructor() {
     OpenBump.instance = this;
 
-    this.client = new Discord.Client();
+    this.client = new Discord.Client({
+      fetchAllMembers: false,
+      ws: {
+        intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"]
+      }
+    });
 
     this.commandManager = new CommandManager(this);
     this.eventManager = new EventManager(this);
