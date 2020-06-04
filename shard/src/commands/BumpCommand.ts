@@ -245,7 +245,8 @@ export default class BumpCommand extends Command {
         ? await Guild.findAll({
             where: {
               id: {
-                [Op.in]: featured.map(({ id }) => id)
+                [Op.in]: featured.map(({ id }) => id),
+                [Op.ne]: guildDatabase.sandbox ? null : guild.id
               },
               name: {
                 [Op.and]: [
