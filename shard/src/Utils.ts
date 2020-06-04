@@ -175,7 +175,7 @@ class Bump {
           value: `**${invite}**`
         },
         {
-          name: `${Utils.Emojis.MEMBERS} **Members [${total}]**`,
+          name: `${Utils.Emojis.MEMBERS} **Members**`,
           value:
             `${Utils.Emojis.ONLINE} **Online:** ${online}\n` +
             `${Utils.Emojis.INVISIBLE} **Total:** ${total}`,
