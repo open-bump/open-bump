@@ -1065,6 +1065,8 @@ export default class Utils {
     BOOST_3: "<:boost_3:707638684555411578>",
     BOOST_2: "<:boost_2:707638684530507907>",
     BOOST_1: "<:boost_1:707638684358410271>",
+    GIFT: "🎁",
+    TADA: "🎉",
     getRaw: (emoji: string) => {
       const regex = /<a?:.{0,}:([0-9]{10,20})>/gim;
       let m;
