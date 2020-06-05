@@ -6,6 +6,7 @@ import AutobumpCommand from "./commands/AutobumpCommand";
 import BadgesCommand from "./commands/BadgesCommand";
 import BrandingCommand from "./commands/BrandingCommand";
 import BumpCommand from "./commands/BumpCommand";
+import GiveawayCommand from "./commands/GiveawayCommand";
 import HelpCommand from "./commands/HelpCommand";
 import NsfwCommand from "./commands/NsfwCommand";
 import PingCommand from "./commands/PingCommand";
@@ -23,7 +24,7 @@ import SupportCommand from "./commands/SupportCommand";
 import VoteCommand from "./commands/VoteCommand";
 import config from "./config";
 import OpenBump from "./OpenBump";
-import Utils, { EmbedError, GuildMessage } from "./Utils";
+import Utils, { EmbedError, GuildMessage, VoidError } from "./Utils";
 
 export default class CommandManager {
   private commands: { [name: string]: Command } = {};
@@ -123,6 +124,7 @@ export default class CommandManager {
           );
         await command.run(parsed, guildDatabase);
       } catch (error) {
+        if (error instanceof VoidError) return;
         const embed = Utils.errorToEmbed(error);
         await message.channel.send({ embed });
         if (!(error instanceof EmbedError))
@@ -137,6 +139,7 @@ export default class CommandManager {
     this.registerCommand(new BadgesCommand(this.instance));
     this.registerCommand(new BrandingCommand(this.instance));
     this.registerCommand(new BumpCommand(this.instance));
+    this.registerCommand(new GiveawayCommand(this.instance));
     this.registerCommand(new HelpCommand(this.instance));
     this.registerCommand(new NsfwCommand(this.instance));
     this.registerCommand(new PingCommand(this.instance));
