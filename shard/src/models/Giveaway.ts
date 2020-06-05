@@ -13,7 +13,10 @@ import GiveawayRequirement from "./GiveawayRequirement";
 import Guild from "./Guild";
 
 @Table({
-  tableName: "Giveaway"
+  tableName: "Giveaway",
+  defaultScope: {
+    include: [GiveawayRequirement]
+  }
 })
 export default class Giveaway extends Model<Giveaway> {
   // Discord Snowflake (Message)

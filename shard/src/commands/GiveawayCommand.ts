@@ -2,6 +2,7 @@ import { SuccessfulParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import ms from "ms";
 import Command from "../Command";
+import Giveaways from "../Giveaways";
 import Guild from "../models/Guild";
 import Utils, {
   GuildMessage,
@@ -21,7 +22,7 @@ export default class GiveawayCommand extends Command {
     { message, arguments: args }: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
-    const { channel, member, author } = message;
+    const { channel, member, author, guild } = message;
 
     this.requireUserPemission(["MANAGE_GUILD"], member);
 
@@ -90,24 +91,90 @@ export default class GiveawayCommand extends Command {
         );
         const targetPrize = (await this.awaitMessage(channel, author)).content;
 
-        await channel.send(
+        const description =
           `**Channel:** ${targetChannel}\n` +
-            `**Duration:** ${ms(targetDuration, { long: true })}\n` +
-            `**Winners:** ${targetWinnersCount}\n` +
-            `**Vote Required:** ${targetVoteRequirement ? "yes" : "no"}\n` +
-            `**Guild Membership Required:** ${
-              targetGuildRequirements.length
-                ? targetGuildRequirements
-                    .map((invite) => invite.guild?.id)
-                    .join(", ")
-                : "no"
-            }\n` +
-            `**Roles Required:** ${
-              targetRoleRequirements.length
-                ? targetRoleRequirements.map((role) => role.id).join(", ")
-                : "no"
-            }\n` +
-            `**Prize:** ${targetPrize}`
+          `**Duration:** ${ms(targetDuration, { long: true })}\n` +
+          `**Winners:** ${targetWinnersCount}\n` +
+          `**Vote Required:** ${targetVoteRequirement ? "yes" : "no"}\n` +
+          `**Guild Membership Required:** ${
+            targetGuildRequirements.length
+              ? targetGuildRequirements
+                  .map(
+                    (invite) =>
+                      `**[${invite.guild?.name}](https://discord.gg/${invite.code})**`
+                  )
+                  .join(", ")
+              : "no"
+          }\n` +
+          `**Roles Required:** ${
+            targetRoleRequirements.length
+              ? targetRoleRequirements
+                  .map((role) => `<@&${role.id}>`)
+                  .join(", ")
+              : "no"
+          }\n` +
+          `**Prize:** ${targetPrize}`;
+
+        const embed = {
+          color: Utils.Colors.BLUE,
+          title: `${Utils.Emojis.INFORMATION} Confirmation`,
+          description:
+            description +
+            `\n` +
+            `\n` +
+            `**Please react with ${Utils.Emojis.CHECK} to confirm and start the giveaway.**`
+        };
+        const confirmationMessage = await channel.send({ embed });
+        const confirmationReaction = await confirmationMessage.react(
+          Utils.Emojis.getRaw(Utils.Emojis.CHECK)
+        );
+
+        try {
+          await confirmationMessage.awaitReactions(
+            (reaction: Discord.MessageReaction, user: Discord.User) =>
+              user.id === author.id &&
+              (reaction.emoji.id === Utils.Emojis.getRaw(Utils.Emojis.CHECK) ||
+                reaction.emoji.name === Utils.Emojis.CHECK),
+            { time: 30000, max: 1, errors: ["time"] }
+          );
+        } catch (error) {
+          embed.description =
+            description +
+            `\n` +
+            `\n` +
+            `**This assistant has timed out. Please restart the process.**`;
+          await confirmationMessage.edit({ embed });
+          if (confirmationReaction)
+            await confirmationReaction.users
+              .remove(this.instance.client.user?.id)
+              .catch(() => {});
+          return;
+        }
+
+        if (confirmationReaction)
+          await confirmationReaction.users
+            .remove(this.instance.client.user?.id)
+            .catch(() => {});
+
+        await Giveaways.start(
+          guild,
+          targetChannel,
+          targetPrize,
+          targetDuration,
+          targetWinnersCount,
+          [
+            ...(targetVoteRequirement ? [{ type: "VOTE" as "VOTE" }] : []),
+            ...targetGuildRequirements.map(
+              (invite) => ({
+                type: "GUILD" as "GUILD",
+                target: invite.guild?.id
+              }),
+              ...targetRoleRequirements.map((role) => ({
+                type: "ROLE" as "ROLE",
+                target: role.id
+              }))
+            )
+          ]
         );
       } else return void (await this.sendSyntax(message, guildDatabase));
     } else return void (await this.sendSyntax(message, guildDatabase));
@@ -261,10 +328,38 @@ export default class GiveawayCommand extends Command {
   ): Promise<TextBasedGuildChannel> {
     const message = await this.awaitMessage(channel, user);
     try {
+      const requiredPermissions = new Discord.Permissions([
+        "VIEW_CHANNEL",
+        "SEND_MESSAGES",
+        "EMBED_LINKS",
+        "ADD_REACTIONS",
+        "USE_EXTERNAL_EMOJIS"
+      ]);
       const targetChannel = Utils.findChannel(message.content, channel.guild);
+      const channelPermissions = targetChannel.permissionsFor(
+        String(this.instance.client.user?.id)
+      );
+      const missing =
+        requiredPermissions.bitfield & ~(channelPermissions?.bitfield || 0);
+      if (missing) {
+        await channel.send(
+          `${Utils.Emojis.XMARK} **Permissions Error**\n` +
+            `Make sure the bot has the following permissions in the channel ${targetChannel} and try again:\n` +
+            Utils.getPermissionIdentifiers(missing)
+              .map(Utils.translatePermission)
+              .map((permission) => `- \`${permission}\``)
+              .join("\n") +
+            `\n` +
+            `\n` +
+            `Note: The assistant has been cancelled, please reuse the command again.`
+        );
+        throw new VoidError();
+      }
       return targetChannel;
     } catch (error) {
-      if (error instanceof NotFoundError)
+      if (error instanceof VoidError) {
+        throw error;
+      } else if (error instanceof NotFoundError)
         await channel.send(
           `${Utils.Emojis.XMARK} Channel not found, please try again.`
         );
