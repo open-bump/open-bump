@@ -1,4 +1,5 @@
 import Discord, { MessageEmbedOptions } from "discord.js";
+import Giveaway from "./models/Giveaway";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
 import Utils from "./Utils";
@@ -20,7 +21,7 @@ export default class Giveaways {
   ) {
     const channelPermissions = channel.permissionsFor(
       String(OpenBump.instance.client.user?.id)
-    );
+    ); // TODO: Check permissions
 
     let description = [`React with ${Utils.Emojis.TADA} to enter!`];
 
@@ -58,7 +59,24 @@ export default class Giveaways {
       timestamp: Date.now() // TODO: Use correct date
     };
 
-    // TODO: Add permission checks somewhere
+    // TODO: Add permission checks somewhere and have error handling
     const message = await channel.send({ embed });
+
+    const giveawayDatabase = await Giveaway.create({
+      id: message.id,
+      guildId: guild.id,
+      channel: channel.id,
+      prize,
+      time,
+      winnersCount
+    });
+
+    for (const requirement of requirements) {
+      await giveawayDatabase.$create("requirements", {
+        type: requirement.type,
+        target: requirement.target,
+        invite: requirement.invite
+      });
+    }
   }
 }

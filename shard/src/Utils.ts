@@ -55,6 +55,9 @@ export type GuildMessage = Discord.Message & {
   guild: Discord.Guild;
 };
 
+export type TextBasedGuildChannel = Discord.GuildChannel &
+  Discord.TextBasedChannelFields;
+
 export interface RawGuildMessage {
   id: string;
   author: {
@@ -662,6 +665,19 @@ export default class Utils {
   public static Bump = Bump;
   public static Lists = Lists;
 
+  public static get inviteRegex() {
+    return /discord(?:(?:app)?\.com\/invite|\.gg(?:\/invite)?)\/([\w-]{2,255})/gim;
+  }
+
+  public static getAllMatches(regex: RegExp, input: string) {
+    const results = [];
+    let m;
+    while ((m = regex.exec(input))) {
+      results.push(m);
+    }
+    return results;
+  }
+
   public static mergeObjects<T extends object = object>(
     target: T,
     ...sources: Array<T>
@@ -794,26 +810,51 @@ export default class Utils {
 
   public static findChannel(
     input: string,
-    guild: Discord.Guild,
-    type?: Array<string>
-  ) {
+    guild: Discord.Guild
+  ): TextBasedGuildChannel {
     const channels = Array.from(guild.channels.cache.values()).filter(
-      (channel) => !type || type.includes(channel.type)
+      (channel) => channel.type === "text" || channel.type === "news"
     );
+
+    input = input.toLowerCase();
 
     let matching = channels.filter(
       (channel) => channel.id === input.replace(/[^0-9]/gim, "")
     );
 
     if (!matching.length)
-      matching = channels.filter((channel) => channel.name === input);
+      matching = channels.filter(
+        (channel) => channel.name.toLowerCase() === input
+      );
     if (!matching.length)
-      matching = channels.filter((channel) => channel.name.includes(input));
+      matching = channels.filter((channel) =>
+        channel.name.toLowerCase().includes(input)
+      );
 
-    if (matching.length === 1) return matching[0];
+    if (matching.length === 1) return matching[0] as TextBasedGuildChannel;
     else if (matching.length)
       throw new TooManyResultsError("channels", matching);
     throw new NotFoundError("guild");
+  }
+
+  public static findRole(input: string, guild: Discord.Guild): Discord.Role {
+    const roles = Array.from(guild.roles.cache.values());
+
+    input = input.toLowerCase();
+
+    let matching = roles.filter(
+      (role) => role.id === input.replace(/[^0-9]/gim, "")
+    );
+    if (!matching.length)
+      matching = roles.filter((role) => role.name.toLowerCase() === input);
+    if (!matching.length)
+      matching = roles.filter((role) =>
+        role.name.toLowerCase().includes(input)
+      );
+
+    if (matching.length === 1) return matching[0];
+    else if (matching.length) throw new TooManyResultsError("roles", matching);
+    throw new NotFoundError("role");
   }
 
   public static escapeLike(value: string) {
@@ -1067,6 +1108,12 @@ export default class Utils {
     BOOST_1: "<:boost_1:707638684358410271>",
     GIFT: "🎁",
     TADA: "🎉",
+    HASH: "#️⃣",
+    WINNERS: "👦",
+    UPVOTE: "<:OA_upvote:718473733387321355>",
+    DOWNVOTE: "<:OA_downvote:718473871413608548>",
+    LABEL: "🏷️",
+    SCROLL: "📜",
     getRaw: (emoji: string) => {
       const regex = /<a?:.{0,}:([0-9]{10,20})>/gim;
       let m;
@@ -1090,7 +1137,17 @@ export default class Utils {
 
 export abstract class EmbedError extends Error {
   public abstract toEmbed(): MessageEmbedOptions;
+
+  public toText(): string {
+    const embed = this.toEmbed();
+    let parts = [];
+    if (embed.title) parts.push(`**${embed.title}**`);
+    if (embed.description) parts.push(embed.description);
+    return parts.join("\n");
+  }
 }
+
+export class VoidError extends Error {}
 
 export class TitleError extends Error {
   constructor(public title: string, message: string) {
@@ -1151,7 +1208,7 @@ export class NotFoundError extends EmbedError {
   public toEmbed() {
     return {
       color: Utils.Colors.RED,
-      title: `Can't find ${this.type}!`,
+      title: `${Utils.Emojis.XMARK} Can't find ${this.type}!`,
       description: "Please specify your input."
     };
   }
@@ -1165,7 +1222,7 @@ export class TooManyResultsError<T> extends EmbedError {
   public toEmbed() {
     return {
       color: Utils.Colors.RED,
-      title: `Too many ${this.type} found!`,
+      title: `${Utils.Emojis.XMARK} Too many ${this.type} found!`,
       description: "Please specify your input."
     };
   }
