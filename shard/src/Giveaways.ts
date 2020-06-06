@@ -3,7 +3,7 @@ import Giveaway from "./models/Giveaway";
 import GiveawayRequirement from "./models/GiveawayRequirement";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
-import Utils, { TextBasedGuildChannel } from "./Utils";
+import Utils, { TextBasedGuildChannel, TitleError } from "./Utils";
 
 export interface RequirementData {
   type: "GUILD" | "ROLE" | "VOTE";
@@ -45,13 +45,7 @@ export default class Giveaways {
 
     const embed = await this.giveawayToEmbed(giveaway);
 
-    if (embed) {
-      await message.edit("", { embed });
-    } else {
-      await message.delete();
-      return giveaway; // TODO: Error
-    }
-
+    await message.edit("", { embed });
     await message.react(Utils.Emojis.getRaw(Utils.Emojis.TADA));
 
     return giveaway;
@@ -66,17 +60,28 @@ export default class Giveaways {
       giveaway = (await Giveaway.findOne({
         where: { id: giveaway }
       })) as Giveaway;
-    if (!giveaway) throw new Error(); // TODO: Error giveaway not found
-    if (giveaway.guildId !== guildId) throw new Error(); // TODO: Error giveaway not on this guild
+    if (!giveaway) throw new TitleError(`Error`, `Could not find giveaway.`);
+    if (giveaway.guildId !== guildId)
+      throw new TitleError(
+        "Error",
+        "The specified giveaway is not on this server."
+      );
+    if (giveaway.ended())
+      throw new TitleError("Error", "The specified giveaway already ended.");
     const guild = OpenBump.instance.client.guilds.cache.get(giveaway.guildId);
-    if (!guild) throw new Error(); // TODO: Error guild not found
+    if (!guild) throw new TitleError("Error", "Could not find server.");
     const channel = guild.channels.cache.get(
       giveaway.channel
     ) as TextBasedGuildChannel;
-    if (channel?.type !== "text" && channel?.type !== "news") throw new Error(); // TODO: Channel invalid type
-    if (!channel) throw new Error(); // TODO: Error channel not found
+    if (channel?.type !== "text" && channel?.type !== "news")
+      throw new TitleError(
+        "Unexpected Error",
+        "The type of the giveaway channel is invalid."
+      );
+    if (!channel) throw new TitleError("Error", "Could not find channel.");
     const message = await channel.messages.fetch(giveaway.id);
-    if (!message) throw new Error(); // TODO: Error message not found
+    if (!message)
+      throw new TitleError("Error", "Could not find giveaway message.");
     giveaway.cancelledBy = authorId;
     const embed = await this.giveawayToEmbed(giveaway);
     await message.edit({ embed });
@@ -90,7 +95,8 @@ export default class Giveaways {
   ) {
     if (!guild)
       guild = OpenBump.instance.client.guilds.cache.get(giveaway.guildId);
-    if (!guild) throw new Error(); // TODO: Error
+    if (!guild)
+      throw new TitleError("Unexpected Error", "Could not find guild");
 
     const endsAt = new Date(giveaway.createdAt).valueOf() + giveaway.time;
 
@@ -109,13 +115,17 @@ export default class Giveaways {
           const requirementGuildDatabase = await Guild.findOne({
             where: { id: requirement.target as string }
           });
-          if (!requirement) return; // TODO: Throw error
+          if (!requirementGuildDatabase)
+            throw new TitleError(
+              "Unexpeced Error",
+              "The guild is not in the database."
+            );
           description.push(
             `Must join: **[${requirementGuildDatabase?.name}](${requirement.invite})**`
           );
         } else if (requirement.type === "ROLE") {
           const role = guild.roles.fetch(requirement.target);
-          if (!role) return; // TODO: Throw error
+          if (!role) continue;
           description.push(`Must have role: ${role}`);
         } else if (requirement.type === "VOTE")
           description.push(
@@ -123,11 +133,11 @@ export default class Giveaways {
               OpenBump.instance.client.user?.username
             }](${Utils.Lists.getLinkTopGG()})**`
           );
-        else return; // TODO: Throw error
+        else continue;
       }
     }
 
-    const ended = giveaway.endedAt || giveaway.cancelledBy;
+    const ended = giveaway.ended();
 
     const embed: MessageEmbedOptions = {
       color: Utils.Colors.GREEN,
