@@ -60,4 +60,11 @@ export default class Giveaway extends Model<Giveaway> {
 
   @Column(DataType.STRING(20))
   cancelledBy!: string;
+
+  @Column(DataType.DATE)
+  lastRefreshedAt!: Date;
+
+  public ended() {
+    return Boolean(this.endedAt || this.cancelledBy);
+  }
 }

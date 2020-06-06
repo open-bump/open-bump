@@ -329,11 +329,25 @@ export default class GiveawayCommand extends Command {
   ): Promise<number> {
     const message = await this.awaitMessage(channel, user);
     const targetDuration = ms(message.content);
-    if (targetDuration) return targetDuration;
-    await channel.send(
-      `${Utils.Emojis.XMARK} Invalid duration, please try again. (example: \`3d\`)`
-    );
-    return await this.awaitMessageDuration(channel, user);
+    if (!targetDuration) {
+      await channel.send(
+        `${Utils.Emojis.XMARK} Invalid duration, please try again. (example: \`3d\`)`
+      );
+      return await this.awaitMessageDuration(channel, user);
+    }
+    if (targetDuration <= 1000 * 60) {
+      await channel.send(
+        `${Utils.Emojis.XMARK} The duration needs to be at least 1 minute, please try again.`
+      );
+      return await this.awaitMessageDuration(channel, user);
+    }
+    if (targetDuration > 1000 * 60 * 60 * 24 * 30) {
+      await channel.send(
+        `${Utils.Emojis.XMARK} The duration can be at most 30 days, please try again.`
+      );
+      return await this.awaitMessageDuration(channel, user);
+    }
+    return targetDuration;
   }
 
   private async awaitMessageChannel(
