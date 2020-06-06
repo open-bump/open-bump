@@ -15,7 +15,7 @@ import Guild from "./Guild";
 @Table({
   tableName: "Giveaway",
   defaultScope: {
-    include: [GiveawayRequirement]
+    include: [{ model: GiveawayRequirement, as: "requirements" }]
   }
 })
 export default class Giveaway extends Model<Giveaway> {
@@ -54,4 +54,10 @@ export default class Giveaway extends Model<Giveaway> {
 
   @Column(DataType.DATE)
   endedAt?: Date;
+
+  @Column(DataType.STRING(20))
+  createdBy!: string;
+
+  @Column(DataType.STRING(20))
+  cancelledBy!: string;
 }

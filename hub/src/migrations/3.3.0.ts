@@ -39,6 +39,12 @@ const migration: MigrationJS = {
           endedAt: {
             type: datatypes.DATE
           },
+          createdBy: {
+            type: datatypes.STRING(20)
+          },
+          cancelledBy: {
+            type: datatypes.STRING(20)
+          },
           createdAt: {
             defaultValue: connection.Sequelize.literal("CURRENT_TIMESTAMP"),
             allowNull: false,

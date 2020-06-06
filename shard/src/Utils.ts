@@ -50,13 +50,13 @@ class Notifications {
 }
 
 export type GuildMessage = Discord.Message & {
-  channel: Discord.GuildChannel & Discord.TextBasedChannelFields;
+  channel: TextBasedGuildChannel;
   member: Discord.GuildMember;
   guild: Discord.Guild;
 };
 
 export type TextBasedGuildChannel = Discord.GuildChannel &
-  Discord.TextBasedChannelFields;
+  (Discord.TextChannel | Discord.NewsChannel);
 
 export interface RawGuildMessage {
   id: string;

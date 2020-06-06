@@ -15,7 +15,7 @@ import Utils, {
 export default class GiveawayCommand extends Command {
   public name = "giveaway";
   public aliases = ["gw", "giveaways"];
-  public syntax = "giveaway <start>";
+  public syntax = "giveaway <start|cancel <messageId>>";
   public description = "Create and manage giveaways";
 
   public async run(
@@ -156,7 +156,7 @@ export default class GiveawayCommand extends Command {
             .remove(this.instance.client.user?.id)
             .catch(() => {});
 
-        await Giveaways.start(
+        const giveaway = await Giveaways.start(
           guild,
           targetChannel,
           targetPrize,
@@ -176,6 +176,20 @@ export default class GiveawayCommand extends Command {
             )
           ]
         );
+
+        await channel.send(
+          `${Utils.Emojis.CHECK} The giveaway in ${targetChannel} with ID \`${giveaway.id}\` has been started.`
+        );
+      } else return void (await this.sendSyntax(message, guildDatabase));
+    } else if (args.length === 2) {
+      if (args[0] === "cancel") {
+        const giveaway = await Giveaways.cancel(args[1], guild.id, author.id);
+        const embed = {
+          color: Utils.Colors.GREEN,
+          title: `${Utils.Emojis.CHECK} Giveaway Cancelled`,
+          description: `The giveaway in the channel <#${giveaway.channel}> has been cancelled.`
+        };
+        await channel.send({ embed });
       } else return void (await this.sendSyntax(message, guildDatabase));
     } else return void (await this.sendSyntax(message, guildDatabase));
   }
@@ -331,6 +345,7 @@ export default class GiveawayCommand extends Command {
       const requiredPermissions = new Discord.Permissions([
         "VIEW_CHANNEL",
         "SEND_MESSAGES",
+        "MANAGE_MESSAGES",
         "EMBED_LINKS",
         "ADD_REACTIONS",
         "USE_EXTERNAL_EMOJIS"
