@@ -174,7 +174,8 @@ export default class GiveawayCommand extends Command {
                 target: role.id
               }))
             )
-          ]
+          ],
+          author.id
         );
 
         await channel.send(
