@@ -1,5 +1,6 @@
 import { ClientEvents } from "discord.js";
 import Event from "../Event";
+import Giveaways from "../Giveaways";
 import Utils from "../Utils";
 
 export default class ReadyEvent extends Event {
@@ -14,6 +15,7 @@ export default class ReadyEvent extends Event {
       Utils.Lists.start();
       Utils.Bump.startAutobump();
       Utils.startReminder();
+      Giveaways.startGiveaways();
       this.instance.customStatusLoop();
       await this.instance.premium.init();
     }
