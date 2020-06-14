@@ -1,5 +1,6 @@
 import * as parser from "discord-command-parser";
 import Discord from "discord.js";
+import * as uuid from "uuid";
 import Command from "./Command";
 import AboutCommand from "./commands/AboutCommand";
 import AutobumpCommand from "./commands/AutobumpCommand";
@@ -27,10 +28,20 @@ import OpenBump from "./OpenBump";
 import Utils, { EmbedError, GuildMessage, VoidError } from "./Utils";
 
 export default class CommandManager {
+  private interactive: {
+    [id: string]: (() => void | Promise<void>) | void;
+  } = {};
+
+  private running: Array<string> = [];
+
   private commands: { [name: string]: Command } = {};
 
   constructor(private instance: OpenBump) {
     this.registerCommands();
+  }
+
+  public isRunning(id: string) {
+    return this.running.includes(id);
   }
 
   public async run(message: GuildMessage) {
@@ -114,7 +125,26 @@ export default class CommandManager {
         return void (await channel.send({ embed }));
       }
 
+      const id = uuid.v4();
       try {
+        const interactive = this.interactive[message.author.id];
+        if (interactive) {
+          try {
+            await interactive();
+          } catch (error) {}
+          this.interactive[message.author.id] = void 0;
+          return;
+        }
+        if (command.interactive) {
+          this.running.push(id);
+          this.interactive[message.author.id] = async () => {
+            const index = this.running.indexOf(id);
+            if (index > -1) this.running.splice(index, 1);
+            await channel.send(
+              `${Utils.Emojis.XMARK} The interactive setup has been cancelled!`
+            );
+          };
+        }
         if (guildDatabase.sandbox)
           await channel.send(
             `${Utils.Emojis.IMPORTANTNOTICE} This guild is on **Sandbox Mode**!\n` +
@@ -122,13 +152,18 @@ export default class CommandManager {
                 guildDatabase
               )}sandbox toggle\` to disable.`
           );
-        await command.run(parsed, guildDatabase);
+
+        await command.run(parsed, guildDatabase, id);
       } catch (error) {
         if (error instanceof VoidError) return;
         const embed = Utils.errorToEmbed(error);
         await message.channel.send({ embed });
         if (!(error instanceof EmbedError))
           console.error(`Catched error while command execution!`, error);
+      } finally {
+        const index = this.running.indexOf(id);
+        if (index > -1) this.running.splice(index, 1);
+        if (command.interactive) this.interactive[message.author.id] = void 0;
       }
     }
   }
