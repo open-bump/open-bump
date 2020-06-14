@@ -17,10 +17,12 @@ export default class GiveawayCommand extends Command {
   public aliases = ["gw", "giveaways"];
   public syntax = "giveaway <start|cancel <messageId>>";
   public description = "Create and manage giveaways";
+  public interactive = true;
 
   public async run(
     { message, arguments: args }: SuccessfulParsedMessage<GuildMessage>,
-    guildDatabase: Guild
+    guildDatabase: Guild,
+    id: string
   ) {
     const { channel, member, author, guild } = message;
 
@@ -34,19 +36,28 @@ export default class GiveawayCommand extends Command {
             `\n` +
             `${Utils.Emojis.HASH} Where do you want to create the giveaway? (channel)`
         );
-        const targetChannel = await this.awaitMessageChannel(channel, author);
+        const targetChannel = await this.awaitMessageChannel(
+          channel,
+          author,
+          id
+        );
 
         await channel.send(
           `${Utils.Emojis.CLOCK} How long should the giveaway run? (duration)`
         );
-        const targetDuration = await this.awaitMessageDuration(channel, author);
+        const targetDuration = await this.awaitMessageDuration(
+          channel,
+          author,
+          id
+        );
 
         await channel.send(
           `${Utils.Emojis.WINNERS} How many winners should there be?`
         );
         const targetWinnersCount = await this.awaitMessageWinnersCount(
           channel,
-          author
+          author,
+          id
         );
 
         // Only ask if a bot admin starts a giveaway
@@ -59,7 +70,8 @@ export default class GiveawayCommand extends Command {
         );
         const targetVoteRequirement = await this.awaitMessageVoteRequirement(
           channel,
-          author
+          author,
+          id
         );
 
         await channel.send(
@@ -71,7 +83,8 @@ export default class GiveawayCommand extends Command {
         );
         const targetGuildRequirements = await this.awaitMessageGuildRequirements(
           channel,
-          author
+          author,
+          id
         );
 
         await channel.send(
@@ -83,13 +96,15 @@ export default class GiveawayCommand extends Command {
         );
         const targetRoleRequirements = await this.awaitMessageRoleRequirements(
           channel,
-          author
+          author,
+          id
         );
 
         await channel.send(
           `${Utils.Emojis.LABEL} What is the prize of the giveaway?`
         );
-        const targetPrize = (await this.awaitMessage(channel, author)).content;
+        const targetPrize = (await this.awaitMessage(channel, author, id))
+          .content;
 
         const description =
           `**Channel:** ${targetChannel}\n` +
@@ -164,16 +179,15 @@ export default class GiveawayCommand extends Command {
           targetWinnersCount,
           [
             ...(targetVoteRequirement ? [{ type: "VOTE" as "VOTE" }] : []),
-            ...targetGuildRequirements.map(
-              (invite) => ({
-                type: "GUILD" as "GUILD",
-                target: invite.guild?.id
-              }),
-              ...targetRoleRequirements.map((role) => ({
-                type: "ROLE" as "ROLE",
-                target: role.id
-              }))
-            )
+            ...targetGuildRequirements.map((invite) => ({
+              type: "GUILD" as "GUILD",
+              target: invite.guild?.id,
+              invite: invite.code
+            })),
+            ...targetRoleRequirements.map((role) => ({
+              type: "ROLE" as "ROLE",
+              target: role.id
+            }))
           ],
           author.id
         );
@@ -197,9 +211,10 @@ export default class GiveawayCommand extends Command {
 
   private async awaitMessageRoleRequirements(
     channel: TextBasedGuildChannel,
-    user: Discord.User
+    user: Discord.User,
+    id: string
   ): Promise<Array<Discord.Role>> {
-    const message = await this.awaitMessage(channel, user);
+    const message = await this.awaitMessage(channel, user, id);
     if (message.content.toLowerCase() === "no") return [];
     const parts = message.content.split(" ");
     const roles: Array<Discord.Role> = [];
@@ -212,29 +227,30 @@ export default class GiveawayCommand extends Command {
         await channel.send(
           `${Utils.Emojis.XMARK} Could not find role \`${part}\`. Please verify your input and try again.`
         );
-        return await this.awaitMessageRoleRequirements(channel, user);
+        return await this.awaitMessageRoleRequirements(channel, user, id);
       }
     }
     if (roles.length > 5) {
       await channel.send(
         `${Utils.Emojis.XMARK} You can require participants to be in at most 5 roles. Please try again.`
       );
-      return await this.awaitMessageRoleRequirements(channel, user);
+      return await this.awaitMessageRoleRequirements(channel, user, id);
     }
     if (!roles.length) {
       await channel.send(
         `${Utils.Emojis.XMARK} Please either reply with role IDs or **no** to not require any roles.`
       );
-      return await this.awaitMessageRoleRequirements(channel, user);
+      return await this.awaitMessageRoleRequirements(channel, user, id);
     }
     return roles;
   }
 
   private async awaitMessageGuildRequirements(
     channel: TextBasedGuildChannel,
-    user: Discord.User
+    user: Discord.User,
+    id: string
   ): Promise<Array<Discord.Invite>> {
-    const message = await this.awaitMessage(channel, user);
+    const message = await this.awaitMessage(channel, user, id);
     if (message.content.toLowerCase() === "no") return [];
     const matches = Utils.getAllMatches(Utils.inviteRegex, message.content).map(
       (raw) => raw[1]
@@ -250,7 +266,7 @@ export default class GiveawayCommand extends Command {
             `Please make sure your invite code is valid and, if multiple, separated by spaces. ` +
             `Then, try again.`
         );
-        return await this.awaitMessageGuildRequirements(channel, user);
+        return await this.awaitMessageGuildRequirements(channel, user, id);
       }
     }
     for (const invite of invites) {
@@ -262,29 +278,30 @@ export default class GiveawayCommand extends Command {
           `${Utils.Emojis.XMARK} It looks like your message contains multiple invite links to the same server. ` +
             `Please make sure you only have one invite per server and try again.`
         );
-        return await this.awaitMessageGuildRequirements(channel, user);
+        return await this.awaitMessageGuildRequirements(channel, user, id);
       }
     }
     if (invites.length > 5) {
       await channel.send(
         `${Utils.Emojis.XMARK} You can require participants to be in at most 5 servers. Please try again.`
       );
-      return await this.awaitMessageGuildRequirements(channel, user);
+      return await this.awaitMessageGuildRequirements(channel, user, id);
     }
     if (!invites.length) {
       await channel.send(
         `${Utils.Emojis.XMARK} Please either reply with invite links or **no** to not require any servers.`
       );
-      return await this.awaitMessageGuildRequirements(channel, user);
+      return await this.awaitMessageGuildRequirements(channel, user, id);
     }
     return invites;
   }
 
   private async awaitMessageVoteRequirement(
     channel: TextBasedGuildChannel,
-    user: Discord.User
+    user: Discord.User,
+    id: string
   ): Promise<boolean> {
-    const message = await this.awaitMessage(channel, user);
+    const message = await this.awaitMessage(channel, user, id);
     if (message.content.toLowerCase() === "yes") {
       return true;
     } else if (message.content.toLowerCase() === "no") {
@@ -293,69 +310,72 @@ export default class GiveawayCommand extends Command {
       await channel.send(
         `${Utils.Emojis.XMARK} Please respond with **yes** or **no** and try again.`
       );
-      return await this.awaitMessageVoteRequirement(channel, user);
+      return await this.awaitMessageVoteRequirement(channel, user, id);
     }
   }
 
   private async awaitMessageWinnersCount(
     channel: TextBasedGuildChannel,
-    user: Discord.User
+    user: Discord.User,
+    id: string
   ): Promise<number> {
-    const message = await this.awaitMessage(channel, user);
+    const message = await this.awaitMessage(channel, user, id);
     const number = parseInt(message.content);
     if (typeof number !== "number" || isNaN(number)) {
       await channel.send(
         `${Utils.Emojis.XMARK} Invalid number, please try again.`
       );
-      return await this.awaitMessageWinnersCount(channel, user);
+      return await this.awaitMessageWinnersCount(channel, user, id);
     }
     if (number <= 0) {
       await channel.send(
         `${Utils.Emojis.XMARK} You need to select at least 1 winner, please try again.`
       );
-      return await this.awaitMessageWinnersCount(channel, user);
+      return await this.awaitMessageWinnersCount(channel, user, id);
     }
     if (number > 10) {
       await channel.send(
         `${Utils.Emojis.XMARK} You need to select at most 10 winner, please try again.`
       );
-      return await this.awaitMessageWinnersCount(channel, user);
+      return await this.awaitMessageWinnersCount(channel, user, id);
     }
     return number;
   }
 
   private async awaitMessageDuration(
     channel: TextBasedGuildChannel,
-    user: Discord.User
+    user: Discord.User,
+    id: string
   ): Promise<number> {
-    const message = await this.awaitMessage(channel, user);
+    const message = await this.awaitMessage(channel, user, id);
     const targetDuration = ms(message.content);
     if (!targetDuration) {
       await channel.send(
         `${Utils.Emojis.XMARK} Invalid duration, please try again. (example: \`3d\`)`
       );
-      return await this.awaitMessageDuration(channel, user);
+      return await this.awaitMessageDuration(channel, user, id);
     }
     if (targetDuration <= 1000 * 60) {
       await channel.send(
         `${Utils.Emojis.XMARK} The duration needs to be at least 1 minute, please try again.`
       );
-      return await this.awaitMessageDuration(channel, user);
+      return await this.awaitMessageDuration(channel, user, id);
     }
     if (targetDuration > 1000 * 60 * 60 * 24 * 30) {
       await channel.send(
         `${Utils.Emojis.XMARK} The duration can be at most 30 days, please try again.`
       );
-      return await this.awaitMessageDuration(channel, user);
+      return await this.awaitMessageDuration(channel, user, id);
     }
     return targetDuration;
   }
 
   private async awaitMessageChannel(
     channel: TextBasedGuildChannel,
-    user: Discord.User
+    user: Discord.User,
+    id: string
   ): Promise<TextBasedGuildChannel> {
-    const message = await this.awaitMessage(channel, user);
+    const message = await this.awaitMessage(channel, user, id);
     try {
       const requiredPermissions = new Discord.Permissions([
         "VIEW_CHANNEL",
@@ -401,13 +421,14 @@ export default class GiveawayCommand extends Command {
         await channel.send(
           `${Utils.Emojis.XMARK} Unknown error, please try again.`
         );
-      return await this.awaitMessageChannel(channel, user);
+      return await this.awaitMessageChannel(channel, user, id);
     }
   }
 
   private async awaitMessage(
     channel: Discord.TextBasedChannelFields,
-    user: Discord.User
+    user: Discord.User,
+    id: string
   ) {
     try {
       const collected = await channel.awaitMessages(
@@ -418,6 +439,7 @@ export default class GiveawayCommand extends Command {
           errors: ["time"]
         }
       );
+      if (!this.instance.commandManager.isRunning(id)) throw new VoidError();
       const message = collected.find(() => true);
       if (message?.content.toLowerCase() === "cancel") {
         await channel.send(

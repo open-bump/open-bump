@@ -777,7 +777,7 @@ export default class Utils {
   }
 
   public static getInviteLink() {
-    return `https://discordapp.com/api/oauth2/authorize?client_id=${OpenBump.instance.client.user?.id}&permissions=379969&scope=bot`;
+    return `https://discordapp.com/api/oauth2/authorize?client_id=${OpenBump.instance.client.user?.id}&permissions=388289&scope=bot`;
   }
 
   public static getShardId(guildId: string, shards: number) {
@@ -1094,6 +1094,8 @@ export default class Utils {
     XMARK: "<:xmark:621063205854380086>",
     UNSET: "<:neutral:621063802028294155>",
     NEUTRAL: "<:neutral:621063205854380057>",
+    TICKYES: "<:OA_tickYes:721811714672296069>",
+    TICKNO: "<:OA_tickNo:721811714643066901>",
     IMPORTANTNOTICE: "⚠️",
     FEATURED: "<:FeaturedServer:622845429045919745>",
     UNITEDSERVER: "<:UnitedServer:622845429435858955>",
@@ -1114,7 +1116,14 @@ export default class Utils {
     DOWNVOTE: "<:OA_downvote:718473871413608548>",
     LABEL: "🏷️",
     SCROLL: "📜",
-    getRaw: (emoji: string) => {
+    getRaw: (emoji: string | Discord.GuildEmoji | Discord.ReactionEmoji) => {
+      if (
+        emoji instanceof Discord.GuildEmoji ||
+        emoji instanceof Discord.ReactionEmoji
+      ) {
+        return emoji.id || emoji.name;
+      }
+
       const regex = /<a?:.{0,}:([0-9]{10,20})>/gim;
       let m;
 
