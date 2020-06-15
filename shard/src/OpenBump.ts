@@ -32,7 +32,7 @@ export default class OpenBump {
       ws: {
         intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"]
       },
-      partials: ["USER", "GUILD_MEMBER", "MESSAGE", "REACTION"]
+      partials: ["USER", "CHANNEL", "GUILD_MEMBER", "MESSAGE", "REACTION"]
     });
 
     this.commandManager = new CommandManager(this);

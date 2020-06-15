@@ -21,7 +21,7 @@ export default class EventManager {
     this.registerEvent(new ReadyEvent(this.instance));
   }
 
-  private registerEvent(event: Event) {
+  private registerEvent(event: Event<any>) {
     this.instance.client.on(event.name, event.run.bind(event));
   }
 }

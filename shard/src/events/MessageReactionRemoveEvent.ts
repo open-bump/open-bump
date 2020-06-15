@@ -1,10 +1,15 @@
-import Discord, { ClientEvents } from "discord.js";
+import Discord from "discord.js";
 import Event from "../Event";
 import Giveaways from "../Giveaways";
+import OpenBump from "../OpenBump";
 import Utils from "../Utils";
 
-export default class MessageReactionRemoveEvent extends Event {
-  public name: keyof ClientEvents = "messageReactionRemove";
+export default class MessageReactionRemoveEvent extends Event<
+  "messageReactionRemove"
+> {
+  constructor(instance: OpenBump) {
+    super(instance, "messageReactionRemove");
+  }
 
   public async run(
     reaction: Discord.MessageReaction,
