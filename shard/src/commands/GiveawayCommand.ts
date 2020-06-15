@@ -74,31 +74,33 @@ export default class GiveawayCommand extends Command {
           id
         );
 
-        await channel.send(
-          `${Utils.Emojis.SLINK} Do participants need to be in a Discord server?\n` +
-            `\n` +
-            `**YES** - Reply with a permanent invite link to the server(s); if multiple, separate each with a space.\n` +
-            `\n` +
-            `**NO** - Reply with \`no\`.`
-        );
-        const targetGuildRequirements = await this.awaitMessageGuildRequirements(
-          channel,
-          author,
-          id
-        );
+        // await channel.send(
+        //   `${Utils.Emojis.SLINK} Do participants need to be in a Discord server?\n` +
+        //     `\n` +
+        //     `**YES** - Reply with a permanent invite link to the server(s); if multiple, separate each with a space.\n` +
+        //     `\n` +
+        //     `**NO** - Reply with \`no\`.`
+        // );
+        // const targetGuildRequirements = await this.awaitMessageGuildRequirements(
+        //   channel,
+        //   author,
+        //   id
+        // );
+        const targetGuildRequirements: Array<any> = [];
 
-        await channel.send(
-          `${Utils.Emojis.SCROLL} Do participants need to have a specific role on this server?\n` +
-            `\n` +
-            `**YES** - Reply with the IDs of the roles; if multiple, separate each with a space.\n` +
-            `\n` +
-            `**NO** - Reply with \`no\`.`
-        );
-        const targetRoleRequirements = await this.awaitMessageRoleRequirements(
-          channel,
-          author,
-          id
-        );
+        // await channel.send(
+        //   `${Utils.Emojis.SCROLL} Do participants need to have a specific role on this server?\n` +
+        //     `\n` +
+        //     `**YES** - Reply with the IDs of the roles; if multiple, separate each with a space.\n` +
+        //     `\n` +
+        //     `**NO** - Reply with \`no\`.`
+        // );
+        // const targetRoleRequirements = await this.awaitMessageRoleRequirements(
+        //   channel,
+        //   author,
+        //   id
+        // );
+        const targetRoleRequirements: Array<any> = [];
 
         await channel.send(
           `${Utils.Emojis.LABEL} What is the prize of the giveaway?`

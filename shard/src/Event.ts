@@ -1,10 +1,8 @@
-import OpenBump from "./OpenBump";
 import { ClientEvents } from "discord.js";
+import OpenBump from "./OpenBump";
 
-export default abstract class Event {
-  public abstract name: keyof ClientEvents;
+export default abstract class Event<T extends keyof ClientEvents> {
+  constructor(protected instance: OpenBump, public name: T) {}
 
-  constructor(protected instance: OpenBump) {}
-
-  public abstract async run(...args: any): Promise<void>;
+  public abstract async run(...args: ClientEvents[T]): Promise<void>;
 }
