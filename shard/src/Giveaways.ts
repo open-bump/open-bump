@@ -235,6 +235,13 @@ export default class Giveaways {
   }
 
   public static async startGiveaways() {
+    this.startEndGiveawayLoop();
+    this.startEditMessageLoop();
+  }
+
+  private static async startEndGiveawayLoop() {}
+
+  private static async startEditMessageLoop() {
     let wait = (5 / 5) * OpenBump.instance.networkManager.total * 2;
     let lastRefresh = 0;
     while (true) {
