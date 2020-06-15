@@ -132,6 +132,79 @@ const migration: MigrationJS = {
         }
       );
 
+      /* Create "GiveawayParticipant" Table */
+      await queryInterface.createTable(
+        "GiveawayParticipant",
+        {
+          id: {
+            primaryKey: true,
+            defaultValue: datatypes.UUIDV4,
+            allowNull: false,
+            type: datatypes.UUID
+          },
+          giveawayId: {
+            allowNull: false,
+            type: datatypes.STRING(20)
+          },
+          userId: {
+            allowNull: false,
+            type: datatypes.STRING(20)
+          },
+          createdAt: {
+            defaultValue: connection.Sequelize.literal("CURRENT_TIMESTAMP"),
+            allowNull: false,
+            type: datatypes.DATE
+          },
+          updatedAt: {
+            defaultValue: connection.Sequelize.literal("CURRENT_TIMESTAMP"),
+            allowNull: false,
+            type: datatypes.DATE
+          }
+        },
+        { transaction, charset: "utf8mb4" }
+      );
+
+      // Create Unique Constraint
+      await queryInterface.addConstraint(
+        "GiveawayParticipant",
+        ["giveawayId", "userId"],
+        {
+          type: "unique",
+          name: "GiveawayParticipant_giveawayId_userId_uk",
+          transaction
+        }
+      );
+
+      // Add Foreign Key From "GiveawayParticipant" To "Giveaway"
+      await queryInterface.addConstraint(
+        "GiveawayParticipant",
+        ["giveawayId"],
+        {
+          type: "foreign key",
+          name: "GiveawayParticipant_giveawayId_Giveaway_fk",
+          references: {
+            table: "Giveaway",
+            field: "id"
+          },
+          onUpdate: "CASCADE",
+          onDelete: "CASCADE",
+          transaction
+        }
+      );
+
+      // Add Foreign Key From "GiveawayParticipant" To "Giveaway"
+      await queryInterface.addConstraint("GiveawayParticipant", ["userId"], {
+        type: "foreign key",
+        name: "GiveawayParticipant_userId_Giveaway_fk",
+        references: {
+          table: "User",
+          field: "id"
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+        transaction
+      });
+
       /* Commit Transaction */
       await transaction.commit();
     } catch (error) {
