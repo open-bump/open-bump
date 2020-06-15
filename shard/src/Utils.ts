@@ -707,6 +707,14 @@ export default class Utils {
     return this.isObject(item) && !Array.isArray(item);
   }
 
+  public static getMessageLink(
+    guild: string,
+    channel: string,
+    message: string
+  ) {
+    return `https://discord.com/channels/${guild}/${channel}/${message}`;
+  }
+
   public static guildMessageToRaw(message: GuildMessage): RawGuildMessage {
     return {
       id: message.id,
@@ -1040,7 +1048,8 @@ export default class Utils {
     RED: 0xff0000,
     GREEN: 0x3dd42c,
     ORANGE: 0xff9900,
-    OPENBUMP: 0x27ad60
+    OPENBUMP: 0x27ad60,
+    ENDED: 0x000001
   };
 
   public static BumpProvider = {
