@@ -458,7 +458,8 @@ export default class Giveaways {
           }!** ${Utils.Emojis.TADA}\n` +
             `Congratulations ${winners
               .map((winner) => `<@${winner.userId}>`)
-              .join(" ")}! You won the **${giveaway.prize}**.`
+              .join(" ")}! You won the **${giveaway.prize}**.`,
+          { allowedMentions: { users: winners.map((winner) => winner.userId) } }
         );
       } catch (error) {
         const embed = {
@@ -594,7 +595,7 @@ export default class Giveaways {
               "The guild is not in the database."
             );
           description.push(
-            `Must join: **[${requirementGuildDatabase?.name}](${requirement.invite})**`
+            `Must join: **[${requirementGuildDatabase?.name}](https://discord.gg/${requirement.invite})**`
           );
         } else if (requirement.type === "ROLE") {
           const role = guild.roles.cache.get(String(requirement.target));

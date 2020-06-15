@@ -444,7 +444,7 @@ class Bump {
   }
 
   public static getBumpChannelIssues(
-    channel: Discord.TextChannel,
+    channel: TextBasedGuildChannel,
     guildDatabase: Guild
   ) {
     const { guild } = channel;
