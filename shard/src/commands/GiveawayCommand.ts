@@ -15,7 +15,7 @@ import Utils, {
 export default class GiveawayCommand extends Command {
   public name = "giveaway";
   public aliases = ["gw", "giveaways"];
-  public syntax = "giveaway <start|cancel <messageId>>";
+  public syntax = "giveaway <start|cancel <messageId>|reroll <messageId>>";
   public description = "Create and manage giveaways";
   public interactive = true;
 
@@ -205,6 +205,14 @@ export default class GiveawayCommand extends Command {
           description: `The giveaway in the channel <#${giveaway.channel}> has been cancelled.`
         };
         await channel.send({ embed });
+      } else if (args[0] === "reroll") {
+        const giveaway = await Giveaways.reroll(args[1], channel);
+        // const embed = {
+        //   color: Utils.Colors.GREEN,
+        //   title: `${Utils.Emojis.CHECK} Giveaway Cancelled`,
+        //   description: `The giveaway in the channel <#${giveaway.channel}> has been cancelled.`
+        // };
+        // await channel.send({ embed });
       } else return void (await this.sendSyntax(message, guildDatabase));
     } else return void (await this.sendSyntax(message, guildDatabase));
   }

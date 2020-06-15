@@ -4,8 +4,10 @@ import fetch from "node-fetch";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
 import Giveaway from "./models/Giveaway";
+import GiveawayParticipant from "./models/GiveawayParticipant";
 import GiveawayRequirement from "./models/GiveawayRequirement";
 import Guild from "./models/Guild";
+import User from "./models/User";
 import OpenBump from "./OpenBump";
 import Utils, { TextBasedGuildChannel, TitleError } from "./Utils";
 
@@ -67,7 +69,7 @@ export default class Giveaways {
 
     const embed = await this.giveawayToEmbed(giveaway);
 
-    await message.edit("", { embed });
+    await message.edit(this.title(), { embed });
     await message.react(Utils.Emojis.getRaw(Utils.Emojis.TADA));
 
     return giveaway;
@@ -138,7 +140,7 @@ export default class Giveaways {
               fullfilled ? Utils.Emojis.TICKYES : Utils.Emojis.TICKNO
             } Be a member of **${
               guildDatabase?.name
-            }** **[[Invite]](https://discord.gg/${requirement.invite})**`
+            }** **[[Invite](https://discord.gg/${requirement.invite})**]`
           );
         } else if (requirement.type === "ROLE") {
           const role = guild.roles.cache.get(String(requirement.target));
@@ -153,7 +155,7 @@ export default class Giveaways {
               fullfilled ? Utils.Emojis.TICKYES : Utils.Emojis.TICKNO
             } Vote for **${
               OpenBump.instance.client.user?.username
-            }** **[[Vote]](${Utils.Lists.getLinkTopGG()})**`
+            }** **[[Vote](${Utils.Lists.getLinkTopGG()})]**`
           );
         }
       }
@@ -177,8 +179,21 @@ export default class Giveaways {
       if (reaction) await reaction.users.remove(user.id).catch(() => void 0);
       await user.send({ embed }).catch(() => void 0);
     } else {
-      await user.send("TODO: Success"); // TODO
+      const [userDatabase] = await User.findOrCreate({
+        where: { id: user.id },
+        defaults: { id: user.id }
+      });
+      await GiveawayParticipant.create({
+        userId: userDatabase.id,
+        giveawayId: giveaway.id
+      }).catch(() => {});
     }
+  }
+
+  public static async leave(user: string, giveaway: string) {
+    return await GiveawayParticipant.destroy({
+      where: { userId: user, giveawayId: giveaway }
+    });
   }
 
   private static async fetchAPIMember(
@@ -229,19 +244,255 @@ export default class Giveaways {
       throw new TitleError("Error", "Could not find giveaway message.");
     giveaway.cancelledBy = authorId;
     const embed = await this.giveawayToEmbed(giveaway);
-    await message.edit({ embed });
+    await message.edit(this.title(), { embed });
     await giveaway.save();
+    return giveaway;
+  }
+
+  public static async reroll(
+    giveaway: string | Giveaway,
+    channel: TextBasedGuildChannel
+  ): Promise<Giveaway> {
+    if (typeof giveaway === "string")
+      giveaway = (await Giveaway.findOne({
+        where: { id: giveaway }
+      })) as Giveaway;
+    if (!giveaway) throw new TitleError(`Error`, `Could not find giveaway.`);
+    if (giveaway.guildId !== channel.guild.id)
+      throw new TitleError(
+        "Error",
+        "The specified giveaway is not on this server."
+      );
+
+    await this.endGiveaway(giveaway, channel);
+
     return giveaway;
   }
 
   public static async startGiveaways() {
     this.startEndGiveawayLoop();
-    this.startEditMessageLoop();
+    this.editMessageLoop();
   }
 
-  private static async startEndGiveawayLoop() {}
+  private static async startEndGiveawayLoop() {
+    await this.endGiveawayLoop().catch(() => {});
+    setTimeout(() => {
+      this.endGiveawayLoop.bind(this);
+      this.startEndGiveawayLoop();
+    }, 1000 * 10);
+  }
 
-  private static async startEditMessageLoop() {
+  private static async endGiveawayLoop() {
+    // SELECT * FROM `Giveaway` WHERE `createdAt` <= DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL ((`time`/1000)*-1) SECOND)
+    const giveaways = await Giveaway.findAll({
+      where: {
+        [Op.and]: [
+          {
+            endedAt: null,
+            cancelledBy: null,
+            createdAt: {
+              [Op.lte]: Sequelize.fn(
+                `DATE_ADD`,
+                Sequelize.fn(`CURRENT_TIMESTAMP`),
+                Sequelize.literal("INTERVAL ((`time`/1000)*-1) SECOND")
+              )
+            }
+          },
+          Sequelize.literal(
+            `(\`guildId\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
+          )
+        ]
+      }
+    });
+    for (const giveaway of giveaways) {
+      await this.endGiveaway(giveaway).catch(() => {});
+    }
+  }
+
+  private static async endGiveaway(
+    giveaway: Giveaway,
+    reroll?: TextBasedGuildChannel
+  ) {
+    const guild = OpenBump.instance.client.guilds.cache.get(giveaway.guildId);
+    const winners = await GiveawayParticipant.findAll({
+      where: { giveawayId: giveaway.id },
+      order: [Sequelize.fn(`RAND`)],
+      limit: reroll ? 1 : giveaway.winnersCount
+    });
+    const channel = guild?.channels.cache.get(giveaway.channel) as
+      | TextBasedGuildChannel
+      | undefined;
+    const hostedBy =
+      (await guild?.members.fetch(giveaway.createdBy).catch(() => {})) ||
+      undefined;
+    const message = await channel?.messages.fetch(giveaway.id);
+    if (!message) {
+      giveaway.cancelledBy = String(OpenBump.instance.client.user?.id);
+      await giveaway.save();
+      const embed: Discord.MessageEmbedOptions = {
+        color: Utils.Colors.RED,
+        title: `${Utils.Emojis.XMARK} Error during giveaway`,
+        description:
+          `The giveaway in the server **${
+            guild?.name
+          }** in the channel ${channel} could not be ${
+            reroll ? "rerolled" : "finished"
+          }. ` + `It looks like the message of the giveaway has been deleted.`,
+        footer: reroll
+          ? void 0
+          : {
+              text: `ID: ${giveaway.id}`
+            }
+      };
+      return void (await (reroll || hostedBy)?.send({ embed }).catch(() => {}));
+    }
+    if (winners.length === 0) {
+      giveaway.endedAt = new Date();
+      await giveaway.save();
+      const hostedByEmbed: Discord.MessageEmbedOptions = {
+        color: Utils.Colors.ORANGE,
+        title: `${Utils.Emojis.IMPORTANTNOTICE} Giveaway ${
+          reroll ? "rerolled" : "ended"
+        }`,
+        description:
+          `The giveaway in the server **${guild?.name}** has ${
+            reroll ? "been rerolled" : "ended"
+          } but no winner could be picked. ` +
+          `**[[Message Link](${Utils.getMessageLink(
+            giveaway.guildId,
+            giveaway.channel,
+            giveaway.id
+          )})]**`,
+        footer: reroll
+          ? void 0
+          : {
+              text: `ID: ${giveaway.id}`
+            }
+      };
+      const giveawayEmbed: Discord.MessageEmbedOptions = {
+        color: Utils.Colors.ENDED,
+        title: `Giveaway ended`,
+        description: `No winners could be picked.`,
+        footer: {
+          text: `Prize: ${giveaway.prize}`
+        }
+      };
+      try {
+        await message.edit(this.title(), { embed: giveawayEmbed });
+      } catch (error) {
+        const embed = {
+          colors: Utils.Colors.RED,
+          title: `${Utils.Emojis.XMARK} Error during giveaway`,
+          description:
+            `The giveaway in the server **${
+              guild?.name
+            }** in the channel ${channel} could not be ${
+              reroll ? "rerolled" : "finished"
+            }. ` +
+            `It looks like the bot was not able to edit the giveaway message.`,
+          footer: {
+            text: `ID: ${giveaway.id}`
+          }
+        };
+        return void (await (reroll || hostedBy)
+          ?.send({ embed })
+          .catch(() => {}));
+      }
+      return void (await (reroll || hostedBy)
+        ?.send({ embed: hostedByEmbed })
+        .catch(() => {}));
+    } else {
+      giveaway.endedAt = new Date();
+      await giveaway.save();
+      const hostedByEmbed: Discord.MessageEmbedOptions = {
+        color: Utils.Colors.GREEN,
+        title: `${Utils.Emojis.CHECK} Giveaway ${
+          reroll ? "rerolled" : "ended"
+        }`,
+        description:
+          `The giveaway in the server **${guild?.name}** has ${
+            reroll ? "been rerolled" : "ended"
+          } and ${winners.length} ${
+            winners.length === 1 ? `winner has` : `winners have`
+          } been drawn.\n` +
+          `\n` +
+          winners.map((winner) => `- <@${winner.userId}>`).join(`\n`) +
+          `\n` +
+          `\n` +
+          `**[[Message Link](${Utils.getMessageLink(
+            giveaway.guildId,
+            giveaway.channel,
+            giveaway.id
+          )})]**`,
+        footer: {
+          text: `ID: ${giveaway.id}`
+        }
+      };
+      const winnerEmbed: Discord.MessageEmbedOptions = {
+        color: Utils.Colors.GREEN,
+        title: `${Utils.Emojis.TADA} You won a giveaway!`,
+        description:
+          `Congratulations! You won the **${giveaway.prize}** in the server **${guild?.name}**.\n` +
+          `\n` +
+          `**[[Message Link](${Utils.getMessageLink(
+            giveaway.guildId,
+            giveaway.channel,
+            giveaway.id
+          )})]**`
+      };
+      const giveawayEmbed: Discord.MessageEmbedOptions = {
+        color: Utils.Colors.ENDED,
+        title: `Giveaway ended`,
+        description: `**Winners:** ${winners
+          .map((winner) => `<@${winner.userId}>`)
+          .join(" ")}`,
+        footer: {
+          text: `Prize: ${giveaway.prize}`
+        }
+      };
+      try {
+        await message.edit(this.title(), { embed: giveawayEmbed });
+        await channel?.send(
+          `${Utils.Emojis.TADA} **Giveaway ${
+            reroll ? "rerolled" : "ended"
+          }!** ${Utils.Emojis.TADA}\n` +
+            `Congratulations ${winners
+              .map((winner) => `<@${winner.userId}>`)
+              .join(" ")}! You won the **${giveaway.prize}**.`
+        );
+      } catch (error) {
+        const embed = {
+          colors: Utils.Colors.RED,
+          title: `${Utils.Emojis.XMARK} Error during giveaway`,
+          description:
+            `The giveaway in the server **${
+              guild?.name
+            }** in the channel ${channel} could not be ${
+              reroll ? "rerolled" : "finished"
+            }. ` +
+            `It looks like the bot was not able to edit the giveaway message or post the winner messages.`,
+          footer: {
+            text: `ID: ${giveaway.id}`
+          }
+        };
+        return void (await (reroll || hostedBy)
+          ?.send({ embed })
+          .catch(() => {}));
+      }
+      await (reroll || hostedBy)
+        ?.send({ embed: hostedByEmbed })
+        .catch(() => {});
+      for (const winner of winners) {
+        const user =
+          (await OpenBump.instance.client.users
+            .fetch(winner.userId)
+            .catch(() => {})) || undefined;
+        await user?.send({ embed: winnerEmbed }).catch(() => {});
+      }
+    }
+  }
+
+  private static async editMessageLoop() {
     let wait = (5 / 5) * OpenBump.instance.networkManager.total * 2;
     let lastRefresh = 0;
     while (true) {
@@ -299,8 +550,12 @@ export default class Giveaways {
           continue;
       }
 
-      await message.edit({ embed }).catch(() => {});
+      await message.edit(this.title(), { embed }).catch(() => {});
     }
+  }
+
+  private static title() {
+    return `${Utils.Emojis.TADA} **GIVEAWAY** ${Utils.Emojis.TADA}`;
   }
 
   public static async giveawayToEmbed(
