@@ -5,10 +5,11 @@ import {
   compare as semVerCompare,
   valid as semVerValid
 } from "semver";
+import semverRegex from "semver-regex";
+import { Op } from "sequelize";
 import { DataType, Sequelize } from "sequelize-typescript";
 import Utils from "../../Utils";
 import { MigrationAdapter } from "./MigrationAdapter";
-import { Op } from "sequelize";
 
 export interface Migration {
   version: string;
@@ -16,7 +17,7 @@ export interface Migration {
   down: string;
 }
 
-export interface MigrationJS {
+export interface Migratable {
   version: string;
   up: (
     connection: Sequelize,
@@ -33,7 +34,6 @@ export interface MigrationJS {
 export interface MigrationOptions {
   migrations: {
     path: string;
-    pattern?: RegExp;
     sort?: (a: string, b: string) => number;
   };
 }
@@ -42,7 +42,6 @@ export class Migrator {
   private static defaultMigrationOptions: MigrationOptions = {
     migrations: {
       path: (undefined as unknown) as string,
-      pattern: /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?.(js|ts)$/,
       sort: (a: string, b: string) =>
         semVerCompare(a.replace(/.(js|ts)$/, ""), b.replace(/.(js|ts)$/, ""))
     }
@@ -104,9 +103,7 @@ export class Migrator {
       ...new Set(
         allfiles
           .filter((file) => {
-            return (
-              file.isFile() && this.options.migrations.pattern?.test(file.name)
-            );
+            return file.isFile() && semverRegex().test(file.name);
           })
           .map((file) => file.name.replace(/.(js|ts)$/, ""))
       )
@@ -119,7 +116,7 @@ export class Migrator {
         const mod = require(filePath);
         return mod?.default || mod;
       })
-      .filter((dataRow: MigrationJS) => {
+      .filter((dataRow: Migratable) => {
         if (!semVerValid(dataRow.version)) {
           console.log(
             `Migration "${dataRow.version}" is not a valid semVer 2.0.0.`
