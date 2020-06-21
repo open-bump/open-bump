@@ -103,9 +103,12 @@ export class Migrator {
       ...new Set(
         allfiles
           .filter((file) => {
-            return file.isFile() && semverRegex().test(file.name);
+            return (
+              file.isFile() &&
+              semverRegex().test(file.name.replace(/\.(js|ts)$/, ""))
+            );
           })
-          .map((file) => file.name.replace(/.(js|ts)$/, ""))
+          .map((file) => file.name.replace(/\.(js|ts)$/, ""))
       )
     ]
       .sort(this.options.migrations.sort)
