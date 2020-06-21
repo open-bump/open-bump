@@ -4,6 +4,7 @@ import ms from "ms";
 import Command from "../Command";
 import Giveaways from "../Giveaways";
 import Guild from "../models/Guild";
+import User from "../models/User";
 import Utils, {
   GuildMessage,
   NotFoundError,
@@ -17,11 +18,12 @@ export default class GiveawayCommand extends Command {
   public aliases = ["gw", "giveaways"];
   public syntax = "giveaway <start|cancel <messageId>|reroll <messageId>>";
   public description = "Create and manage giveaways";
-  public interactive = true;
+  public interactive = "The interactive setup has been cancelled!";
 
   public async run(
     { message, arguments: args }: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild,
+    _userDatabase: User,
     id: string
   ) {
     const { channel, member, author, guild } = message;

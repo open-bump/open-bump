@@ -1,5 +1,6 @@
 import { SuccessfulParsedMessage } from "discord-command-parser";
 import Discord, { ClientUser } from "discord.js";
+import moment from "moment";
 import ms from "ms";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
@@ -16,10 +17,14 @@ export default class BumpCommand extends Command {
   public name = "bump";
   public syntax = "bump";
   public description = "Bump your server";
+  public interactive = "Bump captcha has been cancelled!";
 
   public async run(
     { message }: SuccessfulParsedMessage<GuildMessage>,
-    guildDatabase: Guild
+    guildDatabase: Guild,
+    userDatabase: User,
+    id: string,
+    unhookInteraction: () => void
   ) {
     const { channel, guild, author } = message;
 
@@ -27,6 +32,29 @@ export default class BumpCommand extends Command {
       !guildDatabase.getFeatures().includes("AUTOBUMP") ||
       !guildDatabase.autobump
     ) {
+      if (
+        moment(userDatabase.lastBumpedAt || 0).isBefore(
+          moment().subtract(2, "d")
+        )
+      )
+        userDatabase.bumpsSinceCaptcha = 0;
+      userDatabase.lastBumpedAt = new Date();
+      if (userDatabase.bumpsSinceCaptcha >= 5 || userDatabase.requireCaptcha) {
+        // Captcha required
+        userDatabase.requireCaptcha = true;
+        if (userDatabase.changed()) await userDatabase.save();
+        console.log("require captcha");
+        await Utils.UBPS.captcha(channel, author, id);
+        userDatabase.requireCaptcha = false;
+        userDatabase.bumpsSinceCaptcha = 1;
+        if (userDatabase.changed()) await userDatabase.save();
+      } else {
+        // No captcha required
+        userDatabase.bumpsSinceCaptcha++;
+        if (userDatabase.changed()) await userDatabase.save();
+      }
+      unhookInteraction();
+
       const votingEnabled = config.lists.topgg.enabled;
       const voted = await Utils.Lists.hasVotedTopGG(author.id);
       const voteCooldown = guildDatabase.getCooldown(true, true);
