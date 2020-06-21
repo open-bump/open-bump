@@ -1,4 +1,5 @@
 import Color from "color";
+import crypto from "crypto";
 import DBL from "dblapi.js";
 import Discord, {
   MessageEmbedOptions,
@@ -13,6 +14,7 @@ import ntc from "ntcjs";
 import path from "path";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
+import * as uuid from "uuid";
 import config from "./config";
 import Guild from "./models/Guild";
 import Reminder from "./models/Reminder";
@@ -658,10 +660,110 @@ class Lists {
   }
 }
 
+class UBPS {
+  public static getText(random: string) {
+    const secret = config.captchas.secret;
+    const alphabet = config.captchas.alphabet;
+    const letters = config.captchas.letters;
+    if (letters < 1 || letters > 16)
+      throw new Error(
+        `Character count of ${letters} is outside the range of 1-16`
+      );
+    let input = `${secret}${random}`;
+    if (alphabet !== "abcdefghijklmnopqrstuvwxyz" || letters !== 6) {
+      input += `:${alphabet}:${letters}`;
+    }
+
+    const bytes = crypto
+      .createHash("md5")
+      .update(input)
+      .digest("hex")
+      .split("")
+      .reduce((value, current, index) => {
+        value.push((index % 2 !== 0 ? value.pop() : "") + current);
+        return value;
+      }, [] as Array<string>)
+      .slice(0, letters);
+
+    let text = "";
+
+    for (const byte of bytes) {
+      text += alphabet[parseInt(byte, 16) % alphabet.length];
+    }
+
+    return text;
+  }
+
+  public static async captcha(
+    channel: TextBasedGuildChannel,
+    user: Discord.User,
+    id?: string
+  ) {
+    const random = uuid.v4();
+    const color = Utils.Colors.getRawString(Utils.Colors.OPENBUMP);
+    const url = `https://image.captchas.net?client=${config.captchas.username}&random=${random}&alphabet=${config.captchas.alphabet}&letters=${config.captchas.letters}&color=${color}`;
+    const text = this.getText(random);
+
+    const embed: Discord.MessageEmbedOptions = {
+      color: Utils.Colors.GREEN,
+      title: `${Utils.Emojis.ROBOT} Captcha required`,
+      description:
+        `Please reply with the text in the image below. ` +
+        `Only send the exact characters, do not add a bot prefix or command name.`,
+      image: {
+        url
+      }
+    };
+    const message = await channel.send({ embed });
+    try {
+      const collected = await channel.awaitMessages(
+        (message: GuildMessage) => message.author.id === user.id,
+        {
+          max: 1,
+          time: 30000,
+          errors: ["time"]
+        }
+      );
+      if (id && !OpenBump.instance.commandManager.isRunning(id))
+        throw new VoidError();
+      const reply = collected.find(() => true);
+      if (reply?.content.toLocaleLowerCase() === text.toLocaleLowerCase()) {
+        const embed = {
+          color: Utils.Colors.GREEN,
+          title: `${Utils.Emojis.CHECK} Captcha Solved`,
+          description: `You have successfully solved the captcha.`
+        };
+        await message.edit({ embed });
+        return message;
+      } else {
+        const embed = {
+          color: Utils.Colors.RED,
+          title: `${Utils.Emojis.XMARK} Captcha Error`,
+          description: `Your response was not correct. Please use the command again to retry.`
+        };
+        await message.edit({ embed });
+        throw new VoidError();
+      }
+    } catch (error) {
+      if (error instanceof Discord.Collection && !error.size) {
+        const embed = {
+          color: Utils.Colors.RED,
+          title: `${Utils.Emojis.XMARK} Captcha Timeout`,
+          description: `You took too long to solve the captcha. Please use the command again to retry.`
+        };
+        await message.edit({ embed });
+        throw new VoidError();
+      }
+      throw new VoidError();
+    }
+  }
+}
+
 export default class Utils {
   public static Notifications = Notifications;
   public static Bump = Bump;
   public static Lists = Lists;
+  public static UBPS = UBPS;
 
   public static get inviteRegex() {
     return /discord(?:(?:app)?\.com\/invite|\.gg(?:\/invite)?)\/([\w-]{2,255})/gim;
@@ -780,6 +882,20 @@ export default class Utils {
       );
       throw error;
     }
+  }
+
+  public static async ensureUser(user: Discord.User): Promise<User> {
+    if (!OpenBump.instance.ready) {
+      console.log("Delaying user ensuring until client is ready...");
+      while (!OpenBump.instance.ready) {}
+      console.log("Continuing user ensuring, client is ready now.");
+    }
+
+    const [userDatabase] = await User.findOrCreate({
+      where: { id: user.id },
+      defaults: { id: user.id }
+    });
+    return userDatabase;
   }
 
   public static getInviteLink() {
@@ -1047,7 +1163,12 @@ export default class Utils {
     GREEN: 0x3dd42c,
     ORANGE: 0xff9900,
     OPENBUMP: 0x27ad60,
-    ENDED: 0x000001
+    ENDED: 0x000001,
+    getRawString: (color: number) => {
+      let string = color.toString(16);
+      while (string.length < 6) string = "0" + string;
+      return string;
+    }
   };
 
   public static BumpProvider = {
@@ -1082,6 +1203,7 @@ export default class Utils {
     ADD: "\\✔️",
     REMOVE: "\\➖",
     REMINDER: "⏰",
+    ROBOT: "🤖",
     THUMBSUP: "<:thumbsup:631606538598875174>",
     THUMBSDOWN: "<:thumbsdown:631606537827123221>",
     OWNER: "<:owner:547102770696814592>",

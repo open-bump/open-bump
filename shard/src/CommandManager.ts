@@ -125,7 +125,16 @@ export default class CommandManager {
         return void (await channel.send({ embed }));
       }
 
+      const userDatabase = await Utils.ensureUser(message.author);
+
       const id = uuid.v4();
+      const unhookInteraction = () => {
+        const index = this.running.indexOf(id);
+        if (index > -1) {
+          this.running.splice(index, 1);
+          this.interactive[message.author.id] = void 0;
+        }
+      };
       try {
         const interactive = this.interactive[message.author.id];
         if (interactive) {
@@ -140,9 +149,7 @@ export default class CommandManager {
           this.interactive[message.author.id] = async () => {
             const index = this.running.indexOf(id);
             if (index > -1) this.running.splice(index, 1);
-            await channel.send(
-              `${Utils.Emojis.XMARK} The interactive setup has been cancelled!`
-            );
+            await channel.send(`${Utils.Emojis.XMARK} ${command.interactive}`);
           };
         }
         if (guildDatabase.sandbox)
@@ -153,7 +160,13 @@ export default class CommandManager {
               )}sandbox toggle\` to disable.`
           );
 
-        await command.run(parsed, guildDatabase, id);
+        await command.run(
+          parsed,
+          guildDatabase,
+          userDatabase,
+          id,
+          unhookInteraction
+        );
       } catch (error) {
         if (error instanceof VoidError) return;
         const embed = Utils.errorToEmbed(error);
@@ -161,9 +174,7 @@ export default class CommandManager {
         if (!(error instanceof EmbedError))
           console.error(`Catched error while command execution!`, error);
       } finally {
-        const index = this.running.indexOf(id);
-        if (index > -1) this.running.splice(index, 1);
-        if (command.interactive) this.interactive[message.author.id] = void 0;
+        unhookInteraction();
       }
     }
   }

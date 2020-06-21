@@ -62,6 +62,12 @@ interface IConfig extends config.IConfig {
       token: string;
     };
   };
+  captchas: {
+    username: string;
+    secret: string;
+    alphabet: string;
+    letters: number;
+  };
 }
 
 export default config as IConfig;
