@@ -50,10 +50,13 @@ class Notifications {
 }
 
 export type GuildMessage = Discord.Message & {
-  channel: Discord.GuildChannel & Discord.TextBasedChannelFields;
+  channel: TextBasedGuildChannel;
   member: Discord.GuildMember;
   guild: Discord.Guild;
 };
+
+export type TextBasedGuildChannel = Discord.GuildChannel &
+  (Discord.TextChannel | Discord.NewsChannel);
 
 export interface RawGuildMessage {
   id: string;
@@ -439,7 +442,7 @@ class Bump {
   }
 
   public static getBumpChannelIssues(
-    channel: Discord.TextChannel,
+    channel: TextBasedGuildChannel,
     guildDatabase: Guild
   ) {
     const { guild } = channel;
@@ -660,6 +663,19 @@ export default class Utils {
   public static Bump = Bump;
   public static Lists = Lists;
 
+  public static get inviteRegex() {
+    return /discord(?:(?:app)?\.com\/invite|\.gg(?:\/invite)?)\/([\w-]{2,255})/gim;
+  }
+
+  public static getAllMatches(regex: RegExp, input: string) {
+    const results = [];
+    let m;
+    while ((m = regex.exec(input))) {
+      results.push(m);
+    }
+    return results;
+  }
+
   public static mergeObjects<T extends object = object>(
     target: T,
     ...sources: Array<T>
@@ -687,6 +703,14 @@ export default class Utils {
 
   public static isMergeableObject(item: object): boolean {
     return this.isObject(item) && !Array.isArray(item);
+  }
+
+  public static getMessageLink(
+    guild: string,
+    channel: string,
+    message: string
+  ) {
+    return `https://discord.com/channels/${guild}/${channel}/${message}`;
   }
 
   public static guildMessageToRaw(message: GuildMessage): RawGuildMessage {
@@ -759,7 +783,7 @@ export default class Utils {
   }
 
   public static getInviteLink() {
-    return `https://discordapp.com/api/oauth2/authorize?client_id=${OpenBump.instance.client.user?.id}&permissions=379969&scope=bot`;
+    return `https://discordapp.com/api/oauth2/authorize?client_id=${OpenBump.instance.client.user?.id}&permissions=388289&scope=bot`;
   }
 
   public static getShardId(guildId: string, shards: number) {
@@ -792,26 +816,51 @@ export default class Utils {
 
   public static findChannel(
     input: string,
-    guild: Discord.Guild,
-    type?: Array<string>
-  ) {
+    guild: Discord.Guild
+  ): TextBasedGuildChannel {
     const channels = Array.from(guild.channels.cache.values()).filter(
-      (channel) => !type || type.includes(channel.type)
+      (channel) => channel.type === "text" || channel.type === "news"
     );
+
+    input = input.toLowerCase();
 
     let matching = channels.filter(
       (channel) => channel.id === input.replace(/[^0-9]/gim, "")
     );
 
     if (!matching.length)
-      matching = channels.filter((channel) => channel.name === input);
+      matching = channels.filter(
+        (channel) => channel.name.toLowerCase() === input
+      );
     if (!matching.length)
-      matching = channels.filter((channel) => channel.name.includes(input));
+      matching = channels.filter((channel) =>
+        channel.name.toLowerCase().includes(input)
+      );
 
-    if (matching.length === 1) return matching[0];
+    if (matching.length === 1) return matching[0] as TextBasedGuildChannel;
     else if (matching.length)
       throw new TooManyResultsError("channels", matching);
     throw new NotFoundError("guild");
+  }
+
+  public static findRole(input: string, guild: Discord.Guild): Discord.Role {
+    const roles = Array.from(guild.roles.cache.values());
+
+    input = input.toLowerCase();
+
+    let matching = roles.filter(
+      (role) => role.id === input.replace(/[^0-9]/gim, "")
+    );
+    if (!matching.length)
+      matching = roles.filter((role) => role.name.toLowerCase() === input);
+    if (!matching.length)
+      matching = roles.filter((role) =>
+        role.name.toLowerCase().includes(input)
+      );
+
+    if (matching.length === 1) return matching[0];
+    else if (matching.length) throw new TooManyResultsError("roles", matching);
+    throw new NotFoundError("role");
   }
 
   public static escapeLike(value: string) {
@@ -997,7 +1046,8 @@ export default class Utils {
     RED: 0xff0000,
     GREEN: 0x3dd42c,
     ORANGE: 0xff9900,
-    OPENBUMP: 0x27ad60
+    OPENBUMP: 0x27ad60,
+    ENDED: 0x000001
   };
 
   public static BumpProvider = {
@@ -1051,6 +1101,8 @@ export default class Utils {
     XMARK: "<:xmark:621063205854380086>",
     UNSET: "<:neutral:621063802028294155>",
     NEUTRAL: "<:neutral:621063205854380057>",
+    TICKYES: "<:OA_tickYes:721811714672296069>",
+    TICKNO: "<:OA_tickNo:721811714643066901>",
     IMPORTANTNOTICE: "⚠️",
     FEATURED: "<:FeaturedServer:622845429045919745>",
     UNITEDSERVER: "<:UnitedServer:622845429435858955>",
@@ -1063,7 +1115,22 @@ export default class Utils {
     BOOST_3: "<:boost_3:707638684555411578>",
     BOOST_2: "<:boost_2:707638684530507907>",
     BOOST_1: "<:boost_1:707638684358410271>",
-    getRaw: (emoji: string) => {
+    GIFT: "🎁",
+    TADA: "🎉",
+    HASH: "#️⃣",
+    WINNERS: "👦",
+    UPVOTE: "<:OA_upvote:718473733387321355>",
+    DOWNVOTE: "<:OA_downvote:718473871413608548>",
+    LABEL: "🏷️",
+    SCROLL: "📜",
+    getRaw: (emoji: string | Discord.GuildEmoji | Discord.ReactionEmoji) => {
+      if (
+        emoji instanceof Discord.GuildEmoji ||
+        emoji instanceof Discord.ReactionEmoji
+      ) {
+        return emoji.id || emoji.name;
+      }
+
       const regex = /<a?:.{0,}:([0-9]{10,20})>/gim;
       let m;
 
@@ -1086,7 +1153,17 @@ export default class Utils {
 
 export abstract class EmbedError extends Error {
   public abstract toEmbed(): MessageEmbedOptions;
+
+  public toText(): string {
+    const embed = this.toEmbed();
+    let parts = [];
+    if (embed.title) parts.push(`**${embed.title}**`);
+    if (embed.description) parts.push(embed.description);
+    return parts.join("\n");
+  }
 }
+
+export class VoidError extends Error {}
 
 export class TitleError extends Error {
   constructor(public title: string, message: string) {
@@ -1147,7 +1224,7 @@ export class NotFoundError extends EmbedError {
   public toEmbed() {
     return {
       color: Utils.Colors.RED,
-      title: `Can't find ${this.type}!`,
+      title: `${Utils.Emojis.XMARK} Can't find ${this.type}!`,
       description: "Please specify your input."
     };
   }
@@ -1161,7 +1238,7 @@ export class TooManyResultsError<T> extends EmbedError {
   public toEmbed() {
     return {
       color: Utils.Colors.RED,
-      title: `Too many ${this.type} found!`,
+      title: `${Utils.Emojis.XMARK} Too many ${this.type} found!`,
       description: "Please specify your input."
     };
   }
