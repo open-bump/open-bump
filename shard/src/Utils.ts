@@ -88,16 +88,14 @@ class Bump {
     if (missing) throw new GuildNotReadyError(missing, guildDatabase);
 
     // Verify invite
-    let invite;
+    let guildData;
     try {
-      invite = await OpenBump.instance.client.fetchInvite(
-        guildDatabase.bumpData.invite
-      );
+      guildData = await (OpenBump.instance.client["api"] as any)
+        .guilds(guild.id)
+        .get({ query: { with_counts: true } });
     } catch (error) {
-      throw new InviteNotValidError(guildDatabase);
+      throw new Error("Error while fetching guild!");
     }
-    if (!invite.guild?.id || invite.guild.id !== guild.id)
-      throw new InviteNotValidError(guildDatabase);
 
     // Prepare data
     let total = 0;
@@ -106,8 +104,8 @@ class Bump {
     let channels = 0;
     let emojis = 0;
 
-    total = invite.memberCount;
-    online = invite.presenceCount;
+    total = guildData["approximate_member_count"];
+    online = guildData["approximate_presence_count"];
     roles = guild.roles.cache.size;
     channels = guild.channels.cache.size;
     emojis = guild.emojis.cache.size;
@@ -172,7 +170,7 @@ class Bump {
       fields: [
         {
           name: `${Utils.Emojis.SLINK} **Join Server**`,
-          value: `**${invite}**`
+          value: `**https://discord.gg/${guildDatabase.bumpData.invite}**`
         },
         {
           name: `${Utils.Emojis.MEMBERS} **Members**`,
