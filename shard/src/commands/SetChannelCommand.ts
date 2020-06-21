@@ -1,5 +1,4 @@
 import { SuccessfulParsedMessage } from "discord-command-parser";
-import Discord from "discord.js";
 import Command from "../Command";
 import Guild from "../models/Guild";
 import Utils, { GuildMessage } from "../Utils";
@@ -20,9 +19,7 @@ export default class SetChannelCommand extends Command {
 
     if (args.length === 1) {
       if (!(args[0] === "reset" || args[0] === "default")) {
-        const newChannel = Utils.findChannel(args[0], guild, [
-          "text"
-        ]) as Discord.TextChannel;
+        const newChannel = Utils.findChannel(args[0], guild);
 
         const issues = Utils.Bump.getBumpChannelIssues(
           newChannel,

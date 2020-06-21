@@ -10,6 +10,7 @@ export default abstract class Command {
   public abstract syntax: string;
   public abstract description: string;
   public vanished = false;
+  public interactive = false;
   private permissions: Discord.PermissionResolvable = [
     Discord.Permissions.FLAGS.SEND_MESSAGES,
     Discord.Permissions.FLAGS.VIEW_CHANNEL,
@@ -28,7 +29,8 @@ export default abstract class Command {
 
   public abstract async run(
     parsed: SuccessfulParsedMessage<GuildMessage>,
-    guildDatabase: Guild
+    guildDatabase: Guild,
+    id: string
   ): Promise<void>;
 
   public async calculatePermissions(
