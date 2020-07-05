@@ -1,10 +1,12 @@
 import { SuccessfulParsedMessage } from "discord-command-parser";
 import Discord, { ClientUser } from "discord.js";
+import moment from "moment";
 import ms from "ms";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
 import Command from "../Command";
 import config from "../config";
+import Application from "../models/Application";
 import BumpData from "../models/BumpData";
 import Guild from "../models/Guild";
 import User from "../models/User";
@@ -16,10 +18,14 @@ export default class BumpCommand extends Command {
   public name = "bump";
   public syntax = "bump";
   public description = "Bump your server";
+  public interactive = "Bump captcha has been cancelled!";
 
   public async run(
     { message }: SuccessfulParsedMessage<GuildMessage>,
-    guildDatabase: Guild
+    guildDatabase: Guild,
+    userDatabase: User,
+    id: string,
+    unhookInteraction: () => void
   ) {
     const { channel, guild, author } = message;
 
@@ -27,6 +33,31 @@ export default class BumpCommand extends Command {
       !guildDatabase.getFeatures().includes("AUTOBUMP") ||
       !guildDatabase.autobump
     ) {
+      if (
+        moment(userDatabase.lastBumpedAt || 0).isBefore(
+          moment().subtract(2, "d")
+        )
+      )
+        userDatabase.bumpsSinceCaptcha = 0;
+      userDatabase.lastBumpedAt = new Date();
+      if (userDatabase.bumpsSinceCaptcha >= 5 || userDatabase.requireCaptcha) {
+        // Captcha required
+        userDatabase.requireCaptcha = true;
+        if (userDatabase.changed()) await userDatabase.save();
+        console.log(
+          `[DEBUG] Require captcha for user ${userDatabase.id} on guild ${guildDatabase.id}`
+        );
+        await Utils.UBPS.captcha(channel, author, id);
+        userDatabase.requireCaptcha = false;
+        userDatabase.bumpsSinceCaptcha = 1;
+        if (userDatabase.changed()) await userDatabase.save();
+      } else {
+        // No captcha required
+        userDatabase.bumpsSinceCaptcha++;
+        if (userDatabase.changed()) await userDatabase.save();
+      }
+      unhookInteraction();
+
       const votingEnabled = config.lists.topgg.enabled;
       const voted = await Utils.Lists.hasVotedTopGG(author.id);
       const voteCooldown = guildDatabase.getCooldown(true, true);
@@ -116,15 +147,21 @@ export default class BumpCommand extends Command {
             const provider =
               (await this.instance.client.users
                 .fetch(guildDatabase.lastBumpedWith)
-                .catch(() => {})) || undefined;
+                .catch(() => {})) ||
+              (await Application.findOne({
+                where: { id: guildDatabase.lastBumpedWith }
+              }));
             const lastTrigger =
               (await this.instance.client.users
                 .fetch(String(guildDatabase.lastBumpedBy))
                 .catch(() => {})) || undefined;
+            console.log(guildDatabase.lastBumpedWith, provider, lastTrigger);
             if (provider && lastTrigger) {
               description =
                 `**This server was bumped to multiple bots using SBLP!**\n` +
-                `${lastTrigger.tag} has recently bumped this server using ${provider.tag}.\n` +
+                `${lastTrigger.tag} has recently bumped this server using ${
+                  provider instanceof Application ? provider.name : provider.tag
+                }.\n` +
                 `${this.instance.client.user?.username} has been informed about that and bumped your server with ${this.instance.client.user?.username} too!\n` +
                 `\n` +
                 description;
@@ -200,16 +237,15 @@ export default class BumpCommand extends Command {
       await guildDatabase.save();
 
       // Start SBLP (async)
-      const sblp =
-        config.settings.integration?.sblp.post &&
-        new SBLPBumpEntity(
-          null,
-          this.instance.client.user?.id as string,
-          config.settings.integration.sblp.post,
-          guild.id,
-          channel.id,
-          message.author.id
-        );
+      const sblp = new SBLPBumpEntity(
+        void 0,
+        this.instance.client.user?.id as string,
+        false,
+        config.settings.integration?.sblp.post,
+        guild.id,
+        channel.id,
+        message.author.id
+      );
 
       const loadingEmbedEmbed = {
         color: Utils.Colors.BLUE,
@@ -245,7 +281,8 @@ export default class BumpCommand extends Command {
         ? await Guild.findAll({
             where: {
               id: {
-                [Op.in]: featured.map(({ id }) => id)
+                [Op.in]: featured.map(({ id }) => id),
+                [Op.ne]: guildDatabase.sandbox ? null : guild.id
               },
               name: {
                 [Op.and]: [

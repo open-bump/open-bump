@@ -1,0 +1,64 @@
+{
+  "name": "open-bump",
+  "version": "3.3.1",
+  "description": "Open Bump allows you to automatically advertise your server on other servers and let them advertise their server on your server.",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node-dev --inspect=9220 -- src/index.ts",
+    "debug": "npm run debug:prepare && npm run debug:copy && npm run debug:tsc && npm run debug:cleanup",
+    "debug:prepare": "rm -rf dist/debug && mkdir -p dist/debug",
+    "debug:copy": "cp -r src/* dist/debug && mkdir -p config && cp -r config dist/debug/ && cp package.json dist/debug",
+    "debug:tsc": "tsc --project . --outDir dist/debug --sourceMap",
+    "debug:cleanup": "rm -r dist/debug/*.ts && rm -r dist/debug/**/*.ts",
+    "build": "npm run build:prepare && npm run build:copy && npm run build:tsc && npm run build:cleanup",
+    "build:prepare": "rm -rf dist/build && mkdir -p dist/build",
+    "build:copy": "cp -r src/* dist/build && mkdir -p config && cp -r config dist/build/ && cp package.json dist/build",
+    "build:tsc": "tsc --project . --outDir dist/build",
+    "build:cleanup": "rm -r dist/build/*.ts && rm -r dist/build/**/*.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lyne/open-bump.git"
+  },
+  "author": "Looat",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lyne/open-bump/issues"
+  },
+  "homepage": "https://openbump.com/",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "color": "^3.1.2",
+    "config": "^3.3.1",
+    "dblapi.js": "^2.4.0",
+    "discord-command-parser": "^1.4.3",
+    "discord.js": "^12.1.1",
+    "mariadb": "^2.3.1",
+    "moment": "^2.24.0",
+    "ms": "^2.1.2",
+    "mysql2": "^2.1.0",
+    "node-fetch": "^2.6.0",
+    "ntcjs": "^1.1.2",
+    "reflect-metadata": "^0.1.13",
+    "semver": "^7.2.1",
+    "sequelize": "^5.21.6",
+    "sequelize-typescript": "^1.1.0",
+    "socket.io-client": "^2.3.0",
+    "sqlite3": "^4.1.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/bluebird": "^3.5.30",
+    "@types/color": "^3.0.1",
+    "@types/config": "0.0.36",
+    "@types/ms": "^0.7.31",
+    "@types/node": "^13.11.1",
+    "@types/node-fetch": "^2.5.6",
+    "@types/semver": "^7.1.0",
+    "@types/socket.io-client": "^1.4.32",
+    "@types/validator": "^13.0.0",
+    "@types/ws": "^7.2.3",
+    "ts-node-dev": "^1.0.0-pre.44",
+    "typescript": "^3.8.3"
+  }
+}

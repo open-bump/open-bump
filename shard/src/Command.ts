@@ -1,6 +1,7 @@
 import { SuccessfulParsedMessage } from "discord-command-parser";
 import Discord from "discord.js";
 import Guild from "./models/Guild";
+import User from "./models/User";
 import OpenBump from "./OpenBump";
 import Utils, { GuildMessage, UserPermissionError } from "./Utils";
 
@@ -10,6 +11,7 @@ export default abstract class Command {
   public abstract syntax: string;
   public abstract description: string;
   public vanished = false;
+  public interactive: false | string = false;
   private permissions: Discord.PermissionResolvable = [
     Discord.Permissions.FLAGS.SEND_MESSAGES,
     Discord.Permissions.FLAGS.VIEW_CHANNEL,
@@ -28,7 +30,10 @@ export default abstract class Command {
 
   public abstract async run(
     parsed: SuccessfulParsedMessage<GuildMessage>,
-    guildDatabase: Guild
+    guildDatabase: Guild,
+    userDatabase: User,
+    id: string,
+    unhookInteraction: () => void
   ): Promise<void>;
 
   public async calculatePermissions(

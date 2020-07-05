@@ -1,6 +1,10 @@
 import Discord, { ClientUser } from "discord.js";
 import ms from "ms";
+import fetch from "node-fetch";
+import { Op } from "sequelize";
 import config from "./config";
+import Application from "./models/Application";
+import ApplicationFeature from "./models/ApplicationFeature";
 import OpenBump from "./OpenBump";
 import Utils, { GuildMessage, RawGuildMessage } from "./Utils";
 
@@ -25,6 +29,24 @@ export type SBLPPayload =
   | BumpFinishedResponse
   | BumpErrorResponse;
 
+export interface HTTPBumpRequest {
+  guild: string;
+  channel: string;
+  user: string;
+}
+
+export interface OpenBumpFamilyBaseError {
+  error: true;
+  status: number;
+  code: string;
+  message?: string;
+}
+
+export type HTTPBumpResponse =
+  | BumpFinishedResponse
+  | BumpErrorResponse
+  | OpenBumpFamilyBaseError;
+
 export interface BumpRequest {
   type: MessageType.REQUEST;
   guild: string;
@@ -43,6 +65,7 @@ export interface BumpFinishedResponse {
   amount?: number;
   nextBump: number;
   message?: string;
+  error?: void;
 }
 
 export interface BumpErrorResponse {
@@ -51,6 +74,7 @@ export interface BumpErrorResponse {
   code: ErrorCode;
   nextBump?: number;
   message?: String;
+  error?: void;
 }
 
 export class SBLPSchemaError extends Error {
@@ -66,22 +90,20 @@ export class SBLPBumpEntity {
   private mine: boolean;
   private providers: { [id: string]: SBLPPayload } = {};
   private updateHandlers: Array<() => void> = [];
+  private finalHandlers: Array<(response: HTTPBumpResponse) => void> = [];
   public timeout = false;
 
   constructor(
-    id: string | null,
+    id: string | undefined,
     private provider: string,
-    private communication: { guild: string; channel: string },
+    private http: boolean,
+    private communication: { guild: string; channel: string } | undefined,
     private guild: string,
     private channel: string,
     private user: string
   ) {
     if (id) this.id = id;
     this.mine = provider === OpenBump.instance.client.user?.id;
-    if (!this.mine && !id)
-      throw new Error(
-        "Invalid input to SBLPBumpEntity: Others requests need an ID passed."
-      );
     this.sblp = OpenBump.instance.sblp.registerEntity(this);
     if (this.mine) this.handleInside();
     else this.handleOutside();
@@ -92,8 +114,16 @@ export class SBLPBumpEntity {
       this.updateHandlers.push(handler);
   }
 
+  public onFinal(handler: (response: HTTPBumpResponse) => void) {
+    if (!this.finalHandlers.includes(handler)) this.finalHandlers.push(handler);
+  }
+
   private triggerUpdate() {
     for (const handler of this.updateHandlers) handler();
+  }
+
+  private triggerFinal(response: HTTPBumpResponse) {
+    for (const handler of this.finalHandlers) handler(response);
   }
 
   public getProviderStates() {
@@ -149,6 +179,30 @@ export class SBLPBumpEntity {
   public async handleInside() {
     await this.postBumpRequest();
 
+    const applications = await Application.findAll({
+      where: {
+        sblpEnabled: true,
+        bot: {
+          [Op.ne]: null
+        }
+      },
+      include: [
+        {
+          model: ApplicationFeature,
+          as: "features",
+          where: {
+            feature: "SBLP"
+          }
+        }
+      ]
+    });
+
+    console.log("applications", applications.length);
+
+    for (const application of applications) {
+      this.postHTTPBumpRequest(application);
+    }
+
     setTimeout(() => {
       if (this.sblp.isRegistered(this)) {
         // Timeout after 60 seconds
@@ -161,9 +215,67 @@ export class SBLPBumpEntity {
     }, 60 * 1000);
   }
 
+  private async postHTTPBumpRequest(application: Application) {
+    console.log("before");
+    if (
+      !application.features.find(({ feature }) => feature === "SBLP") ||
+      !application.sblpEnabled ||
+      !application.bot
+    )
+      return;
+    console.log("after");
+    try {
+      const prototypeStartResponse: BumpStartedResponse = {
+        type: MessageType.START,
+        response: "HTTP"
+      };
+      this.providers[application.bot] = prototypeStartResponse;
+
+      let url = application.sblpBase;
+      if (!url.endsWith("/")) url += "/";
+      url += "request";
+
+      console.log("url", url);
+
+      const res: HTTPBumpResponse = await fetch(url, {
+        method: "POST",
+        headers: {
+          authorization: application.sblpAuthorization,
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          guild: this.guild,
+          channel: this.channel,
+          user: this.user
+        })
+      }).then((res) => res.json());
+
+      console.log("response", res);
+
+      if (this.timeout) return;
+
+      if (res.error) {
+        throw res;
+      } else {
+        this.providers[application.bot] = res;
+      }
+      this.triggerUpdate();
+    } catch (error) {
+      console.log("error", error);
+      if (this.timeout) return;
+      const prototypeErrorResponse: BumpErrorResponse = {
+        type: MessageType.ERROR,
+        response: "HTTP",
+        code: ErrorCode.OTHER,
+        message: `HTTP Error`
+      };
+      this.providers[application.bot] = prototypeErrorResponse;
+    }
+  }
+
   private async handleOutside() {
     // Inform bot that the process has been started
-    await this.postBumpStartedResponse();
+    if (!this.http) await this.postBumpStartedResponse();
 
     // Start bumping
     const payload = await SBLPBumpEntity.handleOutsideSharded(
@@ -174,7 +286,8 @@ export class SBLPBumpEntity {
     );
 
     // Post payload
-    await this.post(payload);
+    if (!this.http) await this.post(payload);
+    else this.triggerFinal(payload);
   }
 
   public static async handleOutsideSharded(
@@ -265,6 +378,13 @@ export class SBLPBumpEntity {
     provider: string,
     payload: BumpStartedResponse | BumpFinishedResponse | BumpErrorResponse
   ) {
+    const providerData = this.providers[provider];
+    if (
+      providerData &&
+      providerData.type !== MessageType.REQUEST &&
+      providerData.response === "HTTP"
+    )
+      return;
     if (payload.type === MessageType.START) {
       // Another bump bot has started handling this request
       if (this.providers[provider])
@@ -301,6 +421,8 @@ export class SBLPBumpEntity {
   }
 
   private async post(payload: SBLPPayload) {
+    if (!this.communication?.guild || !this.communication.channel) return false;
+
     if (payload.type === MessageType.ERROR) {
       // TODO: Abort
       this.sblp.unregisterEntity(this);
@@ -321,6 +443,8 @@ export class SBLPBumpEntity {
   }
 
   private async debug(message: string) {
+    if (!this.communication?.guild || !this.communication.channel) return false;
+
     return await OpenBump.instance.networkManager.emitMessage(
       this.communication.guild,
       this.communication.channel,
@@ -361,7 +485,7 @@ export default class SBLP {
    *
    * @param message The received message
    */
-  public onMessage(message: Discord.Message) {
+  public async onMessage(message: Discord.Message) {
     const author = message.author;
     if (!author.bot && !config.discord.admins.includes(author.id)) return; // Only allow bots and bot admins (debug)
     if (author instanceof ClientUser) return; // Ignore own messages
@@ -376,6 +500,23 @@ export default class SBLP {
     ) {
       // Channel is a SBLP channel
       // Note: Open Bump will not use a whitelist system as it expects that only granted bots have access to the SBLP channel(s)
+
+      const application = await Application.findOne({
+        where: {
+          bot: author.id,
+          sblpEnabled: true
+        },
+        include: [
+          {
+            model: ApplicationFeature,
+            as: "features",
+            where: {
+              feature: "SBLP"
+            }
+          }
+        ]
+      });
+      if (application) return; // This bot uses communication over HTTP
 
       let payload: SBLPPayload;
       try {
@@ -431,6 +572,7 @@ export default class SBLP {
         new SBLPBumpEntity(
           message.id,
           message.author.id,
+          false,
           { guild: message?.guild?.id, channel: String(message?.channel?.id) },
           payload.guild,
           payload.channel,
@@ -455,6 +597,25 @@ export default class SBLP {
           message
         ); // Only emit to other shards if message set (this = primary)
     }
+  }
+
+  public async onHTTPBumpRequest(
+    application: Application,
+    request: HTTPBumpRequest
+  ): Promise<HTTPBumpResponse> {
+    const entity = new SBLPBumpEntity(
+      void 0,
+      application.id,
+      true,
+      void 0,
+      request.guild,
+      request.channel,
+      request.user
+    );
+    const response = await new Promise<HTTPBumpResponse>((resolve) =>
+      entity.onFinal(resolve)
+    );
+    return response;
   }
 
   public createBumpRequest(

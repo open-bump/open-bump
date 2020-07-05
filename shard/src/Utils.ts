@@ -1,4 +1,5 @@
 import Color from "color";
+import crypto from "crypto";
 import DBL from "dblapi.js";
 import Discord, {
   MessageEmbedOptions,
@@ -13,6 +14,7 @@ import ntc from "ntcjs";
 import path from "path";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
+import * as uuid from "uuid";
 import config from "./config";
 import Guild from "./models/Guild";
 import Reminder from "./models/Reminder";
@@ -50,10 +52,13 @@ class Notifications {
 }
 
 export type GuildMessage = Discord.Message & {
-  channel: Discord.GuildChannel & Discord.TextBasedChannelFields;
+  channel: TextBasedGuildChannel;
   member: Discord.GuildMember;
   guild: Discord.Guild;
 };
+
+export type TextBasedGuildChannel = Discord.GuildChannel &
+  (Discord.TextChannel | Discord.NewsChannel);
 
 export interface RawGuildMessage {
   id: string;
@@ -88,37 +93,24 @@ class Bump {
     if (missing) throw new GuildNotReadyError(missing, guildDatabase);
 
     // Verify invite
-    let invite;
+    let guildData;
     try {
-      invite = await OpenBump.instance.client.fetchInvite(
-        guildDatabase.bumpData.invite
-      );
+      guildData = await (OpenBump.instance.client["api"] as any)
+        .guilds(guild.id)
+        .get({ query: { with_counts: true } });
     } catch (error) {
-      throw new InviteNotValidError(guildDatabase);
+      throw new Error("Error while fetching guild!");
     }
-    if (!invite.guild?.id || invite.guild.id !== guild.id)
-      throw new InviteNotValidError(guildDatabase);
 
     // Prepare data
     let total = 0;
     let online = 0;
-    let dnd = 0;
-    let idle = 0;
-    let offline = 0;
-    let bots = 0;
     let roles = 0;
     let channels = 0;
     let emojis = 0;
 
-    for (const member of guild.members.cache.values()) {
-      if (member.presence?.status === "online") online++;
-      else if (member.presence?.status === "dnd") dnd++;
-      else if (member.presence?.status === "idle") idle++;
-      else offline++;
-      total++;
-      if (member.user.bot) bots++;
-    }
-
+    total = guildData["approximate_member_count"];
+    online = guildData["approximate_presence_count"];
     roles = guild.roles.cache.size;
     channels = guild.channels.cache.size;
     emojis = guild.emojis.cache.size;
@@ -183,22 +175,19 @@ class Bump {
       fields: [
         {
           name: `${Utils.Emojis.SLINK} **Join Server**`,
-          value: `**${invite}**`
+          value: `**https://discord.gg/${guildDatabase.bumpData.invite}**`
         },
         {
-          name: `${Utils.Emojis.MEMBERS} **Members [${total}]**`,
+          name: `${Utils.Emojis.MEMBERS} **Members**`,
           value:
             `${Utils.Emojis.ONLINE} **Online:** ${online}\n` +
-            `${Utils.Emojis.DND} **Do Not Disturb:** ${dnd}\n` +
-            `${Utils.Emojis.IDLE} **Idle:** ${idle}\n` +
-            `${Utils.Emojis.INVISIBLE} **Offline:** ${offline}`,
+            `${Utils.Emojis.INVISIBLE} **Total:** ${total}`,
           inline: true
         },
         {
           name: `${Utils.Emojis.INFO} **Misc**`,
           value:
             `**Roles:** ${roles}\n` +
-            `**Bots:** ${bots}\n` +
             `**Channels:** ${channels}\n` +
             `**Emojis:** ${emojis}`,
           inline: true
@@ -206,10 +195,6 @@ class Bump {
       ],
       image: {
         url: banner
-      },
-      footer: {
-        icon_url: author.displayAvatarURL({ dynamic: true }),
-        text: `Bumped by ${author.tag}`
       },
       timestamp: Date.now()
     };
@@ -459,7 +444,7 @@ class Bump {
   }
 
   public static getBumpChannelIssues(
-    channel: Discord.TextChannel,
+    channel: TextBasedGuildChannel,
     guildDatabase: Guild
   ) {
     const { guild } = channel;
@@ -675,10 +660,123 @@ class Lists {
   }
 }
 
+class UBPS {
+  public static getText(random: string) {
+    const secret = config.captchas.secret;
+    const alphabet = config.captchas.alphabet;
+    const letters = config.captchas.letters;
+    if (letters < 1 || letters > 16)
+      throw new Error(
+        `Character count of ${letters} is outside the range of 1-16`
+      );
+    let input = `${secret}${random}`;
+    if (alphabet !== "abcdefghijklmnopqrstuvwxyz" || letters !== 6) {
+      input += `:${alphabet}:${letters}`;
+    }
+
+    const bytes = crypto
+      .createHash("md5")
+      .update(input)
+      .digest("hex")
+      .split("")
+      .reduce((value, current, index) => {
+        value.push((index % 2 !== 0 ? value.pop() : "") + current);
+        return value;
+      }, [] as Array<string>)
+      .slice(0, letters);
+
+    let text = "";
+
+    for (const byte of bytes) {
+      text += alphabet[parseInt(byte, 16) % alphabet.length];
+    }
+
+    return text;
+  }
+
+  public static async captcha(
+    channel: TextBasedGuildChannel,
+    user: Discord.User,
+    id?: string
+  ) {
+    const random = uuid.v4();
+    const color = Utils.Colors.getRawString(Utils.Colors.OPENBUMP);
+    const url = `https://image.captchas.net?client=${config.captchas.username}&random=${random}&alphabet=${config.captchas.alphabet}&letters=${config.captchas.letters}&color=${color}`;
+    const text = this.getText(random);
+
+    const embed: Discord.MessageEmbedOptions = {
+      color: Utils.Colors.GREEN,
+      title: `${Utils.Emojis.ROBOT} Captcha required`,
+      description:
+        `Please reply with the text in the image below. ` +
+        `Only send the exact characters, do not add a bot prefix or command name.`,
+      image: {
+        url
+      }
+    };
+    const message = await channel.send({ embed });
+    try {
+      const collected = await channel.awaitMessages(
+        (message: GuildMessage) => message.author.id === user.id,
+        {
+          max: 1,
+          time: 30000,
+          errors: ["time"]
+        }
+      );
+      if (id && !OpenBump.instance.commandManager.isRunning(id))
+        throw new VoidError();
+      const reply = collected.find(() => true);
+      if (reply?.content.toLocaleLowerCase() === text.toLocaleLowerCase()) {
+        const embed = {
+          color: Utils.Colors.GREEN,
+          title: `${Utils.Emojis.CHECK} Captcha Solved`,
+          description: `You have successfully solved the captcha.`
+        };
+        await message.edit({ embed });
+        return message;
+      } else {
+        const embed = {
+          color: Utils.Colors.RED,
+          title: `${Utils.Emojis.XMARK} Captcha Error`,
+          description: `Your response was not correct. Please use the command again to retry.`
+        };
+        await message.edit({ embed });
+        throw new VoidError();
+      }
+    } catch (error) {
+      if (error instanceof Discord.Collection && !error.size) {
+        const embed = {
+          color: Utils.Colors.RED,
+          title: `${Utils.Emojis.XMARK} Captcha Timeout`,
+          description: `You took too long to solve the captcha. Please use the command again to retry.`
+        };
+        await message.edit({ embed });
+        throw new VoidError();
+      }
+      throw new VoidError();
+    }
+  }
+}
+
 export default class Utils {
   public static Notifications = Notifications;
   public static Bump = Bump;
   public static Lists = Lists;
+  public static UBPS = UBPS;
+
+  public static get inviteRegex() {
+    return /discord(?:(?:app)?\.com\/invite|\.gg(?:\/invite)?)\/([\w-]{2,255})/gim;
+  }
+
+  public static getAllMatches(regex: RegExp, input: string) {
+    const results = [];
+    let m;
+    while ((m = regex.exec(input))) {
+      results.push(m);
+    }
+    return results;
+  }
 
   public static mergeObjects<T extends object = object>(
     target: T,
@@ -707,6 +805,14 @@ export default class Utils {
 
   public static isMergeableObject(item: object): boolean {
     return this.isObject(item) && !Array.isArray(item);
+  }
+
+  public static getMessageLink(
+    guild: string,
+    channel: string,
+    message: string
+  ) {
+    return `https://discord.com/channels/${guild}/${channel}/${message}`;
   }
 
   public static guildMessageToRaw(message: GuildMessage): RawGuildMessage {
@@ -778,8 +884,22 @@ export default class Utils {
     }
   }
 
+  public static async ensureUser(user: Discord.User): Promise<User> {
+    if (!OpenBump.instance.ready) {
+      console.log("Delaying user ensuring until client is ready...");
+      while (!OpenBump.instance.ready) {}
+      console.log("Continuing user ensuring, client is ready now.");
+    }
+
+    const [userDatabase] = await User.findOrCreate({
+      where: { id: user.id },
+      defaults: { id: user.id }
+    });
+    return userDatabase;
+  }
+
   public static getInviteLink() {
-    return `https://discordapp.com/api/oauth2/authorize?client_id=${OpenBump.instance.client.user?.id}&permissions=379969&scope=bot`;
+    return `https://discordapp.com/api/oauth2/authorize?client_id=${OpenBump.instance.client.user?.id}&permissions=388289&scope=bot`;
   }
 
   public static getShardId(guildId: string, shards: number) {
@@ -812,26 +932,51 @@ export default class Utils {
 
   public static findChannel(
     input: string,
-    guild: Discord.Guild,
-    type?: Array<string>
-  ) {
+    guild: Discord.Guild
+  ): TextBasedGuildChannel {
     const channels = Array.from(guild.channels.cache.values()).filter(
-      (channel) => !type || type.includes(channel.type)
+      (channel) => channel.type === "text" || channel.type === "news"
     );
+
+    input = input.toLowerCase();
 
     let matching = channels.filter(
       (channel) => channel.id === input.replace(/[^0-9]/gim, "")
     );
 
     if (!matching.length)
-      matching = channels.filter((channel) => channel.name === input);
+      matching = channels.filter(
+        (channel) => channel.name.toLowerCase() === input
+      );
     if (!matching.length)
-      matching = channels.filter((channel) => channel.name.includes(input));
+      matching = channels.filter((channel) =>
+        channel.name.toLowerCase().includes(input)
+      );
 
-    if (matching.length === 1) return matching[0];
+    if (matching.length === 1) return matching[0] as TextBasedGuildChannel;
     else if (matching.length)
       throw new TooManyResultsError("channels", matching);
     throw new NotFoundError("guild");
+  }
+
+  public static findRole(input: string, guild: Discord.Guild): Discord.Role {
+    const roles = Array.from(guild.roles.cache.values());
+
+    input = input.toLowerCase();
+
+    let matching = roles.filter(
+      (role) => role.id === input.replace(/[^0-9]/gim, "")
+    );
+    if (!matching.length)
+      matching = roles.filter((role) => role.name.toLowerCase() === input);
+    if (!matching.length)
+      matching = roles.filter((role) =>
+        role.name.toLowerCase().includes(input)
+      );
+
+    if (matching.length === 1) return matching[0];
+    else if (matching.length) throw new TooManyResultsError("roles", matching);
+    throw new NotFoundError("role");
   }
 
   public static escapeLike(value: string) {
@@ -1015,9 +1160,15 @@ export default class Utils {
   public static Colors = {
     BLUE: 0x698cce,
     RED: 0xff0000,
-    GREEN: 0xff0000,
+    GREEN: 0x3dd42c,
     ORANGE: 0xff9900,
-    OPENBUMP: 0x000000
+    OPENBUMP: 0x27ad60,
+    ENDED: 0x000001,
+    getRawString: (color: number) => {
+      let string = color.toString(16);
+      while (string.length < 6) string = "0" + string;
+      return string;
+    }
   };
 
   public static BumpProvider = {
@@ -1044,7 +1195,7 @@ export default class Utils {
     STAR: "⭐",
     CLOCK: "🕐",
     ARROWRIGHT: "➡",
-    INFORMATION: "",
+    INFORMATION: "ℹ",
     EXCLAMATION: "❗",
     MAILBOX: "📬",
     SBLP: "🌀",
@@ -1052,6 +1203,7 @@ export default class Utils {
     ADD: "\\✔️",
     REMOVE: "\\➖",
     REMINDER: "⏰",
+    ROBOT: "🤖",
     THUMBSUP: "<:thumbsup:631606538598875174>",
     THUMBSDOWN: "<:thumbsdown:631606537827123221>",
     OWNER: "<:owner:547102770696814592>",
@@ -1071,6 +1223,8 @@ export default class Utils {
     XMARK: "<:xmark:621063205854380086>",
     UNSET: "<:neutral:621063802028294155>",
     NEUTRAL: "<:neutral:621063205854380057>",
+    TICKYES: "<:OA_tickYes:721811714672296069>",
+    TICKNO: "<:OA_tickNo:721811714643066901>",
     IMPORTANTNOTICE: "⚠️",
     FEATURED: "<:FeaturedServer:622845429045919745>",
     UNITEDSERVER: "<:UnitedServer:622845429435858955>",
@@ -1083,7 +1237,22 @@ export default class Utils {
     BOOST_3: "<:boost_3:707638684555411578>",
     BOOST_2: "<:boost_2:707638684530507907>",
     BOOST_1: "<:boost_1:707638684358410271>",
-    getRaw: (emoji: string) => {
+    GIFT: "🎁",
+    TADA: "🎉",
+    HASH: "#️⃣",
+    WINNERS: "👦",
+    UPVOTE: "<:OA_upvote:718473733387321355>",
+    DOWNVOTE: "<:OA_downvote:718473871413608548>",
+    LABEL: "🏷️",
+    SCROLL: "📜",
+    getRaw: (emoji: string | Discord.GuildEmoji | Discord.ReactionEmoji) => {
+      if (
+        emoji instanceof Discord.GuildEmoji ||
+        emoji instanceof Discord.ReactionEmoji
+      ) {
+        return emoji.id || emoji.name;
+      }
+
       const regex = /<a?:.{0,}:([0-9]{10,20})>/gim;
       let m;
 
@@ -1106,7 +1275,17 @@ export default class Utils {
 
 export abstract class EmbedError extends Error {
   public abstract toEmbed(): MessageEmbedOptions;
+
+  public toText(): string {
+    const embed = this.toEmbed();
+    let parts = [];
+    if (embed.title) parts.push(`**${embed.title}**`);
+    if (embed.description) parts.push(embed.description);
+    return parts.join("\n");
+  }
 }
+
+export class VoidError extends Error {}
 
 export class TitleError extends Error {
   constructor(public title: string, message: string) {
@@ -1167,7 +1346,7 @@ export class NotFoundError extends EmbedError {
   public toEmbed() {
     return {
       color: Utils.Colors.RED,
-      title: `Can't find ${this.type}!`,
+      title: `${Utils.Emojis.XMARK} Can't find ${this.type}!`,
       description: "Please specify your input."
     };
   }
@@ -1181,7 +1360,7 @@ export class TooManyResultsError<T> extends EmbedError {
   public toEmbed() {
     return {
       color: Utils.Colors.RED,
-      title: `Too many ${this.type} found!`,
+      title: `${Utils.Emojis.XMARK} Too many ${this.type} found!`,
       description: "Please specify your input."
     };
   }

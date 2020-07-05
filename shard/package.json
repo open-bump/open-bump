@@ -1,6 +1,6 @@
 {
   "name": "open-bump",
-  "version": "3.2.0",
+  "version": "3.3.1",
   "description": "Open Bump allows you to automatically advertise your server on other servers and let them advertise their server on your server.",
   "main": "index.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "config": "^3.3.1",
     "dblapi.js": "^2.4.0",
     "discord-command-parser": "^1.4.3",
-    "discord.js": "^12.1.1",
+    "discord.js": "^12.2.0",
     "mariadb": "^2.3.1",
     "moment": "^2.24.0",
     "ms": "^2.1.2",
@@ -44,7 +44,9 @@
     "sequelize": "^5.21.6",
     "sequelize-typescript": "^1.1.0",
     "socket.io-client": "^2.3.0",
-    "sqlite3": "^4.1.1"
+    "sqlite3": "^4.1.1",
+    "table": "^5.4.6",
+    "uuid": "^8.1.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
@@ -56,6 +58,8 @@
     "@types/node-fetch": "^2.5.6",
     "@types/semver": "^7.1.0",
     "@types/socket.io-client": "^1.4.32",
+    "@types/table": "^5.0.0",
+    "@types/uuid": "^8.0.0",
     "@types/validator": "^13.0.0",
     "@types/ws": "^7.2.3",
     "ts-node-dev": "^1.0.0-pre.44",

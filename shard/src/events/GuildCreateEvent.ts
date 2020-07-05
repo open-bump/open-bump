@@ -1,10 +1,13 @@
-import Discord, { ClientEvents, MessageEmbedOptions } from "discord.js";
+import Discord, { MessageEmbedOptions } from "discord.js";
 import config from "../config";
 import Event from "../Event";
+import OpenBump from "../OpenBump";
 import Utils from "../Utils";
 
-export default class GuildCreateEvent extends Event {
-  public name: keyof ClientEvents = "guildCreate";
+export default class GuildCreateEvent extends Event<"guildCreate"> {
+  constructor(instance: OpenBump) {
+    super(instance, "guildCreate");
+  }
 
   public async run(guild: Discord.Guild) {
     if (!this.instance.ready)

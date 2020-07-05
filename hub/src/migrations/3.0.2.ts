@@ -1,8 +1,8 @@
 import { Sequelize } from "sequelize-typescript";
 import { Transaction } from "sequelize/types";
-import { MigrationJS } from "./helpers/Migrator";
+import { Migratable } from "./helpers/Migrator";
 
-const migration: MigrationJS = {
+const migration: Migratable = {
   version: "3.0.2",
   up: async (connection, datatypes) => {
     const transaction: Transaction = await connection.transaction();
