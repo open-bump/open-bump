@@ -3,6 +3,7 @@ import Discord from "discord.js";
 import * as uuid from "uuid";
 import Command from "./Command";
 import AboutCommand from "./commands/AboutCommand";
+import ApplicationCommand from "./commands/ApplicationCommand";
 import AutobumpCommand from "./commands/AutobumpCommand";
 import BadgesCommand from "./commands/BadgesCommand";
 import BrandingCommand from "./commands/BrandingCommand";
@@ -181,6 +182,7 @@ export default class CommandManager {
 
   private registerCommands() {
     this.registerCommand(new AboutCommand(this.instance));
+    this.registerCommand(new ApplicationCommand(this.instance));
     this.registerCommand(new AutobumpCommand(this.instance));
     this.registerCommand(new BadgesCommand(this.instance));
     this.registerCommand(new BrandingCommand(this.instance));

@@ -14,7 +14,10 @@ import ApplicationFeature from "./ApplicationFeature";
 import User from "./User";
 
 @Table({
-  tableName: "Application"
+  tableName: "Application",
+  defaultScope: {
+    include: [{ model: ApplicationFeature, as: "features" }]
+  }
 })
 export default class Application extends Model<Application> {
   @PrimaryKey
