@@ -27,7 +27,6 @@ export default class Server {
         const baseError = BaseError.from(error);
         ctx.body = baseError.dispatch();
         ctx.status = baseError.status;
-        console.warn(baseError);
       }
     });
 
@@ -36,7 +35,7 @@ export default class Server {
   }
 
   private registerRoutes() {
-    this.sblpRouter = new SBLPRouter();
+    this.sblpRouter = new SBLPRouter(this.instance);
 
     this.router.use("/sblp", this.sblpRouter.router.routes());
   }

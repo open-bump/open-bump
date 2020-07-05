@@ -6,6 +6,7 @@ import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
 import Command from "../Command";
 import config from "../config";
+import Application from "../models/Application";
 import BumpData from "../models/BumpData";
 import Guild from "../models/Guild";
 import User from "../models/User";
@@ -43,7 +44,9 @@ export default class BumpCommand extends Command {
         // Captcha required
         userDatabase.requireCaptcha = true;
         if (userDatabase.changed()) await userDatabase.save();
-        console.log("require captcha");
+        console.log(
+          `[DEBUG] Require captcha for user ${userDatabase.id} on guild ${guildDatabase.id}`
+        );
         await Utils.UBPS.captcha(channel, author, id);
         userDatabase.requireCaptcha = false;
         userDatabase.bumpsSinceCaptcha = 1;
@@ -144,15 +147,21 @@ export default class BumpCommand extends Command {
             const provider =
               (await this.instance.client.users
                 .fetch(guildDatabase.lastBumpedWith)
-                .catch(() => {})) || undefined;
+                .catch(() => {})) ||
+              (await Application.findOne({
+                where: { id: guildDatabase.lastBumpedWith }
+              }));
             const lastTrigger =
               (await this.instance.client.users
                 .fetch(String(guildDatabase.lastBumpedBy))
                 .catch(() => {})) || undefined;
+            console.log(guildDatabase.lastBumpedWith, provider, lastTrigger);
             if (provider && lastTrigger) {
               description =
                 `**This server was bumped to multiple bots using SBLP!**\n` +
-                `${lastTrigger.tag} has recently bumped this server using ${provider.tag}.\n` +
+                `${lastTrigger.tag} has recently bumped this server using ${
+                  provider instanceof Application ? provider.name : provider.tag
+                }.\n` +
                 `${this.instance.client.user?.username} has been informed about that and bumped your server with ${this.instance.client.user?.username} too!\n` +
                 `\n` +
                 description;
@@ -231,8 +240,9 @@ export default class BumpCommand extends Command {
       const sblp =
         config.settings.integration?.sblp.post &&
         new SBLPBumpEntity(
-          null,
+          void 0,
           this.instance.client.user?.id as string,
+          false,
           config.settings.integration.sblp.post,
           guild.id,
           channel.id,

@@ -34,13 +34,16 @@ export default class Application extends Model<Application> {
   @Column
   userId!: string;
 
+  @BelongsTo(() => User)
+  user!: User;
+
   @Default(DataType.UUIDV4)
   @AllowNull(false)
   @Column(DataType.UUID)
   token!: string;
 
-  @BelongsTo(() => User)
-  user!: User;
+  @Column(DataType.STRING())
+  bot!: string;
 
   @HasMany(() => ApplicationFeature)
   features!: Array<ApplicationFeature>;

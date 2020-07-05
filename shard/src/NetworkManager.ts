@@ -2,12 +2,15 @@ import bcrypt from "bcryptjs";
 import { MessageEmbedOptions, TextChannel } from "discord.js";
 import io from "socket.io-client";
 import config from "./config";
+import Application from "./models/Application";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
 import {
   BumpErrorResponse,
   BumpFinishedResponse,
   BumpStartedResponse,
+  HTTPBumpRequest,
+  HTTPBumpResponse,
   SBLPPayload
 } from "./SBLP";
 import Utils, { RawGuildMessage } from "./Utils";
@@ -89,6 +92,7 @@ export default class NetworkManager {
     this.socket.on("message", this.onMessage.bind(this));
     this.socket.on("bump", this.onBump.bind(this));
     this.socket.on("sblpOutside", this.onSBLPOutside.bind(this));
+    this.socket.on("sblpDirect", this.onSBLPDirect.bind(this));
     this.socket.on("stats", this.onStats.bind(this));
     this.socket.on("disconnect", this.onDisconnect.bind(this));
   }
@@ -196,6 +200,22 @@ export default class NetworkManager {
     message: RawGuildMessage
   ) {
     this.instance.sblp.onPayload(provider, payload, message, true);
+  }
+
+  private async onSBLPDirect(
+    applicationId: string,
+    request: HTTPBumpRequest,
+    callback: (response: HTTPBumpResponse) => void
+  ) {
+    const application = await Application.findOne({
+      where: { id: applicationId }
+    });
+    if (!application) return; // TODO: Don't return but give error
+    const response = await this.instance.sblp.onHTTPBumpRequest(
+      application,
+      request
+    );
+    callback(response);
   }
 
   private async onStats(callback: (data: IStatsShardData) => void) {
