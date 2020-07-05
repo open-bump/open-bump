@@ -7,6 +7,13 @@ const migration: Migratable = {
     try {
       const queryInterface = connection.getQueryInterface();
 
+      /* Update "lastBumpedWith" column in "Guild" table */
+      await queryInterface.changeColumn(
+        "Guild",
+        "lastBumpedWith",
+        datatypes.STRING(36)
+      );
+
       /* Create "Application" Table */
       await queryInterface.createTable(
         "Application",
@@ -29,6 +36,9 @@ const migration: Migratable = {
             defaultValue: datatypes.UUIDV4,
             allowNull: false,
             type: datatypes.UUID
+          },
+          bot: {
+            type: datatypes.STRING(20)
           },
           createdAt: {
             defaultValue: connection.Sequelize.literal("CURRENT_TIMESTAMP"),
@@ -135,6 +145,13 @@ const migration: Migratable = {
 
       /* Delete "Application" Table */
       await queryInterface.dropTable("Application", { transaction });
+
+      /* Update "lastBumpedWith" column in "Guild" table */
+      await queryInterface.changeColumn(
+        "Guild",
+        "lastBumpedWith",
+        datatypes.STRING(20)
+      );
 
       /* Commit Transaction */
       await transaction.commit();

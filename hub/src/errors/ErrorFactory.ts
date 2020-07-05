@@ -32,4 +32,13 @@ export default class ErrorFactory {
         }: ${parameters.map((parameter) => `\`${parameter}\``).join(", ")}`
       );
   }
+
+  public static shardNotAvailable(shard: number) {
+    return new BaseError()
+      .setStatus(503)
+      .setCode("shard_unavailable")
+      .setMessage(
+        `Shard \`${shard}\` is temporarly unreachable, please try again later.`
+      );
+  }
 }

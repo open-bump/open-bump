@@ -1,12 +1,13 @@
 import Router from "@koa/router";
 import Koa from "koa";
 import ErrorFactory from "../errors/ErrorFactory";
+import Hub from "../Hub";
 import Application from "../models/Application";
 
 export default abstract class BaseRouter {
   public router: Router;
 
-  constructor() {
+  constructor(protected instance: Hub) {
     this.router = new Router();
     this.register();
   }

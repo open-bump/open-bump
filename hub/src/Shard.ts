@@ -19,6 +19,52 @@ interface IStatsData {
   [shard: number]: IStatsShardData | "timeout" | "disconnected";
 }
 
+enum MessageType {
+  "REQUEST" = "REQUEST",
+  "START" = "START",
+  "FINISHED" = "FINISHED",
+  "ERROR" = "ERROR"
+}
+
+enum ErrorCode {
+  "MISSING_SETUP" = "MISSING_SETUP",
+  "COOLDOWN" = "COOLDOWN",
+  "AUTOBUMP" = "AUTOBUMP",
+  "NOT_FOUND" = "NOT_FOUND",
+  "OTHER" = "OTHER"
+}
+
+interface HTTPBumpRequest {
+  guild: string;
+  channel: string;
+  user: string;
+}
+
+type HTTPBumpResponse = BumpFinishedResponse | BumpErrorResponse;
+
+interface BumpRequest {
+  type: MessageType.REQUEST;
+  guild: string;
+  channel: string;
+  user: string;
+}
+
+interface BumpFinishedResponse {
+  type: MessageType.FINISHED;
+  response: string;
+  amount?: number;
+  nextBump: number;
+  message?: string;
+}
+
+interface BumpErrorResponse {
+  type: MessageType.ERROR;
+  response: string;
+  code: ErrorCode;
+  nextBump?: number;
+  message?: String;
+}
+
 export default class Shard {
   public ready = false;
 
@@ -151,6 +197,16 @@ export default class Shard {
     for (let id = 0; id < this.shardManager.total; id++)
       if (!response[id]) response[id] = "disconnected";
     callback(response);
+  }
+
+  public async emitSBLPDirect(
+    applicationId: string,
+    request: HTTPBumpRequest
+  ): Promise<HTTPBumpResponse> {
+    const response = await new Promise<HTTPBumpResponse>((resolve) =>
+      this.socket.emit("sblpDirect", applicationId, request, resolve)
+    );
+    return response;
   }
 
   public disconnect(force = false) {

@@ -1,6 +1,7 @@
 import Discord, { ClientUser } from "discord.js";
 import ms from "ms";
 import config from "./config";
+import Application from "./models/Application";
 import OpenBump from "./OpenBump";
 import Utils, { GuildMessage, RawGuildMessage } from "./Utils";
 
@@ -24,6 +25,14 @@ export type SBLPPayload =
   | BumpStartedResponse
   | BumpFinishedResponse
   | BumpErrorResponse;
+
+export interface HTTPBumpRequest {
+  guild: string;
+  channel: string;
+  user: string;
+}
+
+export type HTTPBumpResponse = BumpFinishedResponse | BumpErrorResponse;
 
 export interface BumpRequest {
   type: MessageType.REQUEST;
@@ -66,22 +75,20 @@ export class SBLPBumpEntity {
   private mine: boolean;
   private providers: { [id: string]: SBLPPayload } = {};
   private updateHandlers: Array<() => void> = [];
+  private finalHandlers: Array<(response: HTTPBumpResponse) => void> = [];
   public timeout = false;
 
   constructor(
-    id: string | null,
+    id: string | undefined,
     private provider: string,
-    private communication: { guild: string; channel: string },
+    private http: boolean,
+    private communication: { guild: string; channel: string } | undefined,
     private guild: string,
     private channel: string,
     private user: string
   ) {
     if (id) this.id = id;
     this.mine = provider === OpenBump.instance.client.user?.id;
-    if (!this.mine && !id)
-      throw new Error(
-        "Invalid input to SBLPBumpEntity: Others requests need an ID passed."
-      );
     this.sblp = OpenBump.instance.sblp.registerEntity(this);
     if (this.mine) this.handleInside();
     else this.handleOutside();
@@ -92,8 +99,16 @@ export class SBLPBumpEntity {
       this.updateHandlers.push(handler);
   }
 
+  public onFinal(handler: (response: HTTPBumpResponse) => void) {
+    if (!this.finalHandlers.includes(handler)) this.finalHandlers.push(handler);
+  }
+
   private triggerUpdate() {
     for (const handler of this.updateHandlers) handler();
+  }
+
+  private triggerFinal(response: HTTPBumpResponse) {
+    for (const handler of this.finalHandlers) handler(response);
   }
 
   public getProviderStates() {
@@ -163,7 +178,7 @@ export class SBLPBumpEntity {
 
   private async handleOutside() {
     // Inform bot that the process has been started
-    await this.postBumpStartedResponse();
+    if (!this.http) await this.postBumpStartedResponse();
 
     // Start bumping
     const payload = await SBLPBumpEntity.handleOutsideSharded(
@@ -174,7 +189,8 @@ export class SBLPBumpEntity {
     );
 
     // Post payload
-    await this.post(payload);
+    if (!this.http) await this.post(payload);
+    else this.triggerFinal(payload);
   }
 
   public static async handleOutsideSharded(
@@ -301,6 +317,8 @@ export class SBLPBumpEntity {
   }
 
   private async post(payload: SBLPPayload) {
+    if (!this.communication?.guild || !this.communication.channel) return false;
+
     if (payload.type === MessageType.ERROR) {
       // TODO: Abort
       this.sblp.unregisterEntity(this);
@@ -321,6 +339,8 @@ export class SBLPBumpEntity {
   }
 
   private async debug(message: string) {
+    if (!this.communication?.guild || !this.communication.channel) return false;
+
     return await OpenBump.instance.networkManager.emitMessage(
       this.communication.guild,
       this.communication.channel,
@@ -431,6 +451,7 @@ export default class SBLP {
         new SBLPBumpEntity(
           message.id,
           message.author.id,
+          false,
           { guild: message?.guild?.id, channel: String(message?.channel?.id) },
           payload.guild,
           payload.channel,
@@ -455,6 +476,25 @@ export default class SBLP {
           message
         ); // Only emit to other shards if message set (this = primary)
     }
+  }
+
+  public async onHTTPBumpRequest(
+    application: Application,
+    request: HTTPBumpRequest
+  ): Promise<HTTPBumpResponse> {
+    const entity = new SBLPBumpEntity(
+      void 0,
+      application.id,
+      true,
+      void 0,
+      request.guild,
+      request.channel,
+      request.user
+    );
+    const response = await new Promise<HTTPBumpResponse>((resolve) =>
+      entity.onFinal(resolve)
+    );
+    return response;
   }
 
   public createBumpRequest(
