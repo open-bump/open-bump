@@ -8,7 +8,6 @@ import AutobumpCommand from "./commands/AutobumpCommand";
 import BadgesCommand from "./commands/BadgesCommand";
 import BrandingCommand from "./commands/BrandingCommand";
 import BumpCommand from "./commands/BumpCommand";
-import GiveawayCommand from "./commands/GiveawayCommand";
 import HelpCommand from "./commands/HelpCommand";
 import NsfwCommand from "./commands/NsfwCommand";
 import PingCommand from "./commands/PingCommand";
@@ -187,7 +186,6 @@ export default class CommandManager {
     this.registerCommand(new BadgesCommand(this.instance));
     this.registerCommand(new BrandingCommand(this.instance));
     this.registerCommand(new BumpCommand(this.instance));
-    this.registerCommand(new GiveawayCommand(this.instance));
     this.registerCommand(new HelpCommand(this.instance));
     this.registerCommand(new NsfwCommand(this.instance));
     this.registerCommand(new PingCommand(this.instance));
