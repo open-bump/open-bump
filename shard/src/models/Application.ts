@@ -42,9 +42,18 @@ export default class Application extends Model<Application> {
   @Column(DataType.UUID)
   token!: string;
 
-  @Column(DataType.STRING())
+  @Column(DataType.STRING(20))
   bot!: string;
 
   @HasMany(() => ApplicationFeature)
   features!: Array<ApplicationFeature>;
+
+  @Column(DataType.BOOLEAN)
+  sblpEnabled!: boolean;
+
+  @Column(DataType.STRING)
+  sblpBase!: string;
+
+  @Column(DataType.STRING)
+  sblpAuthorization!: string;
 }
