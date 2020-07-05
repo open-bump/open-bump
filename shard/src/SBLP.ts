@@ -1,7 +1,10 @@
 import Discord, { ClientUser } from "discord.js";
 import ms from "ms";
+import fetch from "node-fetch";
+import { Op } from "sequelize";
 import config from "./config";
 import Application from "./models/Application";
+import ApplicationFeature from "./models/ApplicationFeature";
 import OpenBump from "./OpenBump";
 import Utils, { GuildMessage, RawGuildMessage } from "./Utils";
 
@@ -164,6 +167,30 @@ export class SBLPBumpEntity {
   public async handleInside() {
     await this.postBumpRequest();
 
+    const applications = await Application.findAll({
+      where: {
+        sblpEnabled: true,
+        bot: {
+          [Op.ne]: null
+        }
+      },
+      include: [
+        {
+          model: ApplicationFeature,
+          as: "features",
+          where: {
+            feature: "SBLP"
+          }
+        }
+      ]
+    });
+
+    console.log("applications", applications.length);
+
+    for (const application of applications) {
+      this.postHTTPBumpRequest(application);
+    }
+
     setTimeout(() => {
       if (this.sblp.isRegistered(this)) {
         // Timeout after 60 seconds
@@ -174,6 +201,60 @@ export class SBLPBumpEntity {
         console.log("[SBLP] Unregistered entity after 60 seconds");
       }
     }, 60 * 1000);
+  }
+
+  private async postHTTPBumpRequest(application: Application) {
+    console.log("before");
+    if (
+      !application.features.find(({ feature }) => feature === "SBLP") ||
+      !application.sblpEnabled ||
+      !application.bot
+    )
+      return;
+    console.log("after");
+    try {
+      const prototypeStartResponse: BumpStartedResponse = {
+        type: MessageType.START,
+        response: "HTTP"
+      };
+      this.providers[application.bot] = prototypeStartResponse;
+
+      let url = application.sblpBase;
+      if (!url.endsWith("/")) url += "/";
+      url += "request";
+
+      console.log("url", url);
+
+      const res: BumpFinishedResponse | BumpErrorResponse = await fetch(url, {
+        method: "POST",
+        headers: {
+          authorization: application.sblpAuthorization,
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          guild: this.guild,
+          channel: this.channel,
+          user: this.user
+        })
+      }).then((res) => res.json());
+
+      console.log("response", res);
+
+      if (this.timeout) return;
+
+      this.providers[application.bot] = res;
+      this.triggerUpdate();
+    } catch (error) {
+      console.log("error", error);
+      if (this.timeout) return;
+      const prototypeErrorResponse: BumpErrorResponse = {
+        type: MessageType.ERROR,
+        response: "HTTP",
+        code: ErrorCode.OTHER,
+        message: `HTTP Error`
+      };
+      this.providers[application.bot] = prototypeErrorResponse;
+    }
   }
 
   private async handleOutside() {
@@ -281,6 +362,13 @@ export class SBLPBumpEntity {
     provider: string,
     payload: BumpStartedResponse | BumpFinishedResponse | BumpErrorResponse
   ) {
+    const providerData = this.providers[provider];
+    if (
+      providerData &&
+      providerData.type !== MessageType.REQUEST &&
+      providerData.response === "HTTP"
+    )
+      return;
     if (payload.type === MessageType.START) {
       // Another bump bot has started handling this request
       if (this.providers[provider])
@@ -381,7 +469,7 @@ export default class SBLP {
    *
    * @param message The received message
    */
-  public onMessage(message: Discord.Message) {
+  public async onMessage(message: Discord.Message) {
     const author = message.author;
     if (!author.bot && !config.discord.admins.includes(author.id)) return; // Only allow bots and bot admins (debug)
     if (author instanceof ClientUser) return; // Ignore own messages
@@ -396,6 +484,23 @@ export default class SBLP {
     ) {
       // Channel is a SBLP channel
       // Note: Open Bump will not use a whitelist system as it expects that only granted bots have access to the SBLP channel(s)
+
+      const application = await Application.findOne({
+        where: {
+          bot: author.id,
+          sblpEnabled: true
+        },
+        include: [
+          {
+            model: ApplicationFeature,
+            as: "features",
+            where: {
+              feature: "SBLP"
+            }
+          }
+        ]
+      });
+      if (application) return; // This bot uses communication over HTTP
 
       let payload: SBLPPayload;
       try {

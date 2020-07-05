@@ -40,6 +40,15 @@ const migration: Migratable = {
           bot: {
             type: datatypes.STRING(20)
           },
+          sblpEnabled: {
+            type: datatypes.BOOLEAN
+          },
+          sblpBase: {
+            type: datatypes.STRING
+          },
+          sblpAuthorization: {
+            type: datatypes.STRING
+          },
           createdAt: {
             defaultValue: connection.Sequelize.literal("CURRENT_TIMESTAMP"),
             allowNull: false,

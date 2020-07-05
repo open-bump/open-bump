@@ -10,7 +10,7 @@ import Utils, { GuildMessage } from "../Utils";
 export default class ApplicationCommand extends Command {
   public name = "application";
   public aliases = ["applications", "app", "apps"];
-  public syntax = "application [page|id [token]]";
+  public syntax = "application [page|id [token|sblp [toggle|setbase <base>]]";
   public description = "Manage your applications";
   public vanished = true;
 
@@ -32,6 +32,7 @@ export default class ApplicationCommand extends Command {
 
       if (application) {
         if (args.length === 1) {
+          const prefix = Utils.getPrefix(guildDatabase);
           const embed: MessageEmbedOptions = {
             color: Utils.Colors.BLUE,
             title: `${Utils.Emojis.ROBOT} Application Info`,
@@ -49,9 +50,9 @@ export default class ApplicationCommand extends Command {
             fields: [
               {
                 name: "Syntax",
-                value: `- \`${Utils.getPrefix(guildDatabase)}${
-                  this.name
-                } <id> token\`- View the application's token`
+                value:
+                  `- \`${prefix}${this.name} <id> token\`- View the  token\n` +
+                  `- \`${prefix}${this.name} <id> sblp\` - View the SBLP settings`
               }
             ],
             footer: {
@@ -59,7 +60,7 @@ export default class ApplicationCommand extends Command {
             }
           };
           return void (await channel.send({ embed }));
-        } else if (args.length === 2) {
+        } else if (args.length >= 2) {
           if (args[1] === "token") {
             let embed: MessageEmbedOptions = {
               color: Utils.Colors.GREEN,
@@ -82,6 +83,71 @@ export default class ApplicationCommand extends Command {
                 color: Utils.Colors.RED,
                 title: `${Utils.Emojis.XMARK} Application Token`,
                 description: `The bot was not able to send you a DM. Please enable your DMs.`
+              };
+              return void (await channel.send({ embed }));
+            }
+          } else if (args[1] === "sblp") {
+            if (
+              application.features.find(
+                (feature) => feature.feature === "SBLP"
+              ) &&
+              application.bot
+            ) {
+              if (args.length === 2) {
+                const prefix = Utils.getPrefix(guildDatabase);
+                const embed: MessageEmbedOptions = {
+                  color: Utils.Colors.BLUE,
+                  title: `${Utils.Emojis.INFORMATION} SBLP`,
+                  description:
+                    `**Status:** ${
+                      application.sblpEnabled ? "Enabled" : "Disabled"
+                    }\n` +
+                    `**Base URL:** ${application.sblpBase || "*No base URL*"}`,
+                  fields: [
+                    {
+                      name: "Syntax",
+                      value:
+                        `- \`${prefix}${this.name} <id> sblp toggle\`- Toggle SBLP\n` +
+                        `- \`${prefix}${this.name} <id> sblp setbase <base>\` - Set the base URL`
+                    }
+                  ]
+                };
+                return void (await channel.send({ embed }));
+              } else {
+                if (args[2] === "toggle") {
+                  application.sblpEnabled = !application.sblpEnabled;
+                  await application.save();
+                  const embed: MessageEmbedOptions = {
+                    color: Utils.Colors.GREEN,
+                    title: `${Utils.Emojis.CHECK} SBLP has been ${
+                      application.sblpEnabled ? "enabled" : "disabled"
+                    }`,
+                    description: `Make sure to also set a base URL using \`${Utils.getPrefix(
+                      guildDatabase
+                    )}${
+                      this.name
+                    } <id> sblp <setbase> <base>\`, or your bot will not receive bump requests.`
+                  };
+                  return void (await channel.send({ embed }));
+                } else if (args[2] === "setbase" && args.length === 4) {
+                  const newBase = args[3];
+                  application.sblpBase = newBase;
+                  await application.save();
+
+                  const embed = {
+                    color: Utils.Colors.GREEN,
+                    title: `${Utils.Emojis.CHECK} Base URL has been updated`,
+                    description: `__**New Base URL:**__ ${newBase}`
+                  };
+                  return void (await channel.send({ embed }));
+                } else
+                  return void (await this.sendSyntax(message, guildDatabase));
+              }
+            } else {
+              const embed: MessageEmbedOptions = {
+                color: Utils.Colors.RED,
+                title: `${Utils.Emojis.XMARK} Forbidden`,
+                description: `This application does not have access to SBLP settings.`
               };
               return void (await channel.send({ embed }));
             }
