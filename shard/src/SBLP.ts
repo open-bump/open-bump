@@ -35,7 +35,17 @@ export interface HTTPBumpRequest {
   user: string;
 }
 
-export type HTTPBumpResponse = BumpFinishedResponse | BumpErrorResponse;
+export interface OpenBumpFamilyBaseError {
+  error: true;
+  status: number;
+  code: string;
+  message?: string;
+}
+
+export type HTTPBumpResponse =
+  | BumpFinishedResponse
+  | BumpErrorResponse
+  | OpenBumpFamilyBaseError;
 
 export interface BumpRequest {
   type: MessageType.REQUEST;
@@ -55,6 +65,7 @@ export interface BumpFinishedResponse {
   amount?: number;
   nextBump: number;
   message?: string;
+  error?: void;
 }
 
 export interface BumpErrorResponse {
@@ -63,6 +74,7 @@ export interface BumpErrorResponse {
   code: ErrorCode;
   nextBump?: number;
   message?: String;
+  error?: void;
 }
 
 export class SBLPSchemaError extends Error {
@@ -225,7 +237,7 @@ export class SBLPBumpEntity {
 
       console.log("url", url);
 
-      const res: BumpFinishedResponse | BumpErrorResponse = await fetch(url, {
+      const res: HTTPBumpResponse = await fetch(url, {
         method: "POST",
         headers: {
           authorization: application.sblpAuthorization,
@@ -242,7 +254,11 @@ export class SBLPBumpEntity {
 
       if (this.timeout) return;
 
-      this.providers[application.bot] = res;
+      if (res.error) {
+        throw res;
+      } else {
+        this.providers[application.bot] = res;
+      }
       this.triggerUpdate();
     } catch (error) {
       console.log("error", error);

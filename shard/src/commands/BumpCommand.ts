@@ -237,17 +237,15 @@ export default class BumpCommand extends Command {
       await guildDatabase.save();
 
       // Start SBLP (async)
-      const sblp =
-        config.settings.integration?.sblp.post &&
-        new SBLPBumpEntity(
-          void 0,
-          this.instance.client.user?.id as string,
-          false,
-          config.settings.integration.sblp.post,
-          guild.id,
-          channel.id,
-          message.author.id
-        );
+      const sblp = new SBLPBumpEntity(
+        void 0,
+        this.instance.client.user?.id as string,
+        false,
+        config.settings.integration?.sblp.post,
+        guild.id,
+        channel.id,
+        message.author.id
+      );
 
       const loadingEmbedEmbed = {
         color: Utils.Colors.BLUE,
