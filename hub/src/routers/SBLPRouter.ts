@@ -15,6 +15,7 @@ export default class SBLPRouter extends BaseRouter {
    * @param ctx Context
    */
   public async bumpRequest(ctx: Koa.Context, _next: Koa.Next) {
-    ctx.body = "request";
+    await this.requireParameters(["guild", "channel", "user"])(ctx);
+    console.log(ctx.request.body);
   }
 }

@@ -18,4 +18,18 @@ export default class ErrorFactory {
         "Your application does not have sufficient permissions to access this resource."
       );
   }
+
+  public static missingParameters(
+    code = "missing_parameters",
+    parameters: Array<string> = []
+  ) {
+    return new BaseError()
+      .setStatus(400)
+      .setCode(code)
+      .setMessage(
+        `Request body is missing the following parameter${
+          parameters.length !== 1 ? "s" : ""
+        }: ${parameters.map((parameter) => `\`${parameter}\``).join(", ")}`
+      );
+  }
 }

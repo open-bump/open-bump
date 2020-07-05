@@ -1,5 +1,6 @@
 import Router from "@koa/router";
 import Koa from "koa";
+import bodyParser from "koa-bodyparser";
 import config from "./config";
 import BaseError from "./errors/BaseError";
 import Hub from "./Hub";
@@ -14,6 +15,8 @@ export default class Server {
   constructor(private instance: Hub) {
     this.app = new Koa();
     this.router = new Router();
+
+    this.app.use(bodyParser());
 
     this.registerRoutes();
 
