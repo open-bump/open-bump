@@ -80,8 +80,8 @@ export default class ShardManager {
   }
 
   public async init() {
-    const port = config.settings.port;
+    const port = config.settings.wsPort;
     await new Promise((resolve) => this.http.listen(port, resolve));
-    console.log(`Listening on *:${port}`);
+    console.log(`Websockets listening on *:${port}`);
   }
 }
