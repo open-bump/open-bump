@@ -128,8 +128,8 @@ export default class Premium {
             description:
               "Hey there, we recently detected a problem with your premium. " +
               "It looks like your balance is not enough to cover the cost for all activated servers. " +
-              "Please fix this issue asap." +
-              "You can increate your pledge or disable/change change servers. " +
+              "Please fix this issue asap. " +
+              "You can increase your pledge or disable/change change servers. " +
               `To get an overview of your activated premium servers, use the command \`${Utils.getPrefix()}premium\` to do so. ` +
               "Please note, the premium command needs to be executed on your own server and not via DMs. " +
               `If you believe this is an error, please contact **[Support](${config.settings.support})**.\n` +
@@ -187,8 +187,8 @@ export default class Premium {
             description:
               "Hey there, we recently detected a problem with your premium. " +
               "It looks like your balance is not enough to cover the cost for all activated servers. " +
-              "Please fix this issue asap." +
-              "You can increate your pledge or disable/change change servers. " +
+              "Please fix this issue asap. " +
+              "You can increase your pledge or disable/change change servers. " +
               `To get an overview of your activated premium servers, use the command \`${Utils.getPrefix()}premium\` to do so. ` +
               "Please note, the premium command needs to be executed on your own server and not via DMs. " +
               `If you believe this is an error, please contact **[Support](${config.settings.support})**.`
