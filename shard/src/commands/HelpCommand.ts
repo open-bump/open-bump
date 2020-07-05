@@ -23,7 +23,7 @@ export default class HelpCommand extends Command {
         title: `${this.instance.client.user?.username} | Discord Bump Bot`,
         description: `To view more information - \`${Utils.getPrefix(
           guildDatabase
-        )}help <command>\`.`,
+        )}help <command>\``,
         thumbnail: {
           url: this.instance.client.user?.displayAvatarURL()
         },

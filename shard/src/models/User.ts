@@ -3,6 +3,7 @@ import {
   AllowNull,
   Column,
   DataType,
+  Default,
   HasOne,
   Model,
   PrimaryKey,
@@ -23,6 +24,19 @@ export default class User extends Model<User> {
 
   @HasOne(() => Donator)
   donator?: Donator;
+
+  @Column(DataType.DATE)
+  lastBumpedAt?: Date | null;
+
+  @Default(0)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  bumpsSinceCaptcha!: number;
+
+  @Default(false)
+  @AllowNull(false)
+  @Column(DataType.BOOLEAN)
+  requireCaptcha!: boolean;
 
   @AfterCreate
   public static async afterCreateHook(

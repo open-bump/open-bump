@@ -1,7 +1,9 @@
 import * as parser from "discord-command-parser";
 import Discord from "discord.js";
+import * as uuid from "uuid";
 import Command from "./Command";
 import AboutCommand from "./commands/AboutCommand";
+import ApplicationCommand from "./commands/ApplicationCommand";
 import AutobumpCommand from "./commands/AutobumpCommand";
 import BadgesCommand from "./commands/BadgesCommand";
 import BrandingCommand from "./commands/BrandingCommand";
@@ -24,7 +26,7 @@ import SupportCommand from "./commands/SupportCommand";
 import VoteCommand from "./commands/VoteCommand";
 import config from "./config";
 import OpenBump from "./OpenBump";
-import Utils, { EmbedError, GuildMessage } from "./Utils";
+import Utils, { EmbedError, GuildMessage, VoidError } from "./Utils";
 
 export default class CommandManager {
   public static Categories = {
@@ -33,10 +35,20 @@ export default class CommandManager {
     PREMIUM: "PREMIUM" as "PREMIUM"
   };
 
+  private interactive: {
+    [id: string]: (() => void | Promise<void>) | void;
+  } = {};
+
+  private running: Array<string> = [];
+
   private commands: { [name: string]: Command } = {};
 
   constructor(private instance: OpenBump) {
     this.registerCommands();
+  }
+
+  public isRunning(id: string) {
+    return this.running.includes(id);
   }
 
   public async run(message: GuildMessage) {
@@ -120,7 +132,33 @@ export default class CommandManager {
         return void (await channel.send({ embed }));
       }
 
+      const userDatabase = await Utils.ensureUser(message.author);
+
+      const id = uuid.v4();
+      const unhookInteraction = () => {
+        const index = this.running.indexOf(id);
+        if (index > -1) {
+          this.running.splice(index, 1);
+          this.interactive[message.author.id] = void 0;
+        }
+      };
       try {
+        const interactive = this.interactive[message.author.id];
+        if (interactive) {
+          try {
+            await interactive();
+          } catch (error) {}
+          this.interactive[message.author.id] = void 0;
+          return;
+        }
+        if (command.interactive) {
+          this.running.push(id);
+          this.interactive[message.author.id] = async () => {
+            const index = this.running.indexOf(id);
+            if (index > -1) this.running.splice(index, 1);
+            await channel.send(`${Utils.Emojis.XMARK} ${command.interactive}`);
+          };
+        }
         if (guildDatabase.sandbox)
           await channel.send(
             `${Utils.Emojis.IMPORTANTNOTICE} This guild is on **Sandbox Mode**!\n` +
@@ -128,12 +166,22 @@ export default class CommandManager {
                 guildDatabase
               )}sandbox toggle\` to disable.`
           );
-        await command.run(parsed, guildDatabase);
+
+        await command.run(
+          parsed,
+          guildDatabase,
+          userDatabase,
+          id,
+          unhookInteraction
+        );
       } catch (error) {
+        if (error instanceof VoidError) return;
         const embed = Utils.errorToEmbed(error);
         await message.channel.send({ embed });
         if (!(error instanceof EmbedError))
           console.error(`Catched error while command execution!`, error);
+      } finally {
+        unhookInteraction();
       }
     }
   }
@@ -159,6 +207,7 @@ export default class CommandManager {
     this.registerCommand(new SetInviteCommand(this.instance));
     this.registerCommand(new PreviewCommand(this.instance));
     this.registerCommand(new SandboxCommand(this.instance));
+    this.registerCommand(new ApplicationCommand(this.instance));
     this.registerCommand(new VoteCommand(this.instance));
   }
 

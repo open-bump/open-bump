@@ -10,6 +10,7 @@ export default class SupportCommand extends Command {
   public syntax = "support";
   public description = "Get an invite link to the support server";
   public category = CommandManager.Categories.GENERAL;
+  public general = true;
 
   public async run(
     { message }: SuccessfulParsedMessage<GuildMessage>,

@@ -18,7 +18,8 @@ interface IConfig extends config.IConfig {
     shards: number;
   };
   settings: {
-    port: number;
+    wsPort: number;
+    httpPort: number;
     logs: {
       shards: string;
     };

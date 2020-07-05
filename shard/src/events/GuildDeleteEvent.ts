@@ -1,9 +1,12 @@
-import Discord, { ClientEvents } from "discord.js";
+import Discord from "discord.js";
 import Event from "../Event";
+import OpenBump from "../OpenBump";
 import Utils from "../Utils";
 
-export default class GuildDeleteEvent extends Event {
-  public name: keyof ClientEvents = "guildDelete";
+export default class GuildDeleteEvent extends Event<"guildDelete"> {
+  constructor(instance: OpenBump) {
+    super(instance, "guildDelete");
+  }
 
   public async run(guild: Discord.Guild) {
     if (!this.instance.ready)

@@ -1,6 +1,6 @@
-import { MigrationJS } from "./helpers/Migrator";
+import { Migratable } from "./helpers/Migrator";
 
-const migration: MigrationJS = {
+const migration: Migratable = {
   version: "3.1.0",
   up: async (connection, datatypes) => {
     const transaction = await connection.transaction();

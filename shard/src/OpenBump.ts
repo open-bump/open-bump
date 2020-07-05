@@ -28,12 +28,15 @@ export default class OpenBump {
     OpenBump.instance = this;
 
     this.client = new Discord.Client({
+      fetchAllMembers: false,
       ws: {
+        intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"],
         properties: {
           $browser: "Discord Android",
           $device: "Discord Android"
         }
-      } as WebSocketOptions
+      } as WebSocketOptions,
+      partials: ["USER", "CHANNEL", "GUILD_MEMBER", "MESSAGE", "REACTION"]
     });
 
     this.commandManager = new CommandManager(this);

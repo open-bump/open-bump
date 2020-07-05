@@ -1,8 +1,8 @@
 import { DataType, Sequelize } from "sequelize-typescript";
 import { Transaction } from "sequelize/types";
-import { MigrationJS } from "./helpers/Migrator";
+import { Migratable } from "./helpers/Migrator";
 
-const migration: MigrationJS = {
+const migration: Migratable = {
   version: "3.0.1",
   up: async (connection, datatypes) => {
     const transaction: Transaction = await connection.transaction();
@@ -76,11 +76,15 @@ const migration: MigrationJS = {
       );
 
       // Create Unique Constraint
-      await queryInterface.addConstraint("GuildFeature", ["guildId", "feature"], {
-        type: "unique",
-        name: "GuildFeature_guildId_feature_uk",
-        transaction
-      });
+      await queryInterface.addConstraint(
+        "GuildFeature",
+        ["guildId", "feature"],
+        {
+          type: "unique",
+          name: "GuildFeature_guildId_feature_uk",
+          transaction
+        }
+      );
 
       // Add Foreign Key From "GuildFeature" To "Guild"
       await queryInterface.addConstraint("GuildFeature", ["guildId"], {

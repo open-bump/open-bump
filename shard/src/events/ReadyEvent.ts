@@ -1,9 +1,12 @@
-import { ClientEvents } from "discord.js";
 import Event from "../Event";
+import Giveaways from "../Giveaways";
+import OpenBump from "../OpenBump";
 import Utils from "../Utils";
 
-export default class ReadyEvent extends Event {
-  public name: keyof ClientEvents = "ready";
+export default class ReadyEvent extends Event<"ready"> {
+  constructor(instance: OpenBump) {
+    super(instance, "ready");
+  }
 
   private first = true;
 
@@ -14,6 +17,7 @@ export default class ReadyEvent extends Event {
       Utils.Lists.start();
       Utils.Bump.startAutobump();
       Utils.startReminder();
+      Giveaways.startGiveaways();
       this.instance.customStatusLoop();
       await this.instance.premium.init();
     }

@@ -41,11 +41,6 @@ interface IConfig extends config.IConfig {
       server: string;
       bonus: number;
     };
-    patreonRoles?: Array<{
-      guild: string;
-      role: string;
-      cost: number;
-    }>;
     servermate: {
       user: string;
       trigger: string;
@@ -70,6 +65,12 @@ interface IConfig extends config.IConfig {
       enabled: boolean;
       token: string;
     };
+  };
+  captchas: {
+    username: string;
+    secret: string;
+    alphabet: string;
+    letters: number;
   };
 }
 
