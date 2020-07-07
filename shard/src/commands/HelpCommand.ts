@@ -1,4 +1,5 @@
 import { SuccessfulParsedMessage } from "discord-command-parser";
+import { MessageEmbedOptions } from "discord.js";
 import Command from "../Command";
 import CommandManager from "../CommandManager";
 import Guild from "../models/Guild";
@@ -15,65 +16,93 @@ export default class HelpCommand extends Command {
     { message, arguments: args }: SuccessfulParsedMessage<GuildMessage>,
     guildDatabase: Guild
   ) {
-    const { channel } = message;
+    const { channel, guild } = message;
+    const prefix = Utils.getPrefix(guildDatabase);
     if (args.length === 0) {
-      const prefix = Utils.getPrefix(guildDatabase);
-      const embed = {
+      const embed: MessageEmbedOptions = {
         color: Utils.Colors.GREEN,
-        title: `${this.instance.client.user?.username} | Discord Bump Bot`,
-        description: `To view more information - \`${Utils.getPrefix(
-          guildDatabase
-        )}help <command>\``,
-        thumbnail: {
-          url: this.instance.client.user?.displayAvatarURL()
-        },
+        title: `${this.instance.client.user?.username} Plugins Commands`,
         fields: [
-          [CommandManager.Categories.GENERAL, "General Plugins Help"],
-          [CommandManager.Categories.BUMPSET, "Bumpset Plugins Commands"],
-          [CommandManager.Categories.PREMIUM, "Premium Plugins Commands"]
-        ].map(([current, title]) => {
-          return {
-            name: title,
-            value: this.instance.commandManager
-              .getCommands()
-              .filter(({ vanished }) => !vanished)
-              .filter(({ category }) => category === current)
-              .map(
-                (command) =>
-                  `\`${prefix}${command.name}\` - ${command.description}`
-              )
-              .join("\n")
-          };
-        }),
-        footer: {
-          text: Utils.getCommonFooter()
-        },
-        timestamp: Date.now()
+          [CommandManager.Categories.GENERAL, "🤖 General", "general"],
+          [CommandManager.Categories.BUMPSET, "⏫ Bumpset", "bumpset"],
+          [CommandManager.Categories.PREMIUM, "💎 Premium", "premium"]
+        ].map(([_category, title, slug]) => ({
+          name: title,
+          value: `\`${prefix}help ${slug}\``,
+          inline: true
+        })),
+        thumbnail: {
+          url: this.instance.client.user?.avatarURL() || void 0
+        }
       };
       return void (await channel.send({ embed }));
     } else if (args.length === 1) {
-      const command = OpenBump.instance.commandManager.getCommand(args[0]);
-      if (command) {
+      const categories: {
+        [category: string]: [keyof typeof CommandManager.Categories, string];
+      } = {
+        general: [
+          CommandManager.Categories.GENERAL,
+          "🤖 General Plugins Commands"
+        ],
+        bumpset: [
+          CommandManager.Categories.BUMPSET,
+          "⏫ Bumpset Plugins Commands"
+        ],
+        premium: [
+          CommandManager.Categories.PREMIUM,
+          "💎 Premium Plugins Commands"
+        ]
+      };
+      if (categories[args[0]]) {
+        const [category, title] = categories[args[0]];
         const embed = {
           color: Utils.Colors.BLUE,
-          title: `${Utils.Emojis.INFORMATION} ${command.name}`,
-          description:
-            `**Syntax:** ${command.syntax}\n` +
-            `**Aliases:** ${Utils.niceList(
-              command.aliases.map((alias) => `\`${alias}\``)
-            )}\n` +
-            `**Description:** ${command.description}`
+          title,
+          description: this.instance.commandManager
+            .getCommands()
+            .filter(({ vanished }) => !vanished)
+            .filter(({ category: cat }) => cat === category)
+            .map((command) => `\`${command.name}\``)
+            .join(" "),
+          thumbnail: {
+            url: this.instance.client.user?.avatarURL() || void 0
+          }
         };
         return void (await channel.send({ embed }));
       } else {
-        const embed = {
-          color: Utils.Colors.RED,
-          title: `${Utils.Emojis.XMARK} Command not found`,
-          description: `Make sure you entered the command name correctly. Use \`${Utils.getPrefix(
-            guildDatabase
-          )}help\` to view a list of all commands.`
+        const command = OpenBump.instance.commandManager.getCommand(args[0]);
+        const categories = {
+          [CommandManager.Categories.GENERAL]: "General",
+          [CommandManager.Categories.BUMPSET]: "Bumpset",
+          [CommandManager.Categories.PREMIUM]: "Premium"
         };
-        return void (await channel.send({ embed }));
+        if (command) {
+          const embed = {
+            description: command.description,
+            fields: [
+              {
+                name: "Command Information",
+                value:
+                  `**Usage:** \`${prefix}${command.syntax}\`\n` +
+                  `**Aliases:** ${Utils.niceList(
+                    command.aliases.map((alias) => `\`${alias}\``) ||
+                      "*No aliases*"
+                  )}\n` +
+                  `**Category:** \`${categories[command.category]}\``
+              }
+            ]
+          };
+          return void (await channel.send({ embed }));
+        } else {
+          const embed = {
+            color: Utils.Colors.RED,
+            title: `${Utils.Emojis.XMARK} Command not found`,
+            description: `Make sure you entered the command name correctly. Use \`${Utils.getPrefix(
+              guildDatabase
+            )}help\` to view a list of all commands.`
+          };
+          return void (await channel.send({ embed }));
+        }
       }
     } else return void (await this.sendSyntax(message, guildDatabase));
   }
