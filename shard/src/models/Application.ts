@@ -56,4 +56,7 @@ export default class Application extends Model<Application> {
 
   @Column(DataType.STRING)
   sblpAuthorization!: string;
+
+  @Column(DataType.BOOLEAN)
+  sblpSandbox!: boolean;
 }
