@@ -5,6 +5,7 @@ import { Op } from "sequelize";
 import config from "./config";
 import Application from "./models/Application";
 import ApplicationFeature from "./models/ApplicationFeature";
+import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
 import Utils, { GuildMessage, RawGuildMessage } from "./Utils";
 
@@ -179,9 +180,14 @@ export class SBLPBumpEntity {
   public async handleInside() {
     await this.postBumpRequest();
 
+    const guildDatabase = await Guild.findOne({ where: { id: this.guild } });
+
     const applications = await Application.findAll({
       where: {
         sblpEnabled: true,
+        ...(!guildDatabase?.sandbox
+          ? { sblpSandbox: { [Op.or]: [null, false] } }
+          : {}),
         bot: {
           [Op.ne]: null
         }
@@ -501,10 +507,17 @@ export default class SBLP {
       // Channel is a SBLP channel
       // Note: Open Bump will not use a whitelist system as it expects that only granted bots have access to the SBLP channel(s)
 
+      const guildDatabase = await Guild.findOne({
+        where: { id: message.guild.id }
+      });
+
       const application = await Application.findOne({
         where: {
           bot: author.id,
-          sblpEnabled: true
+          sblpEnabled: true,
+          ...(!guildDatabase?.sandbox
+            ? { sblpSandbox: { [Op.or]: [null, false] } }
+            : {})
         },
         include: [
           {
