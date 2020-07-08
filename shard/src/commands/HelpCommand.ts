@@ -63,7 +63,7 @@ export default class HelpCommand extends Command {
             .filter(({ vanished }) => !vanished)
             .filter(({ category: cat }) => cat === category)
             .map((command) => `\`${command.name}\``)
-            .join(" "),
+            .join(", "),
           thumbnail: {
             url: this.instance.client.user?.avatarURL() || void 0
           }
