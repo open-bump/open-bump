@@ -1160,9 +1160,9 @@ export default class Utils {
   public static Colors = {
     BLUE: 0x698cce,
     RED: 0xff0000,
-    GREEN: 0x3dd42c,
+    GREEN: 0xff0000,
     ORANGE: 0xff9900,
-    OPENBUMP: 0x27ad60,
+    OPENBUMP: 0x000000,
     ENDED: 0x000001,
     getRawString: (color: number) => {
       let string = color.toString(16);
