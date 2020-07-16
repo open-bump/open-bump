@@ -30,12 +30,7 @@ export default class OpenBump {
     this.client = new Discord.Client({
       fetchAllMembers: false,
       ws: {
-        intents: [
-          "GUILDS",
-          "GUILD_MESSAGES",
-          "GUILD_MESSAGE_REACTIONS",
-          "GUILD_MEMBERS"
-        ]
+        intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MESSAGE_REACTIONS"]
       },
       partials: ["USER", "CHANNEL", "GUILD_MEMBER", "MESSAGE", "REACTION"]
     });
