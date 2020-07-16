@@ -81,6 +81,7 @@ export default class Shard {
     socket.on("bump", this.onBump.bind(this));
     socket.on("sblpOutside", this.onSBLPOutside.bind(this));
     socket.on("stats", this.onStats.bind(this));
+    socket.on("guildMemberRemove", this.onGuildMemberRemove.bind(this));
 
     socket.emit("identified", {
       id: this.id,
@@ -197,6 +198,11 @@ export default class Shard {
     for (let id = 0; id < this.shardManager.total; id++)
       if (!response[id]) response[id] = "disconnected";
     callback(response);
+  }
+
+  private async onGuildMemberRemove(event: object) {
+    const shards = this.shardManager.getOtherShards(this.id);
+    for (const shard of shards) shard.socket.emit("guildMemberRemove", event);
   }
 
   public async emitSBLPDirect(

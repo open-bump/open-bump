@@ -102,7 +102,7 @@ export default class ApplicationCommand extends Command {
                     `**Status:** ${
                       application.sblpEnabled ? "Enabled" : "Disabled"
                     }\n` +
-                    `**Base URL:** ${application.sblpBase || "*No base URL*"}`,
+                    `**Base URL:** ${application.base || "*No base URL*"}`,
                   fields: [
                     {
                       name: "Syntax",
@@ -131,7 +131,7 @@ export default class ApplicationCommand extends Command {
                   return void (await channel.send({ embed }));
                 } else if (args[2] === "setbase" && args.length === 4) {
                   const newBase = args[3];
-                  application.sblpBase = newBase;
+                  application.base = newBase;
                   await application.save();
 
                   const embed = {

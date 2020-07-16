@@ -19,6 +19,13 @@ export default class ErrorFactory {
       );
   }
 
+  public static notFound(type = "object", id?: string) {
+    return new BaseError()
+      .setStatus(404)
+      .setCode(`${type}_not_found`)
+      .setMessage(`Could not find ${type}${id ? ` with id "${id}"` : ""}`);
+  }
+
   public static missingParameters(
     code = "missing_parameters",
     parameters: Array<string> = []

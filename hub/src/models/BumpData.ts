@@ -29,13 +29,13 @@ export default class BumpData extends Model<BumpData> {
   guild!: Guild;
 
   @Column(DataType.TEXT)
-  description?: string;
+  description?: string | null;
 
   @Column(DataType.STRING)
-  invite!: string;
+  invite?: string | null;
 
   @Column(DataType.STRING)
-  banner!: string | null;
+  banner?: string | null;
 
   @Column(DataType.INTEGER)
   color?: number | null;
