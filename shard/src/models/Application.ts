@@ -52,11 +52,20 @@ export default class Application extends Model<Application> {
   sblpEnabled!: boolean;
 
   @Column(DataType.STRING)
-  sblpBase!: string;
+  base!: string;
 
   @Column(DataType.STRING)
-  sblpAuthorization!: string;
+  authorization!: string;
 
   @Column(DataType.BOOLEAN)
   sblpSandbox!: boolean;
+
+  @Column(DataType.BOOLEAN)
+  shareEnabled!: boolean;
+
+  public getBase() {
+    let url = this.base;
+    if (!url.endsWith("/")) url += "/";
+    return url;
+  }
 }
