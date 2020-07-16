@@ -194,7 +194,7 @@ export default class Giveaways {
       ]
     });
     console.log(
-      `[DEBUG] Removedember ${event.d.user.id} from guild ${event.d.guild_id}, found ${participants.length} giveaway participants matching.`
+      `[DEBUG] Removed member ${event.d.user.id} from guild ${event.d.guild_id}, found ${participants.length} giveaway participants matching.`
     );
     if (participants.length) {
       for (const participant of participants) {

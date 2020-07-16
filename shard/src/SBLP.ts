@@ -237,17 +237,14 @@ export class SBLPBumpEntity {
       };
       this.providers[application.bot] = prototypeStartResponse;
 
-      let url = application.sblpBase;
-      if (!url.endsWith("/")) url += "/";
-      url += "request";
-
-      console.log("url", url);
+      const url = `${application.getBase()}sblp/request`;
+      console.log(`[DEBUG] URL: ${url}`);
 
       const res: HTTPBumpResponse = await fetch("https://proxy.discord.one/", {
         method: "POST",
         headers: {
           "x-target": url,
-          authorization: application.sblpAuthorization,
+          authorization: application.authorization,
           "content-type": "application/json"
         },
         body: JSON.stringify({

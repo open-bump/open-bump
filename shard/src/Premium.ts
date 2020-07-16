@@ -279,7 +279,7 @@ export default class Premium {
 
     // Output for debug reasons
     console.log(
-      "violators",
+      "[PATREON] Violators:",
       violators.map(
         (violator) =>
           `${violator.userId}:${violator.get("totalAssigned")}/${violator.get(
@@ -288,7 +288,7 @@ export default class Premium {
       )
     );
     console.log(
-      "exs",
+      "[PATREON] Exs:",
       exs.map(
         (ex) =>
           `${ex.userId}:${ex.get("totalAssigned")}/${ex.get("totalBalance")}`
