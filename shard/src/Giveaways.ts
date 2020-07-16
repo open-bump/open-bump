@@ -1,8 +1,9 @@
 import Discord, { MessageEmbedOptions, MessageReaction } from "discord.js";
 import ms from "ms";
-import fetch from "node-fetch";
+import fetch, { Response } from "node-fetch";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
+import { IGuildMemberRemoveEvent } from "./events/RawEvent";
 import Giveaway from "./models/Giveaway";
 import GiveawayParticipant from "./models/GiveawayParticipant";
 import GiveawayRequirement from "./models/GiveawayRequirement";
@@ -84,81 +85,10 @@ export default class Giveaways {
       user = await OpenBump.instance.client.users.fetch(user.id);
     const guild = OpenBump.instance.client.guilds.cache.get(giveaway.guildId);
     if (!guild) throw new Error("Guild not found!");
-    let requirements: Array<[GiveawayRequirement, boolean]> = [];
-    const cache: Array<{ guild: string; user: string; member: APIMember }> = [];
-    for (const requirement of giveaway.requirements) {
-      if (requirement.type === "GUILD") {
-        const member =
-          cache.find(
-            (entry) =>
-              entry.guild === String(requirement.target) &&
-              entry.user === user.id
-          )?.member ||
-          (await this.fetchAPIMember(String(requirement.target), user.id));
-        if (member)
-          cache.push({
-            guild: String(requirement.target),
-            user: user.id,
-            member
-          });
-        requirements.push([requirement, Boolean(member)]);
-      } else if (requirement.type === "ROLE") {
-        const member =
-          cache.find(
-            (entry) =>
-              entry.guild === giveaway.guildId && entry.user === user.id
-          )?.member || (await this.fetchAPIMember(giveaway.guildId, user.id));
-        if (member)
-          cache.push({
-            guild: giveaway.guildId,
-            user: user.id,
-            member
-          });
-        requirements.push([
-          requirement,
-          Boolean(member?.roles.includes(String(requirement.target)))
-        ]);
-      } else if (requirement.type === "VOTE") {
-        const voted = await Utils.Lists.hasVotedTopGG(user.id);
-        requirements.push([requirement, voted]);
-      }
-    }
-    requirements = requirements.sort(([a], [b]) =>
-      a.type > b.type ? 1 : a.type < b.type ? -1 : 0
-    );
-    if (requirements.find(([_requirement, fullfilled]) => !fullfilled)) {
+    const requirements = await this.checkRequirements(giveaway, user);
+    if (requirements.find(([, fullfilled]) => !fullfilled)) {
       // Not all requirements met
-      const parts = [];
-
-      for (const [requirement, fullfilled] of requirements) {
-        if (requirement.type === "GUILD") {
-          const guildDatabase = await Guild.findOne({
-            where: { id: String(requirement.target) }
-          });
-          parts.push(
-            `${
-              fullfilled ? Utils.Emojis.TICKYES : Utils.Emojis.TICKNO
-            } Be a member of **${
-              guildDatabase?.name
-            }** **[[Invite](https://discord.gg/${requirement.invite})**]`
-          );
-        } else if (requirement.type === "ROLE") {
-          const role = guild.roles.cache.get(String(requirement.target));
-          parts.push(
-            `${
-              fullfilled ? Utils.Emojis.TICKYES : Utils.Emojis.TICKNO
-            } Have the role **${role?.name}**`
-          );
-        } else if (requirement.type === "VOTE") {
-          parts.push(
-            `${
-              fullfilled ? Utils.Emojis.TICKYES : Utils.Emojis.TICKNO
-            } Vote for **${
-              OpenBump.instance.client.user?.username
-            }** **[[Vote](${Utils.Lists.getLinkTopGG()})]**`
-          );
-        }
-      }
+      const parts = await this.displayRequirements(requirements, guild);
 
       let description =
         `To participate in the giveaway in **${guild?.name}**, you need to...\n` +
@@ -196,18 +126,125 @@ export default class Giveaways {
     });
   }
 
+  public static async kick(user: Discord.User, giveaway: Giveaway) {
+    const guild = OpenBump.instance.client.guilds.cache.get(giveaway.guildId);
+    if (!guild) throw new Error("Guild not on this shard!"); // TODO
+    await GiveawayParticipant.destroy({
+      where: {
+        userId: user.id,
+        giveawayId: giveaway.id
+      }
+    });
+    await this.deleteAPIReaction(
+      giveaway.channel,
+      giveaway.id,
+      Utils.Emojis.getRaw(Utils.Emojis.TADA),
+      user.id
+    );
+    const requirements = await this.checkRequirements(giveaway, user);
+    const parts = await this.displayRequirements(requirements, guild);
+    let description =
+      `You have been removed from the giveaway in **${guild?.name}** since you don't meet all requirements anymore.\n` +
+      `\n` +
+      parts.join(`\n`) +
+      `\n` +
+      `\n` +
+      `After you fullfilled all requirements, you need to **react again** in <#${giveaway.channel}>.`;
+
+    const embed: Discord.MessageEmbedOptions = {
+      color: Utils.Colors.RED,
+      title: `${Utils.Emojis.XMARK} Giveaway Requirements`,
+      description,
+      footer: {
+        text: `You have received this message because you reacted to a giveaway in ${guild?.name}.`
+      }
+    };
+    await user.send({ embed }).catch(() => void 0);
+  }
+
+  public static async onGuildMemberLeave(event: IGuildMemberRemoveEvent) {
+    const participants = await GiveawayParticipant.findAll({
+      where: {
+        userId: event.d.user.id
+      },
+      include: [
+        {
+          model: Giveaway,
+          where: {
+            [Op.and]: [
+              {
+                endedAt: null,
+                cancelledBy: null
+              },
+              Sequelize.literal(
+                `(\`guildId\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
+              )
+            ]
+          },
+          include: [
+            {
+              model: GiveawayRequirement,
+              where: {
+                type: "GUILD",
+                target: event.d.guild_id
+              }
+            }
+          ]
+        }
+      ]
+    });
+    console.log(
+      `[DEBUG] Removed member ${event.d.user.id} from guild ${event.d.guild_id}, found ${participants.length} giveaway participants matching.`
+    );
+    if (participants.length) {
+      for (const participant of participants) {
+        const giveaway = participant.giveaway;
+        console.log(
+          `[DEBUG] Member ${event.d.user.id} in guild ${event.d.guild_id} left required giveaway guild.`
+        );
+        const user = await OpenBump.instance.client.users.fetch(
+          event.d.user.id
+        );
+        await Giveaways.kick(user, giveaway);
+      }
+    }
+  }
+
   private static async fetchAPIMember(
     guild: string,
     member: string
   ): Promise<APIMember | null> {
-    const url = `https://discord.com/api/guilds/${guild}/members/${member}`;
+    const path = `/guilds/${guild}/members/${member}`;
+    const url = `https://discord.com/api${path}`;
     try {
-      const res: APIMember = await fetch(url, {
+      const [res, member]: [Response, APIMember] = await fetch(url, {
         headers: { Authorization: `Bot ${OpenBump.instance.client.token}` }
-      }).then((res) => res.json());
-      return res;
+      }).then(async (res) => [res, await res.json()]);
+      if (res.status !== 200) return null;
+      return member;
     } catch (error) {
       return null;
+    }
+  }
+
+  private static async deleteAPIReaction(
+    channel: string,
+    message: string,
+    emoji: string,
+    user: string
+  ): Promise<any> {
+    const path = `/channels/${channel}/messages/${message}/reactions/${encodeURIComponent(
+      emoji
+    )}/${user}`;
+    const url = `https://discord.com/api${path}`;
+    try {
+      await fetch(url, {
+        method: "DELETE",
+        headers: { Authorization: `Bot ${OpenBump.instance.client.token}` }
+      });
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 
@@ -628,5 +665,73 @@ export default class Giveaways {
     };
 
     return embed;
+  }
+
+  public static async checkRequirements(
+    giveaway: Giveaway,
+    user: Discord.User
+  ) {
+    let requirements: Array<[GiveawayRequirement, boolean]> = [];
+    for (const requirement of giveaway.requirements) {
+      if (requirement.type === "GUILD") {
+        const member = await this.fetchAPIMember(
+          String(requirement.target),
+          user.id
+        );
+        requirements.push([requirement, Boolean(member)]);
+      } else if (requirement.type === "ROLE") {
+        const member = await this.fetchAPIMember(giveaway.guildId, user.id);
+        requirements.push([
+          requirement,
+          Boolean(member?.roles.includes(String(requirement.target)))
+        ]);
+      } else if (requirement.type === "VOTE") {
+        const voted = await Utils.Lists.hasVotedTopGG(user.id);
+        requirements.push([requirement, voted]);
+      }
+    }
+    requirements = requirements.sort(([a], [b]) =>
+      a.type > b.type ? 1 : a.type < b.type ? -1 : 0
+    );
+    return requirements;
+  }
+
+  public static async displayRequirements(
+    requirements: Array<[GiveawayRequirement, boolean]>,
+    guild: Discord.Guild
+  ) {
+    const parts = [];
+
+    for (const [requirement, fullfilled] of requirements) {
+      if (requirement.type === "GUILD") {
+        const guildDatabase = await Guild.findOne({
+          where: { id: String(requirement.target) }
+        });
+        parts.push(
+          `${
+            fullfilled ? Utils.Emojis.TICKYES : Utils.Emojis.TICKNO
+          } Be a member of **${
+            guildDatabase?.name
+          }** **[[Invite](https://discord.gg/${requirement.invite})**]`
+        );
+      } else if (requirement.type === "ROLE") {
+        const role = guild.roles.cache.get(String(requirement.target));
+        parts.push(
+          `${
+            fullfilled ? Utils.Emojis.TICKYES : Utils.Emojis.TICKNO
+          } Have the role **${role?.name}**`
+        );
+      } else if (requirement.type === "VOTE") {
+        parts.push(
+          `${
+            fullfilled ? Utils.Emojis.TICKYES : Utils.Emojis.TICKNO
+          } Vote for **${
+            OpenBump.instance.client.user?.username
+          }** **[[Vote](${Utils.Lists.getLinkTopGG()})]**`
+        );
+      }
+    }
+
+    return parts;
   }
 }

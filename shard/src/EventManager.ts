@@ -4,6 +4,7 @@ import GuildDeleteEvent from "./events/GuildDeleteEvent";
 import MessageEvent from "./events/MessageEvent";
 import MessageReactionAddEvent from "./events/MessageReactionAddEvent";
 import MessageReactionRemoveEvent from "./events/MessageReactionRemoveEvent";
+import RawEvent from "./events/RawEvent";
 import ReadyEvent from "./events/ReadyEvent";
 import OpenBump from "./OpenBump";
 
@@ -18,6 +19,7 @@ export default class EventManager {
     this.registerEvent(new MessageEvent(this.instance));
     this.registerEvent(new MessageReactionAddEvent(this.instance));
     this.registerEvent(new MessageReactionRemoveEvent(this.instance));
+    this.registerEvent(new RawEvent(this.instance));
     this.registerEvent(new ReadyEvent(this.instance));
   }
 

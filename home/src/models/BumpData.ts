@@ -32,10 +32,10 @@ export default class BumpData extends Model<BumpData> {
   description?: string | null;
 
   @Column(DataType.STRING)
-  invite!: string;
+  invite?: string | null;
 
   @Column(DataType.STRING)
-  banner!: string | null;
+  banner?: string | null;
 
   @Column(DataType.INTEGER)
   color?: number | null;
