@@ -139,19 +139,19 @@ export default class GiveawayCommand extends Command {
             description +
             `\n` +
             `\n` +
-            `**Please react with ${Utils.Emojis.CHECK} to confirm and start the giveaway.**`
+            `**Please react with ${Utils.Emojis.ROCKET} to confirm and start the giveaway.**`
         };
         const confirmationMessage = await channel.send({ embed });
         const confirmationReaction = await confirmationMessage.react(
-          Utils.Emojis.getRaw(Utils.Emojis.CHECK)
+          Utils.Emojis.getRaw(Utils.Emojis.ROCKET)
         );
 
         try {
           await confirmationMessage.awaitReactions(
             (reaction: Discord.MessageReaction, user: Discord.User) =>
               user.id === author.id &&
-              (reaction.emoji.id === Utils.Emojis.getRaw(Utils.Emojis.CHECK) ||
-                reaction.emoji.name === Utils.Emojis.CHECK),
+              (reaction.emoji.id === Utils.Emojis.getRaw(Utils.Emojis.ROCKET) ||
+                reaction.emoji.name === Utils.Emojis.ROCKET),
             { time: 30000, max: 1, errors: ["time"] }
           );
         } catch (error) {
