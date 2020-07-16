@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import { MessageEmbedOptions, TextChannel } from "discord.js";
 import io from "socket.io-client";
 import config from "./config";
+import { IGuildMemberRemoveEvent } from "./events/RawEvent";
+import Giveaways from "./Giveaways";
 import Application from "./models/Application";
 import Guild from "./models/Guild";
 import OpenBump from "./OpenBump";
@@ -95,6 +97,7 @@ export default class NetworkManager {
     this.socket.on("sblpDirect", this.onSBLPDirect.bind(this));
     this.socket.on("stats", this.onStats.bind(this));
     this.socket.on("disconnect", this.onDisconnect.bind(this));
+    this.socket.on("guildMemberRemove", this.onGuildMemberRemove.bind(this));
   }
 
   public async onConnect() {
@@ -105,6 +108,10 @@ export default class NetworkManager {
   public async onDisconnect() {
     console.warn("Disconnected from websocket!");
     this.connected = false;
+  }
+
+  public async onGuildMemberRemove(event: IGuildMemberRemoveEvent) {
+    await Giveaways.onGuildMemberLeave(event);
   }
 
   public async emitMessage(
@@ -136,6 +143,10 @@ export default class NetworkManager {
     message: RawGuildMessage
   ) {
     this.socket.emit("sblpOutside", provider, payload, message);
+  }
+
+  public async emitGuildMemberRemove(event: IGuildMemberRemoveEvent) {
+    this.socket.emit("guildMemberRemove", event);
   }
 
   public async requestStats() {

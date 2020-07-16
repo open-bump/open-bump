@@ -8,6 +8,10 @@ import OpenBump from "../OpenBump";
 
 interface IRawEvent {
   t: string;
+}
+
+interface IRawGuildMemberUpdateEvent extends IRawEvent {
+  t: "GUILD_MEMBER_UPDATE";
   d: {
     user: Discord.PartialUser;
     roles: Array<string>;
@@ -15,11 +19,15 @@ interface IRawEvent {
   };
 }
 
-interface IRawGuildMemberUpdateEvent extends IRawEvent {
-  t: "GUILD_MEMBER_UPDATE";
+export interface IGuildMemberRemoveEvent extends IRawEvent {
+  t: "GUILD_MEMBER_REMOVE";
+  d: {
+    user: Discord.PartialUser;
+    guild_id: string;
+  };
 }
 
-type TRawEvent = IRawGuildMemberUpdateEvent;
+type TRawEvent = IRawGuildMemberUpdateEvent | IGuildMemberRemoveEvent;
 
 export default class RawEvent extends Event<any> {
   constructor(instance: OpenBump) {
@@ -28,7 +36,6 @@ export default class RawEvent extends Event<any> {
 
   public async run(event: TRawEvent) {
     if (event.t === "GUILD_MEMBER_UPDATE") {
-      console.log("memberupdatevent");
       const participants = await GiveawayParticipant.findAll({
         where: {
           userId: event.d.user.id
@@ -69,11 +76,15 @@ export default class RawEvent extends Event<any> {
                   event.d.user.id
                 );
                 await Giveaways.kick(user, giveaway);
+                continue;
               }
             }
           }
         }
       }
+    } else if (event.t === "GUILD_MEMBER_REMOVE") {
+      await Giveaways.onGuildMemberLeave(event);
+      this.instance.networkManager.emitGuildMemberRemove(event);
     }
   }
 }

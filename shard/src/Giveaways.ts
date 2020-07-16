@@ -1,8 +1,9 @@
 import Discord, { MessageEmbedOptions, MessageReaction } from "discord.js";
 import ms from "ms";
-import fetch from "node-fetch";
+import fetch, { Response } from "node-fetch";
 import { Op } from "sequelize";
 import { Sequelize } from "sequelize-typescript";
+import { IGuildMemberRemoveEvent } from "./events/RawEvent";
 import Giveaway from "./models/Giveaway";
 import GiveawayParticipant from "./models/GiveawayParticipant";
 import GiveawayRequirement from "./models/GiveawayRequirement";
@@ -161,6 +162,54 @@ export default class Giveaways {
     await user.send({ embed }).catch(() => void 0);
   }
 
+  public static async onGuildMemberLeave(event: IGuildMemberRemoveEvent) {
+    const participants = await GiveawayParticipant.findAll({
+      where: {
+        userId: event.d.user.id
+      },
+      include: [
+        {
+          model: Giveaway,
+          where: {
+            [Op.and]: [
+              {
+                endedAt: null,
+                cancelledBy: null
+              },
+              Sequelize.literal(
+                `(\`guildId\` >> 22) % ${OpenBump.instance.networkManager.total} = ${OpenBump.instance.networkManager.id}`
+              )
+            ]
+          },
+          include: [
+            {
+              model: GiveawayRequirement,
+              where: {
+                type: "GUILD",
+                target: event.d.guild_id
+              }
+            }
+          ]
+        }
+      ]
+    });
+    console.log(
+      `[DEBUG] Removedember ${event.d.user.id} from guild ${event.d.guild_id}, found ${participants.length} giveaway participants matching.`
+    );
+    if (participants.length) {
+      for (const participant of participants) {
+        const giveaway = participant.giveaway;
+        console.log(
+          `[DEBUG] Member ${event.d.user.id} in guild ${event.d.guild_id} left required giveaway guild.`
+        );
+        const user = await OpenBump.instance.client.users.fetch(
+          event.d.user.id
+        );
+        await Giveaways.kick(user, giveaway);
+      }
+    }
+  }
+
   private static async fetchAPIMember(
     guild: string,
     member: string
@@ -168,10 +217,11 @@ export default class Giveaways {
     const path = `/guilds/${guild}/members/${member}`;
     const url = `https://discord.com/api${path}`;
     try {
-      const res: APIMember = await fetch(url, {
+      const [res, member]: [Response, APIMember] = await fetch(url, {
         headers: { Authorization: `Bot ${OpenBump.instance.client.token}` }
-      }).then((res) => res.json());
-      return res;
+      }).then(async (res) => [res, await res.json()]);
+      if (res.status !== 200) return null;
+      return member;
     } catch (error) {
       return null;
     }
@@ -187,7 +237,6 @@ export default class Giveaways {
       emoji
     )}/${user}`;
     const url = `https://discord.com/api${path}`;
-    console.log("url", url);
     try {
       await fetch(url, {
         method: "DELETE",
@@ -623,35 +672,15 @@ export default class Giveaways {
     user: Discord.User
   ) {
     let requirements: Array<[GiveawayRequirement, boolean]> = [];
-    const cache: Array<{ guild: string; user: string; member: APIMember }> = [];
     for (const requirement of giveaway.requirements) {
       if (requirement.type === "GUILD") {
-        const member =
-          cache.find(
-            (entry) =>
-              entry.guild === String(requirement.target) &&
-              entry.user === user.id
-          )?.member ||
-          (await this.fetchAPIMember(String(requirement.target), user.id));
-        if (member)
-          cache.push({
-            guild: String(requirement.target),
-            user: user.id,
-            member
-          });
+        const member = await this.fetchAPIMember(
+          String(requirement.target),
+          user.id
+        );
         requirements.push([requirement, Boolean(member)]);
       } else if (requirement.type === "ROLE") {
-        const member =
-          cache.find(
-            (entry) =>
-              entry.guild === giveaway.guildId && entry.user === user.id
-          )?.member || (await this.fetchAPIMember(giveaway.guildId, user.id));
-        if (member)
-          cache.push({
-            guild: giveaway.guildId,
-            user: user.id,
-            member
-          });
+        const member = await this.fetchAPIMember(giveaway.guildId, user.id);
         requirements.push([
           requirement,
           Boolean(member?.roles.includes(String(requirement.target)))
