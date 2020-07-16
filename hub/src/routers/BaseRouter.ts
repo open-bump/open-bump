@@ -49,4 +49,14 @@ export default abstract class BaseRouter {
       if (next) return await next();
     };
   }
+
+  protected pick<T, K extends keyof T>(
+    object: T,
+    parameters: Array<K>
+  ): Pick<T, K> {
+    return parameters.reduce((obj, param) => {
+      obj[param] = object[param];
+      return obj;
+    }, {} as Pick<T, K>);
+  }
 }

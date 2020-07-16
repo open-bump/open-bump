@@ -4,6 +4,7 @@ import bodyParser from "koa-bodyparser";
 import config from "./config";
 import BaseError from "./errors/BaseError";
 import Hub from "./Hub";
+import GuildsRouter from "./routers/GuildsRouter";
 import SBLPRouter from "./routers/SBLPRouter";
 
 export default class Server {
@@ -11,6 +12,7 @@ export default class Server {
   private router: Router;
 
   private sblpRouter?: SBLPRouter;
+  private guildsRouter?: GuildsRouter;
 
   constructor(private instance: Hub) {
     this.app = new Koa();
@@ -36,8 +38,10 @@ export default class Server {
 
   private registerRoutes() {
     this.sblpRouter = new SBLPRouter(this.instance);
+    this.guildsRouter = new GuildsRouter(this.instance);
 
     this.router.use("/sblp", this.sblpRouter.router.routes());
+    this.router.use("/guilds", this.guildsRouter.router.routes());
   }
 
   public async init() {
