@@ -1264,6 +1264,7 @@ export default class Utils {
     TADA: "🎉",
     HASH: "#️⃣",
     WINNERS: "👦",
+    ROCKET: "🚀",
     UPVOTE: "<:OA_upvote:718473733387321355>",
     DOWNVOTE: "<:OA_downvote:718473871413608548>",
     LABEL: "🏷️",
@@ -1273,7 +1274,7 @@ export default class Utils {
         emoji instanceof Discord.GuildEmoji ||
         emoji instanceof Discord.ReactionEmoji
       ) {
-        return emoji.id || emoji.name;
+        return encodeURIComponent(emoji.id || emoji.name);
       }
 
       const regex = /<a?:.{0,}:([0-9]{10,20})>/gim;
@@ -1288,10 +1289,10 @@ export default class Utils {
         m.forEach((match, groupIndex) => {
           if (groupIndex === 1) res = match;
         });
-        return res || emoji;
+        return encodeURIComponent(res || emoji);
       }
 
-      return emoji;
+      return encodeURIComponent(emoji);
     }
   };
 }
