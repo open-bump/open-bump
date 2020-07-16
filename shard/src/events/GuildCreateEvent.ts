@@ -51,7 +51,7 @@ export default class GuildCreateEvent extends Event<"guildCreate"> {
       ]
     });
 
-    const sharedGuildData: Array<HTTPGuild> = [];
+    let sharedGuildData: Array<HTTPGuild> = [];
 
     for (const application of applications) {
       const url = `${application.getBase()}guilds/${guild.id}`;
@@ -73,39 +73,40 @@ export default class GuildCreateEvent extends Event<"guildCreate"> {
 
     console.log("[DEBUG] Shared guild data:", sharedGuildData);
 
-    const newestGuildData = sharedGuildData
-      .sort(
-        (a, b) =>
-          new Date(b.bumpData.updatedAt).valueOf() -
-          new Date(a.bumpData.updatedAt).valueOf()
-      )
-      .shift();
+    sharedGuildData = sharedGuildData.sort(
+      (a, b) =>
+        new Date(b.bumpData.updatedAt).valueOf() -
+        new Date(a.bumpData.updatedAt).valueOf()
+    );
 
     const currentBumpData = guildDatabase.bumpData;
-    currentBumpData.description =
-      currentBumpData.description ||
-      newestGuildData?.bumpData.description ||
-      void 0;
-    if (!currentBumpData.invite && newestGuildData?.bumpData.invite) {
-      const inviteObj = await this.instance.client
-        .fetchInvite(newestGuildData.bumpData.invite)
-        .catch(() => void 0);
-      if (inviteObj?.channel.id) {
-        const channel = guild.channels.cache.get(inviteObj.channel.id);
-        if (channel) {
-          const newInvite = await channel
-            .createInvite({
-              reason: `Automatically create invite for bump message`
-            })
-            .catch(() => void 0);
-          if (newInvite) currentBumpData.invite = newInvite.code;
+    for (const guildData of sharedGuildData) {
+      currentBumpData.description =
+        currentBumpData.description ||
+        guildData?.bumpData.description ||
+        void 0;
+      if (!currentBumpData.invite && guildData?.bumpData.invite) {
+        const inviteObj = await this.instance.client
+          .fetchInvite(guildData.bumpData.invite)
+          .catch(() => void 0);
+        if (inviteObj?.channel.id) {
+          const channel = guild.channels.cache.get(inviteObj.channel.id);
+          if (channel) {
+            const newInvite = await channel
+              .createInvite({
+                maxAge: 0,
+                reason: `Automatically create invite for bump message`
+              })
+              .catch(() => void 0);
+            if (newInvite) currentBumpData.invite = newInvite.code;
+          }
         }
       }
+      currentBumpData.banner =
+        currentBumpData.banner || guildData?.bumpData.banner || void 0;
+      currentBumpData.color =
+        currentBumpData.color || guildData?.bumpData.color || void 0;
     }
-    currentBumpData.banner =
-      currentBumpData.banner || newestGuildData?.bumpData.banner || void 0;
-    currentBumpData.color =
-      currentBumpData.color || newestGuildData?.bumpData.color || void 0;
     if (currentBumpData.changed()) await currentBumpData.save();
 
     const steps = [];
