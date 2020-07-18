@@ -132,7 +132,10 @@ class Bump {
 
     // Description
     let description =
-      `${Utils.Emojis.OWNER} **Owner:** ${guild.owner?.user.tag}\n` +
+      `${Utils.Emojis.OWNER} **Owner:** ${
+        guild.owner?.user.tag ||
+        (await OpenBump.instance.client.users.fetch(guild.ownerID)).tag
+      }\n` +
       `${Utils.Emojis.REGION} **Region:** ${region?.name}\n` +
       `${Utils.Emojis.CREATED} **Created:** ${ms(
         Date.now() - guild.createdTimestamp,
