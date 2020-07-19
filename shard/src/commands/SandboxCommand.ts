@@ -69,7 +69,7 @@ export default class SandboxCommand extends Command {
           const embed = {
             color: Utils.Colors.GREEN,
             title: `${Utils.Emojis.CHECK} Cooldown Reset`,
-            description: `This guild can now be bumped again.`
+            description: `This server can now be bumped again.`
           };
           return void (await channel.send({ embed }));
         } else return void (await this.sandboxRequired(message, guildDatabase));

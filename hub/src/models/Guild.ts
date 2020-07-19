@@ -47,6 +47,9 @@ export default class Guild extends Model<Guild> {
   autobump!: boolean;
 
   @Column(DataType.STRING(20))
+  autobumpNotifications!: string | null;
+
+  @Column(DataType.STRING(20))
   lastBumpedBy!: string;
 
   @Column(DataType.STRING(20))

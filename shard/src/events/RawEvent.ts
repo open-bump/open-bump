@@ -59,9 +59,10 @@ export default class RawEvent extends Event<any> {
           }
         ]
       });
-      console.log(
-        `[DEBUG] Updated member ${event.d.user.id} in guild ${event.d.guild_id}, found ${participants.length} giveaway participants matching.`
-      );
+      if (participants.length)
+        console.log(
+          `[DEBUG] Updated member ${event.d.user.id} in guild ${event.d.guild_id}, found ${participants.length} giveaway participants matching.`
+        );
       if (participants.length) {
         for (const participant of participants) {
           const giveaway = participant.giveaway;
