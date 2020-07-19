@@ -512,6 +512,34 @@ class Bump {
     return issues;
   }
 
+  public static getAutobumpNotificationChannelIssues(
+    channel: TextBasedGuildChannel
+  ) {
+    const issues: Array<string> = [];
+
+    const requiredPermissions: Array<{
+      permission: PermissionString;
+      name: string;
+    }> = [
+      { permission: "SEND_MESSAGES", name: "Send Messages" },
+      { permission: "VIEW_CHANNEL", name: "Read Messages" },
+      { permission: "EMBED_LINKS", name: "Embed Links" },
+      { permission: "USE_EXTERNAL_EMOJIS", name: "Use External Emojis" }
+    ];
+    for (const { permission, name } of requiredPermissions) {
+      if (
+        !channel
+          .permissionsFor(String(OpenBump.instance.client.user?.id))
+          ?.has(permission)
+      )
+        issues.push(
+          `Please grant \`${OpenBump.instance.client.user?.tag}\` the permission \`${name}\`.`
+        );
+    }
+
+    return issues;
+  }
+
   public static BumpType = {
     HUBS: "HUBS" as "HUBS",
     CROSS: "CROSS" as "CROSS",
@@ -589,6 +617,85 @@ class Bump {
             guildDatabase,
             await Bump.getEmbed(guild, guildDatabase)
           );
+
+          if (guildDatabase.autobumpNotifications) {
+            const channel = guild.channels.cache.get(
+              guildDatabase.autobumpNotifications
+            ) as TextBasedGuildChannel | void;
+
+            if (channel) {
+              const issues = this.getAutobumpNotificationChannelIssues(channel);
+              if (!issues.length) {
+                const embed: MessageEmbedOptions = {
+                  color: Utils.Colors.GREEN,
+                  title: `${Utils.Emojis.CHECK} Autobump Success`,
+                  description: `Your server was successfully autobumped. The next autobump is expected to happen in ${ms(
+                    guildDatabase.getCooldown(true),
+                    { long: true }
+                  )}.`,
+                  footer: {
+                    text: `To disable these notifications, use the command "${Utils.getPrefix(
+                      guildDatabase
+                    )}autobump notifications reset".`
+                  }
+                };
+                // TODO: Send Autobump Notification
+                try {
+                  await channel.send({ embed });
+                } catch (error) {
+                  console.error(
+                    `Unknown hard error occured while trying to send a notification in ${guild.id}: ${error.message}`
+                  );
+                }
+              } else {
+                guildDatabase.autobumpNotifications = null;
+                await guildDatabase.save();
+
+                console.log(
+                  `Guild ${guild.name} (${guild.id}) had a notifications channel set; but there are permission errors!`
+                );
+                const embed = {
+                  color: Utils.Colors.RED,
+                  title: `${Utils.Emojis.XMARK} Autobump Notifications Error`,
+                  description: `Hey there, we tried to send a message to your notifications channel on your server ${guild.name}. However, we had some issues.`,
+                  fields: [
+                    {
+                      name: "**Issues**",
+                      value:
+                        `**Fix these issues for ${channel} and set the notifications channel again:**\n` +
+                        issues.map((issue) => `- ${issue}`).join("\n")
+                    }
+                  ]
+                };
+                try {
+                  await guild.owner?.user.send({ embed });
+                } catch (error) {
+                  console.error(
+                    `Tried to inform the owner ${guild.ownerID} of guild ${guild.name} (${guild.id}) that sending a message to their notifications channel failed, but failed contacting them. `
+                  );
+                }
+              }
+            } else {
+              guildDatabase.autobumpNotifications = null;
+
+              const embed = {
+                color: Utils.Colors.RED,
+                title: `${Utils.Emojis.XMARK} Autobump notifications channel not found`,
+                description:
+                  `Hey there, we tried to send a message to your notifications channel on your server ${guild.name}. However, we were not able to find the channel. ` +
+                  `You can fix this issue by setting a new notifications channel using \`${Utils.getPrefix(
+                    guildDatabase
+                  )}autobump notifications <channel>\`.`
+              };
+              try {
+                await guild.owner?.user.send({ embed });
+              } catch (error) {
+                console.error(
+                  `Tried to inform the owner ${guild.ownerID} of guild ${guild.name} (${guild.id}) that bumping to their server failed, but failed contacting them.`
+                );
+              }
+            }
+          }
 
           guildDatabase.lastBumpedAt = new Date();
           guildDatabase.lastBumpedBy = OpenBump.instance.client.user?.id;
@@ -959,7 +1066,7 @@ export default class Utils {
     if (matching.length === 1) return matching[0] as TextBasedGuildChannel;
     else if (matching.length)
       throw new TooManyResultsError("channels", matching);
-    throw new NotFoundError("guild");
+    throw new NotFoundError("channel");
   }
 
   public static findRole(input: string, guild: Discord.Guild): Discord.Role {
@@ -1105,7 +1212,7 @@ export default class Utils {
             if (!channel || !(channel instanceof Discord.TextChannel)) continue;
             await channel
               .send(
-                `${Utils.Emojis.REMINDER} <@${reminder.userId}> This guild can be bumped again.`
+                `${Utils.Emojis.REMINDER} <@${reminder.userId}> This server can be bumped again.`
               )
               .catch(() => {});
           }

@@ -116,7 +116,7 @@ export default class CommandManager {
           color: Utils.Colors.RED,
           title: `${Utils.Emojis.XMARK} Restricted`,
           description:
-            `This guild has been blocked from executing commands.\n` +
+            `This server has been blocked from executing commands.\n` +
             `If you believe this is an error, please contact **[Support](${config.settings.support})**.` +
             (guildDatabase.blocked
               ? `\n**Reason:** ${guildDatabase.blocked}`
@@ -154,7 +154,7 @@ export default class CommandManager {
         }
         if (guildDatabase.sandbox)
           await channel.send(
-            `${Utils.Emojis.IMPORTANTNOTICE} This guild is on **Sandbox Mode**!\n` +
+            `${Utils.Emojis.IMPORTANTNOTICE} This server is on **Sandbox Mode**!\n` +
               `Use \`${Utils.getPrefix(
                 guildDatabase
               )}sandbox toggle\` to disable.`
