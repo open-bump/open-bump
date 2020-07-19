@@ -11,7 +11,6 @@ import {
   Table
 } from "sequelize-typescript";
 import { Transaction } from "sequelize/types";
-import config from "../config";
 import AssignedTier from "./AssignedTier";
 import BumpData from "./BumpData";
 import GuildFeature from "./GuildFeature";
@@ -46,6 +45,9 @@ export default class Guild extends Model<Guild> {
 
   @Column(DataType.BOOLEAN)
   autobump!: boolean;
+
+  @Column(DataType.STRING(20))
+  autobumpNotifications!: string | null;
 
   @Column(DataType.STRING(20))
   lastBumpedBy?: string;
