@@ -534,7 +534,7 @@ export default class SBLP {
         ))
     ) {
       // Channel is a SBLP channel
-      // Note: Open Bump will not use a whitelist system as it expects that only granted bots have access to the SBLP channel(s)
+      // Note: DGP Bump will not use a whitelist system as it expects that only granted bots have access to the SBLP channel(s)
 
       const guildDatabase = await Guild.findOne({
         where: { id: message.guild.id }
