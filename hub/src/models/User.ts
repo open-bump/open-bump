@@ -26,6 +26,9 @@ export default class User extends Model<User> {
   donator?: Donator;
 
   @Column(DataType.DATE)
+  lastVotedAt?: Date | null;
+
+  @Column(DataType.DATE)
   lastBumpedAt?: Date | null;
 
   @Default(0)
