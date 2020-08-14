@@ -62,4 +62,16 @@ export default class Application extends Model<Application> {
 
   @Column(DataType.BOOLEAN)
   shareEnabled!: boolean;
+
+  public getBase() {
+    let url = this.base;
+    if (!url.endsWith("/")) url += "/";
+    return url;
+  }
+
+  public getFeatures() {
+    return this.features
+      .filter(({ feature }) => Boolean(feature))
+      .map(({ feature }) => feature);
+  }
 }

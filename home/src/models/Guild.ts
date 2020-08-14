@@ -64,6 +64,16 @@ export default class Guild extends Model<Guild> {
   @Default(0)
   @AllowNull(false)
   @Column(DataType.INTEGER)
+  sblpBumpsSinceCaptcha!: number;
+
+  @Default(false)
+  @AllowNull(false)
+  @Column(DataType.BOOLEAN)
+  sblpRequireCaptcha!: boolean;
+
+  @Default(0)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
   totalBumps!: number;
 
   @Column(DataType.BOOLEAN)
