@@ -765,10 +765,28 @@ class Lists {
     setTimeout(() => this.loopPostTopGG(), 1000 * 60 * 15);
   }
 
-  public static async hasVotedTopGG(user: string): Promise<boolean> {
+  public static async hasVotedTopGG(
+    userResolvable: string | User
+  ): Promise<boolean> {
+    let user =
+      typeof userResolvable === "string"
+        ? await User.findOne({ where: { id: userResolvable } })
+        : userResolvable;
+    if (user?.hasVotedTopGG()) return true;
     if (!this.dbl) return false;
     try {
-      return await this.dbl.hasVoted(user);
+      if (!user) {
+        const userDiscord = await OpenBump.instance.client.users.fetch(
+          typeof userResolvable === "string"
+            ? userResolvable
+            : userResolvable.id
+        );
+        user = await Utils.ensureUser(userDiscord);
+      }
+      const voted = await this.dbl.hasVoted(user.id);
+      if (voted) user.lastVotedAt = new Date();
+      if (user.changed()) await user.save();
+      return user.hasVotedTopGG();
     } catch (error) {
       return false;
     }
@@ -1201,23 +1219,9 @@ export default class Utils {
         if (!guildDatabase) continue;
 
         for (const reminder of reminders) {
-          if (typeof reminder.voted !== "boolean") {
-            const cooldown = guildDatabase.getCooldown(true, false);
-            const nextBump = guildDatabase.lastBumpedAt
-              ? guildDatabase.lastBumpedAt.valueOf() + cooldown
-              : 0;
-            const canBump = !nextBump || nextBump <= Date.now();
-            const voteCooldown = guildDatabase.getCooldown(true, true);
-            const voteNextBump = guildDatabase.lastBumpedAt
-              ? guildDatabase.lastBumpedAt.valueOf() + voteCooldown
-              : 0;
-            const voteCanBump = !voteNextBump || voteNextBump <= Date.now();
-            if (voteCanBump && !canBump) {
-              reminder.voted = await Lists.hasVotedTopGG(reminder.userId);
-              await reminder.save();
-            }
-          }
-          const cooldown = guildDatabase.getCooldown(true, reminder.voted);
+          if (!reminder.user) continue;
+          const voted = await Lists.hasVotedTopGG(reminder.user);
+          const cooldown = guildDatabase.getCooldown(true, voted);
           const nextBump = guildDatabase.lastBumpedAt
             ? guildDatabase.lastBumpedAt.valueOf() + cooldown
             : 0;
