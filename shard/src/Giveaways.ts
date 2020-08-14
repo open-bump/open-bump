@@ -193,10 +193,10 @@ export default class Giveaways {
         }
       ]
     });
-    console.log(
-      `[DEBUG] Removed member ${event.d.user.id} from guild ${event.d.guild_id}, found ${participants.length} giveaway participants matching.`
-    );
     if (participants.length) {
+      console.log(
+        `[DEBUG] Removed member ${event.d.user.id} from guild ${event.d.guild_id}, found ${participants.length} giveaway participants matching.`
+      );
       for (const participant of participants) {
         const giveaway = participant.giveaway;
         console.log(
