@@ -68,4 +68,10 @@ export default class Application extends Model<Application> {
     if (!url.endsWith("/")) url += "/";
     return url;
   }
+
+  public getFeatures() {
+    return this.features
+      .filter(({ feature }) => Boolean(feature))
+      .map(({ feature }) => feature);
+  }
 }

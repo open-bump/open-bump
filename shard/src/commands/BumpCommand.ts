@@ -40,7 +40,11 @@ export default class BumpCommand extends Command {
       )
         userDatabase.bumpsSinceCaptcha = 0;
       userDatabase.lastBumpedAt = new Date();
-      if (userDatabase.bumpsSinceCaptcha >= 5 || userDatabase.requireCaptcha) {
+      if (
+        userDatabase.bumpsSinceCaptcha >= 5 ||
+        userDatabase.requireCaptcha ||
+        guildDatabase.sblpRequireCaptcha
+      ) {
         // Captcha required
         userDatabase.requireCaptcha = true;
         if (userDatabase.changed()) await userDatabase.save();
@@ -48,8 +52,9 @@ export default class BumpCommand extends Command {
           `[DEBUG] Require captcha for user ${userDatabase.id} on guild ${guildDatabase.id}`
         );
         await Utils.UBPS.captcha(channel, author, id);
-        userDatabase.requireCaptcha = false;
         userDatabase.bumpsSinceCaptcha = 1;
+        userDatabase.requireCaptcha = false;
+        guildDatabase.sblpRequireCaptcha = false;
         if (userDatabase.changed()) await userDatabase.save();
       } else {
         // No captcha required

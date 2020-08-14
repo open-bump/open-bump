@@ -1,4 +1,5 @@
 import Discord, { ClientUser } from "discord.js";
+import moment from "moment";
 import ms from "ms";
 import fetch from "node-fetch";
 import { Op } from "sequelize";
@@ -203,8 +204,6 @@ export class SBLPBumpEntity {
       ]
     });
 
-    console.log("applications", applications.length);
-
     for (const application of applications) {
       this.postHTTPBumpRequest(application);
     }
@@ -222,14 +221,12 @@ export class SBLPBumpEntity {
   }
 
   private async postHTTPBumpRequest(application: Application) {
-    console.log("before");
     if (
       !application.features.find(({ feature }) => feature === "SBLP") ||
       !application.sblpEnabled ||
       !application.bot
     )
       return;
-    console.log("after");
     try {
       const prototypeStartResponse: BumpStartedResponse = {
         type: MessageType.START,
@@ -254,8 +251,6 @@ export class SBLPBumpEntity {
         })
       }).then((res) => res.json());
 
-      console.log("response", res);
-
       if (this.timeout) return;
 
       if (res.error) {
@@ -265,7 +260,6 @@ export class SBLPBumpEntity {
       }
       this.triggerUpdate();
     } catch (error) {
-      console.log("error", error);
       if (this.timeout) return;
       const prototypeErrorResponse: BumpErrorResponse = {
         type: MessageType.ERROR,
@@ -324,6 +318,43 @@ export class SBLPBumpEntity {
         undefined,
         "Autobump enabled"
       );
+
+    const providerDatabase = await Application.findOne({
+      where: { id: provider }
+    });
+
+    if (
+      !providerDatabase ||
+      !providerDatabase.getFeatures().includes("CAPTCHA")
+    ) {
+      if (
+        moment(guildDatabase.lastBumpedAt || 0).isBefore(
+          moment().subtract(2, "d")
+        )
+      )
+        guildDatabase.sblpBumpsSinceCaptcha = 0;
+      if (
+        guildDatabase.sblpBumpsSinceCaptcha >= 5 ||
+        guildDatabase.sblpRequireCaptcha
+      ) {
+        // Captcha required
+        guildDatabase.sblpRequireCaptcha = true;
+        if (guildDatabase.changed()) await guildDatabase.save();
+        console.log(
+          `[DEBUG] Require sblp captcha for guild ${guildDatabase.id} with provider ${provider}`
+        );
+        return sblp.createBumpErrorResponse(
+          id,
+          ErrorCode.OTHER,
+          undefined,
+          `Captcha [Use ${Utils.getPrefix(guildDatabase)}bump]`
+        );
+      } else {
+        // No captcha required
+        guildDatabase.sblpBumpsSinceCaptcha++;
+        if (guildDatabase.changed()) await guildDatabase.save();
+      }
+    }
 
     const voted = await Utils.Lists.hasVotedTopGG(userId);
 

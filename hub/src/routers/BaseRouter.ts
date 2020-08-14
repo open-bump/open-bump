@@ -22,11 +22,9 @@ export default abstract class BaseRouter {
       const application =
         token && (await Application.findOne({ where: { token } }));
       if (!application) throw ErrorFactory.forbidden();
+      const appFeatures = application.getFeatures();
       for (const feature of features)
-        if (
-          !application.features.map(({ feature }) => feature).includes(feature)
-        )
-          throw ErrorFactory.forbidden();
+        if (!appFeatures.includes(feature)) throw ErrorFactory.forbidden();
 
       ctx.custom.application = application;
       if (next) return await next();
