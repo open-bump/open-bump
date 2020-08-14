@@ -19,7 +19,15 @@ const ReminderIndex = createIndexDecorator({
 });
 
 @Table({
-  tableName: "Reminder"
+  tableName: "Reminder",
+  defaultScope: {
+    include: [
+      {
+        model: User,
+        as: "user"
+      }
+    ]
+  }
 })
 export default class Reminder extends Model<Reminder> {
   @PrimaryKey
@@ -49,7 +57,4 @@ export default class Reminder extends Model<Reminder> {
   @AllowNull(false)
   @Column(DataType.STRING(20))
   channel!: string;
-
-  @Column(DataType.BOOLEAN)
-  voted!: boolean;
 }

@@ -6,6 +6,7 @@ import BaseError from "./errors/BaseError";
 import Hub from "./Hub";
 import GuildsRouter from "./routers/GuildsRouter";
 import SBLPRouter from "./routers/SBLPRouter";
+import VoteRouter from "./routers/VoteRouter";
 
 export default class Server {
   private app: Koa;
@@ -13,6 +14,7 @@ export default class Server {
 
   private sblpRouter?: SBLPRouter;
   private guildsRouter?: GuildsRouter;
+  private voteRouter?: VoteRouter;
 
   constructor(private instance: Hub) {
     this.app = new Koa();
@@ -39,9 +41,11 @@ export default class Server {
   private registerRoutes() {
     this.sblpRouter = new SBLPRouter(this.instance);
     this.guildsRouter = new GuildsRouter(this.instance);
+    this.voteRouter = new VoteRouter(this.instance);
 
     this.router.use("/sblp", this.sblpRouter.router.routes());
     this.router.use("/guilds", this.guildsRouter.router.routes());
+    this.router.use("/vote", this.voteRouter.router.routes());
   }
 
   public async init() {

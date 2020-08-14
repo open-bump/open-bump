@@ -112,7 +112,7 @@ export default class Patreon {
   private async patreonRefreshLoop() {
     await this.refreshMembers();
     await this.updatePatreonsDatabase();
-    setTimeout(this.patreonRefreshLoop.bind(this), 1000 * 60);
+    setTimeout(this.patreonRefreshLoop.bind(this), 1000 * 60 * 5); // Every 5 minutes
   }
 
   private async updatePatreonsDatabase() {
