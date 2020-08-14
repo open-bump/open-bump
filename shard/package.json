@@ -1,7 +1,7 @@
 {
   "name": "open-bump",
   "version": "3.6.2",
-  "description": "Open Bump allows you to automatically advertise your server on other servers and let them advertise their server on your server.",
+  "description": "PYS Bump allows you to automatically advertise your server on other servers and let them advertise their server on your server.",
   "main": "index.js",
   "scripts": {
     "start": "ts-node-dev --inspect=9220 -- src/index.ts",

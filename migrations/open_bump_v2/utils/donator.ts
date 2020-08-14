@@ -102,7 +102,7 @@ module.exports.translateCooldown = (guildDatabase) => {
                 color: colors.red,
                 title: `${emojis.xmark} **Bump channel error**`,
                 description:
-                  "Hey there, it looks like Open Bump doesn't have access to your bump channel anymore. " +
+                  "Hey there, it looks like PYS Bump doesn't have access to your bump channel anymore. " +
                   `To fix this issue, please set the bump channel again using \`${config.settings.prefix}setchannel\`.`
               }
             };
