@@ -1,3 +1,4 @@
+import moment from "moment";
 import {
   AfterCreate,
   AllowNull,
@@ -26,6 +27,9 @@ export default class User extends Model<User> {
   donator?: Donator;
 
   @Column(DataType.DATE)
+  lastVotedAt?: Date | null;
+
+  @Column(DataType.DATE)
   lastBumpedAt?: Date | null;
 
   @Default(0)
@@ -37,6 +41,14 @@ export default class User extends Model<User> {
   @AllowNull(false)
   @Column(DataType.BOOLEAN)
   requireCaptcha!: boolean;
+
+  public hasVotedTopGG() {
+    return Boolean(
+      this.lastVotedAt &&
+        moment(this.lastVotedAt).isValid() &&
+        moment(this.lastVotedAt).add(12, "h").isAfter(moment())
+    );
+  }
 
   @AfterCreate
   public static async afterCreateHook(
