@@ -129,7 +129,7 @@ export default class GuildCreateEvent extends Event<"guildCreate"> {
     }
     if (!guildDatabase.feed) {
       steps.push(
-        `**Set a bump channel to recieve other servers:**\n` +
+        `**Set a bump channel to receive other servers:**\n` +
           `Create a text channel for ${
             this.instance.client.user?.username
           } and use the command \`${Utils.getPrefix(
