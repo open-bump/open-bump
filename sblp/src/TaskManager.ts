@@ -43,6 +43,9 @@ export default class TaskManager {
 
     for (const service of application.services) {
       const { target } = service;
+
+      if (!target.getBase()) continue;
+
       const subtask: ISubTask = {
         task,
         service,
@@ -61,47 +64,52 @@ export default class TaskManager {
       delete this.tasks[task.id];
     }, 1000 * 60);
 
-    return {
-      id: task.id
-    };
+    return this.check(applicationId, task.id);
   }
 
   public check(applicationId: string, taskId: string) {
     const task = this.tasks[taskId];
     if (task && task.application.id === applicationId)
-      return task.subtasks.map((subtask) => {
-        const { target } = subtask;
-        const { bot } = target;
-        if (subtask.errored)
-          return {
-            bot: bot,
-            data: {
-              type: "ERROR",
-              code: "OTHER",
-              message: "HTTP Error",
-              service: "SBLP Centralized"
-            }
-          };
-        else if (subtask.res)
-          return {
-            bot: bot,
-            data: subtask.res
-          };
-        else
-          return {
-            bot: bot,
-            data: {
-              type: "START",
-              service: "SBLP Centralized"
-            }
-          };
-      });
+      return {
+        id: taskId,
+        application: applicationId,
+        services: task.subtasks
+          .map((subtask) => {
+            const { target } = subtask;
+            const { bot } = target;
+            if (subtask.errored)
+              return {
+                bot: bot,
+                data: {
+                  type: "ERROR",
+                  code: "OTHER",
+                  message: "HTTP Error",
+                  service: target.id
+                }
+              };
+            else if (subtask.res)
+              return {
+                bot: bot,
+                data: { ...subtask.res, service: target.id }
+              };
+            else
+              return {
+                bot: bot,
+                data: {
+                  type: "START",
+                  service: target.id
+                }
+              };
+          })
+          .reduce((previous, current) => {
+            return { ...previous, [current.bot]: current.data };
+          }, {})
+      };
     else
       return {
         type: "ERROR",
         code: "OTHER",
-        message: "Timeout",
-        service: "SBLP Centralized"
+        message: "Timeout"
       };
   }
 

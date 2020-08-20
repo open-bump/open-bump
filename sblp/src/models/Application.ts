@@ -59,7 +59,7 @@ export default class Application extends Model<Application> {
 
   public getBase() {
     let url = this.base;
-    if (!url?.endsWith("/")) url += "/";
+    if (url && !url.endsWith("/")) url += "/";
     return url;
   }
 }
