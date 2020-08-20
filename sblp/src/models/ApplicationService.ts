@@ -37,11 +37,11 @@ export default class ApplicationService extends Model<ApplicationService> {
   @BelongsTo(() => Application, "targetId")
   target!: Application;
 
-  /* The token the service needs to bump this application */
+  /* The token the target service needs to bump the application */
   @Column(DataType.STRING)
   token!: string;
 
-  /* The token this application uses to bump the service */
+  /* The token the application uses to bump the target service */
   @Column(DataType.STRING)
   authorization!: string;
 }

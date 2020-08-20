@@ -22,7 +22,13 @@ export default abstract class BaseRouter {
       if (!token) throw ErrorFactory.unauthorized();
       const application = await Application.findOne({
         include: service
-          ? [{ model: ApplicationService, as: "services", where: { token } }]
+          ? [
+              {
+                model: ApplicationService,
+                as: "targetServices",
+                where: { token }
+              }
+            ]
           : void 0,
         where: !service ? { token } : void 0
       });

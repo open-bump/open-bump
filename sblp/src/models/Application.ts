@@ -18,7 +18,7 @@ import ApplicationService from "./ApplicationService";
       include: [
         {
           model: ApplicationService,
-          as: "services",
+          as: "applicationServices",
           include: [
             {
               model: Application,
@@ -51,11 +51,19 @@ export default class Application extends Model<Application> {
   @Column(DataType.STRING)
   base?: string | null;
 
-  @HasMany(() => ApplicationService)
-  services!: Array<ApplicationService>;
+  @HasMany(() => ApplicationService, "applicationId")
+  applicationServices!: Array<ApplicationService>;
 
+  @HasMany(() => ApplicationService, "targetId")
+  targetServices!: Array<ApplicationService>;
+
+  /* The token this application uses to create bump tasks */
   @Column(DataType.STRING)
   token!: string;
+
+  /* The token SBLP Centralized uses to forward requests to this application */
+  @Column(DataType.STRING)
+  authorization!: string;
 
   public getBase() {
     let url = this.base;
