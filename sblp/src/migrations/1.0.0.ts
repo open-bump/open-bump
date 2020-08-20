@@ -25,11 +25,7 @@ const migration: Migratable = {
             type: datatypes.STRING(20)
           },
           base: datatypes.STRING,
-          token: {
-            defaultValue: datatypes.UUIDV4,
-            allowNull: false,
-            type: datatypes.STRING
-          },
+          token: datatypes.STRING,
           createdAt: {
             defaultValue: connection.Sequelize.literal("CURRENT_TIMESTAMP"),
             allowNull: false,

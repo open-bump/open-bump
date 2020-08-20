@@ -3,14 +3,16 @@ import Koa from "koa";
 import bodyParser from "koa-bodyparser";
 import config from "./config";
 import BaseError from "./errors/BaseError";
-import SBLPRouter from "./routers/SBLPRouter";
+import InsideRouter from "./routers/InsideRouter";
+import OutsideRouter from "./routers/OutsideRouter";
 import Hub from "./SBLP";
 
 export default class Server {
   private app: Koa;
   private router: Router;
 
-  private sblpRouter?: SBLPRouter;
+  private insideRouter?: InsideRouter;
+  private outsideRouter?: OutsideRouter;
 
   constructor(private instance: Hub) {
     this.app = new Koa();
@@ -35,9 +37,11 @@ export default class Server {
   }
 
   private registerRoutes() {
-    this.sblpRouter = new SBLPRouter(this.instance);
+    this.insideRouter = new InsideRouter(this.instance);
+    this.outsideRouter = new OutsideRouter(this.instance);
 
-    this.router.use(this.sblpRouter.router.routes());
+    this.router.use(this.insideRouter.router.routes());
+    this.router.use("/sblp", this.outsideRouter.router.routes());
   }
 
   public async init() {

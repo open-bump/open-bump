@@ -121,7 +121,7 @@ export default class TaskManager {
         method: "POST",
         headers: {
           "x-target": url,
-          authorization: subtask.service.token,
+          authorization: subtask.service.authorization,
           "content-type": "application/json"
         },
         body: JSON.stringify(task.body)
