@@ -40,6 +40,9 @@ export default class Application extends Model<Application> {
   @Column(DataType.STRING)
   name!: string;
 
+  @Column(DataType.STRING)
+  host!: string;
+
   @Unique
   @AllowNull(false)
   @Column(DataType.STRING(20))
@@ -51,8 +54,6 @@ export default class Application extends Model<Application> {
   @HasMany(() => ApplicationService)
   services!: Array<ApplicationService>;
 
-  @Default(DataType.UUIDV4)
-  @AllowNull(false)
   @Column(DataType.STRING)
   token!: string;
 

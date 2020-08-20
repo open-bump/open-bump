@@ -2,6 +2,7 @@ import Router from "@koa/router";
 import Koa from "koa";
 import ErrorFactory from "../errors/ErrorFactory";
 import Application from "../models/Application";
+import ApplicationService from "../models/ApplicationService";
 import Hub from "../SBLP";
 
 export default abstract class BaseRouter {
@@ -14,16 +15,33 @@ export default abstract class BaseRouter {
 
   protected abstract register(): void;
 
-  protected requireAuthorization() {
+  protected requireAuthorization(service = false) {
     return async (ctx: Koa.Context, next?: Koa.Next) => {
       if (!ctx.custom) ctx.custom = {};
       const token = ctx.headers["authorization"];
       if (!token) throw ErrorFactory.unauthorized();
-      const application =
-        token && (await Application.findOne({ where: { token } }));
+      const application = await Application.findOne({
+        include: service
+          ? [{ model: ApplicationService, as: "services", where: { token } }]
+          : void 0,
+        where: !service ? { token } : void 0
+      });
       if (!application) throw ErrorFactory.forbidden();
 
       ctx.custom.application = application;
+      if (next) return await next();
+    };
+  }
+
+  protected requireProvider() {
+    return async (ctx: Koa.Context, next?: Koa.Next) => {
+      if (!ctx.custom) ctx.custom = {};
+      const host = ctx.headers["host"];
+      if (!host) return;
+      const application = await Application.findOne({ where: { host } });
+      if (!application) return;
+
+      ctx.custom.provider = application;
       if (next) return await next();
     };
   }

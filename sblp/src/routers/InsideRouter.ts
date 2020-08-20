@@ -2,7 +2,7 @@ import Koa from "koa";
 import Application from "../models/Application";
 import BaseRouter from "./BaseRouter";
 
-export default class SBLPRouter extends BaseRouter {
+export default class InsideRouter extends BaseRouter {
   protected register() {
     this.router.post(
       "/start",
