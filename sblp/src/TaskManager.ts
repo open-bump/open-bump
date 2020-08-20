@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import uuid from "uuid";
+import config from "./config";
 import BaseError from "./errors/BaseError";
 import Application from "./models/Application";
 import ApplicationService from "./models/ApplicationService";
@@ -84,20 +85,26 @@ export default class TaskManager {
                   type: "ERROR",
                   code: "OTHER",
                   message: "HTTP Error",
-                  service: target.id
+                  application: target.id,
+                  verified: ["*"]
                 }
               };
             else if (subtask.res)
               return {
                 bot: bot,
-                data: { ...subtask.res, service: target.id }
+                data: {
+                  ...subtask.res,
+                  application: target.id,
+                  verified: ["application"]
+                }
               };
             else
               return {
                 bot: bot,
                 data: {
                   type: "START",
-                  service: target.id
+                  application: target.id,
+                  verified: ["*"]
                 }
               };
           })
@@ -130,7 +137,8 @@ export default class TaskManager {
         headers: {
           "x-target": url,
           authorization: subtask.service.authorization,
-          "content-type": "application/json"
+          "content-type": "application/json",
+          "x-proxy-auth": config.settings.proxyAuth
         },
         body: JSON.stringify(task.body)
       }).then((res) => res.json());
