@@ -40,7 +40,8 @@ export default class Application extends Model<Application> {
   @Column(DataType.STRING)
   name!: string;
 
-  @Column(DataType.STRING)
+  @Unique
+  @Column(DataType.STRING(64))
   host!: string;
 
   @Unique

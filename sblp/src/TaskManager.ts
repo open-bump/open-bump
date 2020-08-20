@@ -42,7 +42,7 @@ export default class TaskManager {
       createdAt: new Date()
     };
 
-    for (const service of application.services) {
+    for (const service of application.applicationServices) {
       const { target } = service;
 
       if (!target.getBase()) continue;
