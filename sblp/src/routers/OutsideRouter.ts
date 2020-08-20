@@ -45,7 +45,7 @@ export default class OutsideRouter extends BaseRouter {
         method: "POST",
         headers: {
           "x-target": url,
-          authorization: service.token,
+          authorization: service.authorization,
           "content-type": "application/json",
           "x-proxy-auth": config.settings.proxyAuth
         },

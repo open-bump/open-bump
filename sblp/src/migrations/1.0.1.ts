@@ -10,9 +10,17 @@ const migration: Migratable = {
       const queryInterface = connection.getQueryInterface();
 
       /* Add "host" Column To "Application" Table */
-      await queryInterface.addColumn("Application", "host", datatypes.STRING, {
-        transaction
-      });
+      await queryInterface.addColumn(
+        "Application",
+        "host",
+        {
+          type: datatypes.STRING(64),
+          unique: true
+        },
+        {
+          transaction
+        }
+      );
 
       /* Add "authorization" Column To "ApplicationService" Table */
       await queryInterface.addColumn(
