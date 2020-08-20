@@ -40,7 +40,7 @@ export default class Server {
     this.insideRouter = new InsideRouter(this.instance);
     this.outsideRouter = new OutsideRouter(this.instance);
 
-    this.router.use(this.insideRouter.router.routes());
+    this.router.use("/sblp", this.insideRouter.router.routes());
     this.router.use("/sblp", this.outsideRouter.router.routes());
   }
 

@@ -5,37 +5,36 @@ import BaseRouter from "./BaseRouter";
 export default class InsideRouter extends BaseRouter {
   protected register() {
     this.router.post(
-      "/start",
+      "/tasks",
       this.requireAuthorization(),
-      this.bumpStart.bind(this)
+      this.taskCreate.bind(this)
     );
     this.router.get(
-      "/check",
+      "/tasks/:task",
       this.requireAuthorization(),
-      this.bumpCheck.bind(this)
+      this.taskCheck.bind(this)
     );
   }
 
   /**
-   * POST /start
+   * POST /sblp/tasks
    * @param ctx Context
    */
-  public async bumpStart(ctx: Koa.Context, _next: Koa.Next) {
-    const body = ctx.request.body;
+  public async taskCreate(ctx: Koa.Context, _next: Koa.Next) {
     const application: Application = ctx.custom.application;
+    const body = ctx.request.body;
     await this.requireParameters(["guild", "channel", "user"])(ctx);
     const res = await this.instance.taskManager.start(application.id, body);
     ctx.body = res;
   }
 
   /**
-   * GET /check
+   * GET /sblp/tasks/:task
    * @param ctx Context
    */
-  public async bumpCheck(ctx: Koa.Context, _next: Koa.Next) {
-    const body = ctx.request.body;
+  public async taskCheck(ctx: Koa.Context, _next: Koa.Next) {
     const application: Application = ctx.custom.application;
-    await this.requireParameters(["id"])(ctx);
-    ctx.body = this.instance.taskManager.check(application.id, body.id);
+    const task = ctx.params.task;
+    ctx.body = this.instance.taskManager.check(application.id, task);
   }
 }
