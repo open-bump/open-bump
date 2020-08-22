@@ -6,7 +6,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import SearchIcon from "@material-ui/icons/Search";
 import MaterialTable from "material-table";
-import React from "react";
+import React, { useEffect } from "react";
+import Api from "../Api";
 
 const useStyles = makeStyles((theme) => ({
   search: {
@@ -84,7 +85,7 @@ export default function Home() {
             </IconButton>
           </Paper>
         </Grid>
-        <Grid item xs={6} >
+        <Grid item xs={6}>
           <Paper className={classes.paper}>
             <Grid container spacing={3}>
               <Grid item xs={12}>

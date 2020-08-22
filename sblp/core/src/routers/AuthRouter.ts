@@ -22,7 +22,7 @@ passport.use(
     {
       clientID: config.auth.discord.clientId,
       clientSecret: config.auth.discord.clientSecret,
-      callbackURL: `${config.settings.url}login`,
+      callbackURL: `${config.settings.url}/login`,
       scope: scopes
     },
     function (accessToken, refreshToken, profile, cb) {
@@ -52,6 +52,6 @@ export default class AuthRouter extends BaseRouter {
    */
   public async logout(ctx: CustomContext, _next: Koa.Next) {
     ctx.logout();
-    return void ctx.redirect("/");
+    return void ctx.redirect(config.settings.app);
   }
 }

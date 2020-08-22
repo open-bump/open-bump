@@ -6,6 +6,7 @@ import send from "koa-send";
 import session from "koa-session";
 import serve from "koa-static";
 import path from "path";
+import { env } from "process";
 import config from "./config";
 import BaseError from "./errors/BaseError";
 import ApplicationRouter from "./routers/ApplicationRouter";
@@ -39,6 +40,15 @@ export default class Server {
     this.app.use(passport.initialize());
     this.app.use(passport.session());
 
+    // cors
+    if (env.NODE_ENV === "development")
+      this.app.use(async (ctx: Koa.Context, next: Koa.Next) => {
+        ctx.set("Access-Control-Allow-Origin", config.settings.app);
+        ctx.set("Access-Control-Allow-Credentials", "true");
+        return await next();
+      });
+
+    // error handling
     this.app.use(async (ctx: Koa.Context, next: Koa.Next) => {
       try {
         return await next();
