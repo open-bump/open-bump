@@ -16,6 +16,14 @@ interface IConfig extends config.IConfig {
   settings: {
     port: number;
     proxyAuth: string;
+    url: string;
+  };
+  auth: {
+    key: string;
+    discord: {
+      clientId: string;
+      clientSecret: string;
+    };
   };
 }
 

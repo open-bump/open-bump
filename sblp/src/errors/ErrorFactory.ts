@@ -1,12 +1,14 @@
 import BaseError from "./BaseError";
 
 export default class ErrorFactory {
-  public static unauthorized() {
+  public static unauthorized(user = false) {
     return new BaseError()
       .setStatus(401)
       .setCode("unauthorized")
       .setMessage(
-        "The request is missing an `Authorization` header containing an application token."
+        !user
+          ? "The request is missing an `Authorization` header containing an application token."
+          : "You need to be logged in to perform this request."
       );
   }
 

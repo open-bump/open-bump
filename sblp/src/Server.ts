@@ -1,16 +1,24 @@
 import Router from "@koa/router";
 import Koa from "koa";
 import bodyParser from "koa-bodyparser";
+import passport from "koa-passport";
+import send from "koa-send";
+import session from "koa-session";
+import serve from "koa-static";
+import path from "path";
 import config from "./config";
 import BaseError from "./errors/BaseError";
+import AuthRouter from "./routers/AuthRouter";
 import InsideRouter from "./routers/InsideRouter";
 import OutsideRouter from "./routers/OutsideRouter";
 import Hub from "./SBLP";
+import { CustomContext, CustomState } from "./types";
 
 export default class Server {
-  private app: Koa;
-  private router: Router;
+  private app: Koa<CustomState, CustomContext>;
+  private router: Router<CustomState, CustomContext>;
 
+  private authRouter?: AuthRouter;
   private insideRouter?: InsideRouter;
   private outsideRouter?: OutsideRouter;
 
@@ -18,9 +26,16 @@ export default class Server {
     this.app = new Koa();
     this.router = new Router();
 
+    // body parser
     this.app.use(bodyParser());
 
-    this.registerRoutes();
+    // sessions
+    this.app.keys = [config.auth.key];
+    this.app.use(session({}, (this.app as unknown) as Koa));
+
+    // authentication
+    this.app.use(passport.initialize());
+    this.app.use(passport.session());
 
     this.app.use(async (ctx: Koa.Context, next: Koa.Next) => {
       try {
@@ -32,14 +47,25 @@ export default class Server {
       }
     });
 
+    // routes
+    this.registerRoutes();
     this.app.use(this.router.routes());
     this.app.use(this.router.allowedMethods());
+
+    // static
+    this.app.use(serve(path.join(__dirname, "public")));
+    this.app.use(
+      async (ctx) =>
+        await send(ctx, path.join("public", "index.html"), { root: __dirname })
+    );
   }
 
   private registerRoutes() {
+    this.authRouter = new AuthRouter(this.instance);
     this.insideRouter = new InsideRouter(this.instance);
     this.outsideRouter = new OutsideRouter(this.instance);
 
+    this.router.use(this.authRouter.router.routes());
     this.router.use("/sblp", this.insideRouter.router.routes());
     this.router.use("/sblp", this.outsideRouter.router.routes());
   }

@@ -4,9 +4,10 @@ import ErrorFactory from "../errors/ErrorFactory";
 import Application from "../models/Application";
 import ApplicationService from "../models/ApplicationService";
 import Hub from "../SBLP";
+import { CustomContext, CustomState } from "../types";
 
 export default abstract class BaseRouter {
-  public router: Router;
+  public router: Router<CustomState, CustomContext>;
 
   constructor(protected instance: Hub) {
     this.router = new Router();
@@ -15,9 +16,24 @@ export default abstract class BaseRouter {
 
   protected abstract register(): void;
 
+  protected redirectUser() {
+    return async (ctx: CustomContext, next?: Koa.Next) => {
+      if (ctx.state?.user) return void ctx.redirect("/app");
+      if (next) return await next();
+    };
+  }
+
+  protected requireUser() {
+    return async (ctx: CustomContext, next?: Koa.Next) => {
+      if (!ctx.state) ctx.state = {};
+      if (!ctx.state.user) throw ErrorFactory.unauthorized(true);
+      if (next) return await next();
+    };
+  }
+
   protected requireAuthorization(service = false) {
-    return async (ctx: Koa.Context, next?: Koa.Next) => {
-      if (!ctx.custom) ctx.custom = {};
+    return async (ctx: CustomContext, next?: Koa.Next) => {
+      if (!ctx.state) ctx.state = {};
       const token = ctx.headers["authorization"];
       if (!token) throw ErrorFactory.unauthorized();
       const application = await Application.findOne({
@@ -34,26 +50,26 @@ export default abstract class BaseRouter {
       });
       if (!application) throw ErrorFactory.forbidden();
 
-      ctx.custom.application = application;
+      ctx.state.application = application;
       if (next) return await next();
     };
   }
 
   protected requireProvider() {
-    return async (ctx: Koa.Context, next?: Koa.Next) => {
-      if (!ctx.custom) ctx.custom = {};
+    return async (ctx: CustomContext, next?: Koa.Next) => {
+      if (!ctx.state) ctx.state = {};
       const host = ctx.headers["host"];
       if (!host) return;
       const application = await Application.findOne({ where: { host } });
       if (!application) return;
 
-      ctx.custom.provider = application;
+      ctx.state.provider = application;
       if (next) return await next();
     };
   }
 
   protected requireParameters(parameters: Array<string>) {
-    return async (ctx: Koa.Context, next?: Koa.Next) => {
+    return async (ctx: CustomContext, next?: Koa.Next) => {
       const missing: Array<string> = [];
       for (const parameter of parameters) {
         if (
