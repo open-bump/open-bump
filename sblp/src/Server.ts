@@ -8,6 +8,7 @@ import serve from "koa-static";
 import path from "path";
 import config from "./config";
 import BaseError from "./errors/BaseError";
+import ApplicationRouter from "./routers/ApplicationRouter";
 import AuthRouter from "./routers/AuthRouter";
 import InsideRouter from "./routers/InsideRouter";
 import OutsideRouter from "./routers/OutsideRouter";
@@ -18,6 +19,7 @@ export default class Server {
   private app: Koa<CustomState, CustomContext>;
   private router: Router<CustomState, CustomContext>;
 
+  private applicationRouter?: ApplicationRouter;
   private authRouter?: AuthRouter;
   private insideRouter?: InsideRouter;
   private outsideRouter?: OutsideRouter;
@@ -61,10 +63,15 @@ export default class Server {
   }
 
   private registerRoutes() {
+    this.applicationRouter = new ApplicationRouter(this.instance);
     this.authRouter = new AuthRouter(this.instance);
     this.insideRouter = new InsideRouter(this.instance);
     this.outsideRouter = new OutsideRouter(this.instance);
 
+    this.router.use(
+      "/api/applications",
+      this.applicationRouter.router.routes()
+    );
     this.router.use(this.authRouter.router.routes());
     this.router.use("/sblp", this.insideRouter.router.routes());
     this.router.use("/sblp", this.outsideRouter.router.routes());
