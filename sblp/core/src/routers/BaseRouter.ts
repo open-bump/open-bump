@@ -1,5 +1,6 @@
 import Router from "@koa/router";
 import Koa from "koa";
+import config from "../config";
 import ErrorFactory from "../errors/ErrorFactory";
 import Application from "../models/Application";
 import ApplicationService from "../models/ApplicationService";
@@ -18,7 +19,7 @@ export default abstract class BaseRouter {
 
   protected redirectUser() {
     return async (ctx: CustomContext, next?: Koa.Next) => {
-      if (ctx.state?.user) return void ctx.redirect("/app");
+      if (ctx.state?.user) return void ctx.redirect(config.settings.app);
       if (next) return await next();
     };
   }

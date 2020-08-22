@@ -17,6 +17,7 @@ interface IConfig extends config.IConfig {
     port: number;
     proxyAuth: string;
     url: string;
+    app: string;
   };
   auth: {
     key: string;

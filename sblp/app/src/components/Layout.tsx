@@ -13,7 +13,9 @@ import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import MenuIcon from "@material-ui/icons/Menu";
 import SettingsEthernetIcon from "@material-ui/icons/SettingsEthernet";
 import clsx from "clsx";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import Api from "../Api";
+import { Application } from "../types";
 
 const drawerWidth = 240;
 
@@ -76,6 +78,17 @@ export default function Sidebar(props: React.PropsWithChildren<{}>) {
   const theme = useTheme();
   const [open, setOpen] = useState(true);
 
+  const [applications, setApplications] = React.useState<Array<Application>>(
+    []
+  );
+  console.log("applications", applications);
+
+  useEffect(() => {
+    Api.listApplications().then((applications) =>
+      setApplications(applications)
+    );
+  }, []);
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -127,24 +140,14 @@ export default function Sidebar(props: React.PropsWithChildren<{}>) {
         </div>
         <Divider />
         <List>
-          <ListItem button>
-            <ListItemIcon>
-              <SettingsEthernetIcon />
-            </ListItemIcon>
-            <ListItemText primary={"Open Bump"} />
-          </ListItem>
-          <ListItem button>
-            <ListItemIcon>
-              <SettingsEthernetIcon />
-            </ListItemIcon>
-            <ListItemText primary={"PYS Bump"} />
-          </ListItem>
-          <ListItem button>
-            <ListItemIcon>
-              <SettingsEthernetIcon />
-            </ListItemIcon>
-            <ListItemText primary={"DGP Bump"} />
-          </ListItem>
+          {applications.map((application) => (
+            <ListItem button key={application.id}>
+              <ListItemIcon>
+                <SettingsEthernetIcon />
+              </ListItemIcon>
+              <ListItemText primary={application.name} />
+            </ListItem>
+          ))}
         </List>
       </Drawer>
       <main
