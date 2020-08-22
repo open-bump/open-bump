@@ -4,6 +4,7 @@ import config from "../config";
 import ErrorFactory from "../errors/ErrorFactory";
 import Application from "../models/Application";
 import ApplicationService from "../models/ApplicationService";
+import { CustomContext } from "../types";
 import BaseRouter from "./BaseRouter";
 
 export default class OutsideRouter extends BaseRouter {
@@ -18,12 +19,11 @@ export default class OutsideRouter extends BaseRouter {
 
   /**
    * POST /sblp/request
-   * @param ctx Context
    */
-  public async bumpRequest(ctx: Koa.Context, _next: Koa.Next) {
+  public async bumpRequest(ctx: CustomContext, _next: Koa.Next) {
     const body = ctx.request.body;
-    const provider: Application = ctx.custom.provider;
-    const application: Application = ctx.custom.application;
+    const provider: Application = ctx.state.provider;
+    const application: Application = ctx.state.application;
     const service = await ApplicationService.findOne({
       where: { applicationId: provider.id, targetId: application.id }
     });

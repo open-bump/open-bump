@@ -1,8 +1,10 @@
 import {
   AllowNull,
+  BelongsTo,
   Column,
   DataType,
   Default,
+  ForeignKey,
   HasMany,
   Model,
   PrimaryKey,
@@ -10,6 +12,7 @@ import {
   Unique
 } from "sequelize-typescript";
 import ApplicationService from "./ApplicationService";
+import User from "./User";
 
 @Table({
   tableName: "Application",
@@ -43,6 +46,13 @@ export default class Application extends Model<Application> {
   @Unique
   @Column(DataType.STRING(64))
   host!: string;
+
+  @ForeignKey(() => User)
+  @Column
+  userId!: string;
+
+  @BelongsTo(() => User)
+  user!: User;
 
   @Unique
   @AllowNull(false)
