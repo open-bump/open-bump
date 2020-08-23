@@ -5,7 +5,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import SaveIcon from "@material-ui/icons/Save";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { api } from "../App";
@@ -57,17 +57,20 @@ function Application(props: RouteComponentProps<{ application: string }>) {
     state.applications.find(({ id }) => id === props.match.params.application)
   );
 
-  const defaultState = {
-    name: application?.name || "",
-    authorization: application?.authorization || ""
-  };
+  const defaultState = useMemo(
+    () => ({
+      name: application?.name || "",
+      authorization: application?.authorization || ""
+    }),
+    [application]
+  );
   const [state, setState] = React.useState(defaultState);
   const [initialState, setInitialState] = React.useState(defaultState);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setState(defaultState);
     setInitialState(defaultState);
-  }, [application]);
+  }, [application, defaultState]);
 
   const hasChanged = () =>
     JSON.stringify(state) !== JSON.stringify(initialState);
