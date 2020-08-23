@@ -5,11 +5,13 @@ import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import SaveIcon from "@material-ui/icons/Save";
+import Alert from "@material-ui/lab/Alert";
 import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { api } from "../App";
 import { ApplicationsState } from "../applicationsReducer";
+import ApplicationService from "./partials/ApplicationService";
 import ConfirmDialog from "./utils/dialog/ConfirmDialog";
 import CopyDialog from "./utils/dialog/CopyDialog";
 
@@ -41,6 +43,9 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     bottom: theme.spacing(3),
     right: theme.spacing(3)
+  },
+  nested: {
+    paddingLeft: theme.spacing(4)
   }
 }));
 
@@ -60,6 +65,7 @@ function Application(props: RouteComponentProps<{ application: string }>) {
   const defaultState = useMemo(
     () => ({
       name: application?.name || "",
+      host: application?.host || "",
       authorization: application?.authorization || ""
     }),
     [application]
@@ -71,6 +77,11 @@ function Application(props: RouteComponentProps<{ application: string }>) {
     setState(defaultState);
     setInitialState(defaultState);
   }, [application, defaultState]);
+
+  useEffect(() => {
+    if (!application) return;
+    api.getApplicationServices(application.id);
+  }, [application]);
 
   const hasChanged = () =>
     JSON.stringify(state) !== JSON.stringify(initialState);
@@ -102,16 +113,20 @@ function Application(props: RouteComponentProps<{ application: string }>) {
     setCopy(true);
   };
 
+  console.log("services", application?.services);
+
   return (
     <>
       <form onSubmit={handleSave}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Paper className={classes.paper}>
-              <Typography variant="h6" component="h1">
-                Bot Information
-              </Typography>
               <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Typography variant="h6" component="h1">
+                    Bot Information
+                  </Typography>
+                </Grid>
                 <Grid item xs={12}>
                   <TextField
                     label="Name"
@@ -134,8 +149,21 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
+                    label="Domain"
+                    helperText={
+                      'This is the domain other bots use as base when requesting bumps from your bot. Example: "openbump.bot.discord.one"'
+                    }
+                    fullWidth
+                    value={state.host}
+                    onChange={(e) =>
+                      setState({ ...state, host: e.target.value })
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
                     label="Token"
-                    helperText="This is the token your bot will need to pass in the `Authorization` header to make requests to SBLP."
+                    helperText="This is the token your bot will need to pass in the `Authorization` header to make requests to SBLP Centralized."
                     fullWidth
                     value={application?.token || "Not set"}
                     disabled
@@ -156,13 +184,38 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                 <Grid item xs={12}>
                   <TextField
                     label="Authorization"
-                    helperText="SBLP will provide this in the `Authorization` header when making requests to your server. Use this to verify the authenticity of the SBLP."
+                    helperText="SBLP Centralized will provide this in the `Authorization` header when making requests to your server. Use this to verify the authenticity of the SBLP."
                     fullWidth
                     value={state.authorization}
                     onChange={(e) =>
                       setState({ ...state, authorization: e.target.value })
                     }
                   />
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+          <Grid item xs={12}>
+            <Paper className={classes.paper}>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Typography variant="h6" component="h1">
+                    Services
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Alert variant="outlined" severity="warning">
+                    This is a dangerous section. Changing service tokens might
+                    break your bot's connection to other bots.
+                  </Alert>
+                </Grid>
+                <Grid item xs={12}>
+                  {application?.services?.map((service) => (
+                    <ApplicationService
+                      application={application}
+                      service={service}
+                    />
+                  ))}
                 </Grid>
               </Grid>
             </Paper>
