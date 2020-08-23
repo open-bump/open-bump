@@ -56,7 +56,6 @@ export default class Server {
       try {
         return await next();
       } catch (error) {
-        console.log("error", error);
         const baseError = BaseError.from(error);
         ctx.body = baseError.dispatch();
         ctx.status = baseError.status;

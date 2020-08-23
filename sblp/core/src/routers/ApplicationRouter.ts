@@ -19,6 +19,11 @@ export default class ApplicationRouter extends BaseRouter {
       this.requireUser(),
       this.updateApplication.bind(this)
     );
+    this.router.get(
+      "/:application/services",
+      this.requireUser(),
+      this.viewApplicationServices.bind(this)
+    );
     this.router.post(
       "/:application/token",
       this.requireUser(),
@@ -61,10 +66,24 @@ export default class ApplicationRouter extends BaseRouter {
     if (!application)
       throw ErrorFactory.notFound("application", ctx.params.application);
     if (ctx.request.body.name) application.name = ctx.request.body.name;
+    if (ctx.request.body.host) application.host = ctx.request.body.host;
     if (ctx.request.body.authorization)
       application.authorization = ctx.request.body.authorization;
     if (application.changed()) await application.save();
     ctx.body = application;
+  }
+
+  /**
+   * GET /api/applications/:application/services
+   */
+  public async viewApplicationServices(ctx: CustomContext, _next: Koa.Next) {
+    const user: User = ctx.state.user;
+    const application = await Application.scope("full").findOne({
+      where: { id: ctx.params.application, userId: user.id }
+    });
+    if (!application)
+      throw ErrorFactory.notFound("application", ctx.params.application);
+    ctx.body = application.applicationServices;
   }
 
   /**

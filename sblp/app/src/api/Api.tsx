@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import store from "../store";
-import { IApplication } from "../types";
+import { IApplication, IApplicationService } from "../types";
 
 export default class Api {
   private base = "http://localhost:4100/";
@@ -55,6 +55,18 @@ export default class Api {
       data
     );
     store.dispatch({ type: "UPDATE_APPLICATION", payload: res });
+    return res;
+  }
+
+  public async getApplicationServices(
+    application: string
+  ): Promise<Array<IApplicationService>> {
+    const res = await this.get(`${this.base}api/applications/${application}/services`);
+    console.log('res', res);
+    store.dispatch({
+      type: "SET_SERVICES",
+      payload: { application, services: res }
+    });
     return res;
   }
 
