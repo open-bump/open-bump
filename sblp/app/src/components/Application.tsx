@@ -239,7 +239,7 @@ function Application(props: RouteComponentProps<{ application: string }>) {
             <Paper className={classes.paper}>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
-                  <Typography variant="h6" component="h1">
+                  <Typography variant="h6" component="h2">
                     Services
                   </Typography>
                 </Grid>
