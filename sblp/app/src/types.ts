@@ -20,16 +20,5 @@ export interface IApplicationService {
   authorization: string;
   createdAt: string;
   updatedAt: string;
-  target: {
-    id: string;
-    name: string;
-    host: string | null;
-    userId: string;
-    bot: string;
-    base: string;
-    token: string;
-    authorization: string | null;
-    createdAt: string;
-    updatedAt: string;
-  };
+  target: IApplication;
 }

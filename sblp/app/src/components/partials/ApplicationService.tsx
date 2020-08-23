@@ -10,6 +10,7 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import React, { useState } from "react";
+import { api } from "../../App";
 import { IApplication, IApplicationService } from "../../types";
 import ConfirmDialog from "../utils/dialog/ConfirmDialog";
 import CopyDialog from "../utils/dialog/CopyDialog";
@@ -49,13 +50,21 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+export interface IApplicationServiceState {
+  authorization: string;
+}
+
 interface IApplicationServiceProps {
   application: IApplication;
   service: IApplicationService;
+  state: IApplicationServiceState;
+  setState: (state: IApplicationServiceState) => void;
 }
 
 export default function ApplicationService(props: IApplicationServiceProps) {
   const classes = useStyles();
+
+  const { state, setState, application, service } = props;
 
   const [open, setOpen] = useState(false);
   const [copy, setCopy] = useState(false);
@@ -71,7 +80,7 @@ export default function ApplicationService(props: IApplicationServiceProps) {
 
   const handleConfirm = () => {
     handleClose();
-    // api.resetApplicationServiceToken(props.service.id);
+    api.resetApplicationServiceToken(application.id, service.id);
   };
 
   const handleCopy = () => {
@@ -87,7 +96,7 @@ export default function ApplicationService(props: IApplicationServiceProps) {
         >
           <div className={classes.column}>
             <Typography className={classes.heading}>
-              {props.service.target.name}
+              {service.target.name}
             </Typography>
           </div>
         </AccordionSummary>
@@ -97,10 +106,10 @@ export default function ApplicationService(props: IApplicationServiceProps) {
               <TextField
                 label="Token"
                 helperText={`This is the token other bots need to pass in the \`Authorization\` header when making requests to https://${
-                  props.application.host || "yourbot.bot.discord.one"
+                  application.host || "yourbot.bot.discord.one"
                 }/.`}
                 fullWidth
-                value={props.service.token}
+                value={service.token}
                 disabled
                 InputProps={{
                   endAdornment: (
@@ -121,7 +130,10 @@ export default function ApplicationService(props: IApplicationServiceProps) {
                 label="Authorization"
                 helperText="SBLP Centralized will pass this token when making requests to other bots. If the other bot uses SBLP Centralized too, you need to insert it's service's `Token` here."
                 fullWidth
-                value={props.service.authorization}
+                value={state.authorization}
+                onChange={(e) =>
+                  setState({ ...state, authorization: e.target.value })
+                }
               />
             </Grid>
           </Grid>
@@ -134,7 +146,7 @@ export default function ApplicationService(props: IApplicationServiceProps) {
       />
       <CopyDialog
         open={copy}
-        value={props.service.token || ""}
+        value={service.token || ""}
         onClose={() => setCopy(false)}
       />
     </>

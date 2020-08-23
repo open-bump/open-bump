@@ -14,6 +14,13 @@ type Action =
   | {
       type: "SET_SERVICES";
       payload: { application: string; services: Array<IApplicationService> };
+    }
+  | {
+      type: "UPDATE_SERVICE";
+      payload: {
+        application: string;
+        service: IApplicationService;
+      };
     };
 
 export default (state = initialState, action: Action) => {
@@ -38,6 +45,22 @@ export default (state = initialState, action: Action) => {
         applications: state.applications.map((application) =>
           application.id === action.payload.application
             ? { ...application, services: action.payload.services }
+            : application
+        )
+      };
+    case "UPDATE_SERVICE":
+      return {
+        ...state,
+        applications: state.applications.map((application) =>
+          application.id === action.payload.application
+            ? {
+                ...application,
+                services: application.services?.map((service) =>
+                  service.id === action.payload.service.id
+                    ? action.payload.service
+                    : service
+                )
+              }
             : application
         )
       };

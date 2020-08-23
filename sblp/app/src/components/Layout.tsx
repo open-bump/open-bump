@@ -112,7 +112,7 @@ export default function Sidebar(props: React.PropsWithChildren<{}>) {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap>
-            SBLP
+            SBLP Centralized
           </Typography>
         </Toolbar>
       </AppBar>
