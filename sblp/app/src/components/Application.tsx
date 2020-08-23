@@ -1,11 +1,16 @@
 import { Button, Fab } from "@material-ui/core";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import SaveIcon from "@material-ui/icons/Save";
-import React from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { api } from "../App";
@@ -45,10 +50,8 @@ const useStyles = makeStyles((theme) => ({
 function Application(props: RouteComponentProps<{ application: string }>) {
   const classes = useStyles();
 
-  // TODO: Application
-  // const application = props.applications.find(
-  //   ({ id }) => id === props.match.params.application
-  // );
+  const [open, setOpen] = React.useState(false);
+  const [copy, setCopy] = useState(false);
 
   const application = useSelector<
     ApplicationsState,
@@ -71,14 +74,44 @@ function Application(props: RouteComponentProps<{ application: string }>) {
     [application]
   );
 
-  const handleSave = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleSave = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!application) return;
     api.patchApplication(application?.id, state);
   };
 
+  const handleReset = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+    if (!application) return;
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleConfirm = () => {
+    handleClose();
+    if (!application) return;
+    api.resetApplicationToken(application.id);
+  };
+
+  const tokenRef = useRef<HTMLInputElement>();
+
+  const handleCopy = () => {
+    if (!application) return;
+    setCopy(true);
+    setTimeout(() => {
+      tokenRef.current?.select();
+      document.execCommand("copy");
+    });
+  };
+
+  const handleCloseCopy = () => {
+    setCopy(false);
+  };
+
   return (
-    <form>
+    <form onSubmit={handleSave}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Paper className={classes.paper}>
@@ -114,8 +147,12 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                   InputProps={{
                     endAdornment: (
                       <>
-                        <Button color="primary">Copy</Button>
-                        <Button color="primary">Reset</Button>
+                        <Button color="primary" onClick={handleCopy}>
+                          Copy
+                        </Button>
+                        <Button color="primary" onClick={handleReset}>
+                          Reset
+                        </Button>
                       </>
                     )
                   }}
@@ -141,10 +178,55 @@ function Application(props: RouteComponentProps<{ application: string }>) {
         className={classes.fab}
         color="primary"
         type="submit"
-        onClick={handleSave}
       >
         <SaveIcon />
       </Fab>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Reset Token?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            The current token will be revoked immediately and a new token
+            created. You won't be able to revert back to the old token.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirm} color="primary" autoFocus>
+            Confirm Reset
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={copy}
+        onClose={handleCloseCopy}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Copy Content</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Press CTRL+C to copy the content of the field below.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            value={application?.token || ""}
+            fullWidth
+            inputRef={tokenRef}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCopy} color="primary">
+            Finished
+          </Button>
+        </DialogActions>
+      </Dialog>
     </form>
   );
 }

@@ -1,4 +1,5 @@
 import Koa from "koa";
+import uuid from "uuid";
 import ErrorFactory from "../errors/ErrorFactory";
 import Application from "../models/Application";
 import User from "../models/User";
@@ -17,6 +18,11 @@ export default class ApplicationRouter extends BaseRouter {
       "/:application",
       this.requireUser(),
       this.updateApplication.bind(this)
+    );
+    this.router.post(
+      "/:application/token",
+      this.requireUser(),
+      this.resetApplicationToken.bind(this)
     );
   }
 
@@ -57,6 +63,21 @@ export default class ApplicationRouter extends BaseRouter {
     if (ctx.request.body.name) application.name = ctx.request.body.name;
     if (ctx.request.body.authorization)
       application.authorization = ctx.request.body.authorization;
+    if (application.changed()) await application.save();
+    ctx.body = application;
+  }
+
+  /**
+   * POST /api/applications/:application/token
+   */
+  public async resetApplicationToken(ctx: CustomContext, _next: Koa.Next) {
+    const user: User = ctx.state.user;
+    const application = await Application.findOne({
+      where: { id: ctx.params.application, userId: user.id }
+    });
+    if (!application)
+      throw ErrorFactory.notFound("application", ctx.params.application);
+    application.token = uuid.v4();
     if (application.changed()) await application.save();
     ctx.body = application;
   }
