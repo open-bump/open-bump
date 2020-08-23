@@ -45,7 +45,10 @@ export default class Server {
       this.app.use(async (ctx: Koa.Context, next: Koa.Next) => {
         ctx.set("Access-Control-Allow-Origin", config.settings.app);
         ctx.set("Access-Control-Allow-Credentials", "true");
-        return await next();
+        ctx.set("Access-Control-Allow-Headers", "content-type");
+        ctx.set("Access-Control-Allow-Methods", "GET,POST,PATCH,PUT,DELETE");
+        if (ctx.method !== "OPTIONS") return await next();
+        ctx.status = 200;
       });
 
     // error handling
@@ -53,6 +56,7 @@ export default class Server {
       try {
         return await next();
       } catch (error) {
+        console.log("error", error);
         const baseError = BaseError.from(error);
         ctx.body = baseError.dispatch();
         ctx.status = baseError.status;

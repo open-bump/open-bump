@@ -6,8 +6,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import SearchIcon from "@material-ui/icons/Search";
 import MaterialTable from "material-table";
-import React, { useEffect } from "react";
-import Api from "../Api";
+import React from "react";
 
 const useStyles = makeStyles((theme) => ({
   search: {
@@ -35,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function Home() {
+export default function Home(props: React.Props<{}>) {
   const classes = useStyles();
 
   const [state, setState] = React.useState({

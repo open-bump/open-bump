@@ -13,6 +13,11 @@ export default class ApplicationRouter extends BaseRouter {
       this.requireUser(),
       this.viewApplication.bind(this)
     );
+    this.router.patch(
+      "/:application",
+      this.requireUser(),
+      this.updateApplication.bind(this)
+    );
   }
 
   /**
@@ -36,6 +41,23 @@ export default class ApplicationRouter extends BaseRouter {
     });
     if (!application)
       throw ErrorFactory.notFound("application", ctx.params.application);
+    ctx.body = application;
+  }
+
+  /**
+   * PATCH /api/applications/:application
+   */
+  public async updateApplication(ctx: CustomContext, _next: Koa.Next) {
+    const user: User = ctx.state.user;
+    const application = await Application.findOne({
+      where: { id: ctx.params.application, userId: user.id }
+    });
+    if (!application)
+      throw ErrorFactory.notFound("application", ctx.params.application);
+    if (ctx.request.body.name) application.name = ctx.request.body.name;
+    if (ctx.request.body.authorization)
+      application.authorization = ctx.request.body.authorization;
+    if (application.changed()) await application.save();
     ctx.body = application;
   }
 }
