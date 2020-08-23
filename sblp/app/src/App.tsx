@@ -2,11 +2,12 @@ import { createMuiTheme, makeStyles, ThemeProvider } from "@material-ui/core";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import React, { useEffect } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import Api from "./Api";
+import Api from "./api/Api";
 import Application from "./components/Application";
 import Home from "./components/Home";
 import Layout from "./components/Layout";
-import { IApplication } from "./types";
+
+export const api = new Api();
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -25,13 +26,8 @@ function App() {
   });
   const classes = useStyles();
 
-  const [applications, setApplications] = React.useState<Array<IApplication>>(
-    []
-  );
   useEffect(() => {
-    Api.listApplications().then((applications) =>
-      setApplications(applications)
-    );
+    api.getApplications();
   }, []);
 
   return (
@@ -39,10 +35,10 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
-          <Layout applications={applications}>
+          <Layout>
             <Switch>
               <Route path="/applications/:application">
-                <Application applications={applications} />
+                <Application />
               </Route>
               <Route path="/" exact>
                 <Home />

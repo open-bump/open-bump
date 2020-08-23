@@ -6,9 +6,10 @@ import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import SaveIcon from "@material-ui/icons/Save";
 import React from "react";
+import { useSelector } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
-import Api from "../Api";
-import { IApplication } from "../types";
+import { api } from "../App";
+import { ApplicationsState } from "../applicationsReducer";
 
 const useStyles = makeStyles((theme) => ({
   search: {
@@ -41,16 +42,19 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-interface IApplicationProps
-  extends RouteComponentProps<{ application: string }> {
-  applications: Array<IApplication>;
-}
-
-function Application(props: IApplicationProps) {
+function Application(props: RouteComponentProps<{ application: string }>) {
   const classes = useStyles();
 
-  const application = props.applications.find(
-    ({ id }) => id === props.match.params.application
+  // TODO: Application
+  // const application = props.applications.find(
+  //   ({ id }) => id === props.match.params.application
+  // );
+
+  const application = useSelector<
+    ApplicationsState,
+    ApplicationsState["applications"][0] | undefined
+  >((state) =>
+    state.applications.find(({ id }) => id === props.match.params.application)
   );
 
   const [state, setState] = React.useState({
@@ -70,7 +74,7 @@ function Application(props: IApplicationProps) {
   const handleSave = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
     if (!application) return;
-    Api.updateApplication(application?.id, state);
+    api.patchApplication(application?.id, state);
   };
 
   return (
@@ -85,9 +89,19 @@ function Application(props: IApplicationProps) {
               <Grid item xs={12}>
                 <TextField
                   label="Name"
+                  helperText="This is the name of your bot. It is only for informational purposes on this dashboard, other bots will use your bot's ID to retrieve it's name."
                   fullWidth
                   value={state.name}
                   onChange={(e) => setState({ ...state, name: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Bot ID"
+                  helperText="This is the ID of your bot. You can't change this."
+                  fullWidth
+                  value={application?.bot || ""}
+                  disabled
                 />
               </Grid>
               <Grid item xs={12}>
