@@ -1,20 +1,17 @@
-import { Button, Fab } from "@material-ui/core";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
+import { Button, Fab, Zoom } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import SaveIcon from "@material-ui/icons/Save";
-import React, { FormEvent, useRef, useState } from "react";
+import React, { FormEvent, useState } from "react";
 import { useSelector } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { api } from "../App";
 import { ApplicationsState } from "../applicationsReducer";
+import ConfirmDialog from "./utils/dialog/ConfirmDialog";
+import CopyDialog from "./utils/dialog/CopyDialog";
 
 const useStyles = makeStyles((theme) => ({
   search: {
@@ -60,19 +57,20 @@ function Application(props: RouteComponentProps<{ application: string }>) {
     state.applications.find(({ id }) => id === props.match.params.application)
   );
 
-  const [state, setState] = React.useState({
+  const defaultState = {
     name: application?.name || "",
     authorization: application?.authorization || ""
-  });
+  };
+  const [state, setState] = React.useState(defaultState);
+  const [initialState, setInitialState] = React.useState(defaultState);
 
-  React.useEffect(
-    () =>
-      setState({
-        name: application?.name || "",
-        authorization: application?.authorization || ""
-      }),
-    [application]
-  );
+  React.useEffect(() => {
+    setState(defaultState);
+    setInitialState(defaultState);
+  }, [application]);
+
+  const hasChanged = () =>
+    JSON.stringify(state) !== JSON.stringify(initialState);
 
   const handleSave = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -89,145 +87,106 @@ function Application(props: RouteComponentProps<{ application: string }>) {
   const handleClose = () => {
     setOpen(false);
   };
+
   const handleConfirm = () => {
     handleClose();
     if (!application) return;
     api.resetApplicationToken(application.id);
   };
 
-  const tokenRef = useRef<HTMLInputElement>();
-
   const handleCopy = () => {
     if (!application) return;
     setCopy(true);
-    setTimeout(() => {
-      tokenRef.current?.select();
-      document.execCommand("copy");
-    });
-  };
-
-  const handleCloseCopy = () => {
-    setCopy(false);
   };
 
   return (
-    <form onSubmit={handleSave}>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Paper className={classes.paper}>
-            <Typography variant="h6" component="h1">
-              Bot Information
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField
-                  label="Name"
-                  helperText="This is the name of your bot. It is only for informational purposes on this dashboard, other bots will use your bot's ID to retrieve it's name."
-                  fullWidth
-                  value={state.name}
-                  onChange={(e) => setState({ ...state, name: e.target.value })}
-                />
+    <>
+      <form onSubmit={handleSave}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Paper className={classes.paper}>
+              <Typography variant="h6" component="h1">
+                Bot Information
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Name"
+                    helperText="This is the name of your bot. It is only for informational purposes on this dashboard, other bots will use your bot's ID to retrieve it's name."
+                    fullWidth
+                    value={state.name}
+                    onChange={(e) =>
+                      setState({ ...state, name: e.target.value })
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Bot ID"
+                    helperText="This is the ID of your bot. You can't change this."
+                    fullWidth
+                    value={application?.bot || ""}
+                    disabled
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Token"
+                    helperText="This is the token your bot will need to pass in the `Authorization` header to make requests to SBLP."
+                    fullWidth
+                    value={application?.token || "Not set"}
+                    disabled
+                    InputProps={{
+                      endAdornment: (
+                        <>
+                          <Button color="primary" onClick={handleCopy}>
+                            Copy
+                          </Button>
+                          <Button color="primary" onClick={handleReset}>
+                            Reset
+                          </Button>
+                        </>
+                      )
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Authorization"
+                    helperText="SBLP will provide this in the `Authorization` header when making requests to your server. Use this to verify the authenticity of the SBLP."
+                    fullWidth
+                    value={state.authorization}
+                    onChange={(e) =>
+                      setState({ ...state, authorization: e.target.value })
+                    }
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="Bot ID"
-                  helperText="This is the ID of your bot. You can't change this."
-                  fullWidth
-                  value={application?.bot || ""}
-                  disabled
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="Token"
-                  helperText="This is the token your bot will need to pass in the `Authorization` header to make requests to SBLP."
-                  fullWidth
-                  value={application?.token || "Not set"}
-                  disabled
-                  InputProps={{
-                    endAdornment: (
-                      <>
-                        <Button color="primary" onClick={handleCopy}>
-                          Copy
-                        </Button>
-                        <Button color="primary" onClick={handleReset}>
-                          Reset
-                        </Button>
-                      </>
-                    )
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="Authorization"
-                  helperText="SBLP will provide this in the `Authorization` header when making requests to your server. Use this to verify the authenticity of the SBLP."
-                  fullWidth
-                  value={state.authorization}
-                  onChange={(e) =>
-                    setState({ ...state, authorization: e.target.value })
-                  }
-                />
-              </Grid>
-            </Grid>
-          </Paper>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
-      <Fab
-        aria-label={"Save"}
-        className={classes.fab}
-        color="primary"
-        type="submit"
-      >
-        <SaveIcon />
-      </Fab>
-      <Dialog
+        <Zoom in={hasChanged()} unmountOnExit>
+          <Fab
+            aria-label={"Save"}
+            className={classes.fab}
+            color="primary"
+            type="submit"
+          >
+            <SaveIcon />
+          </Fab>
+        </Zoom>
+      </form>
+      <ConfirmDialog
         open={open}
         onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">Reset Token?</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            The current token will be revoked immediately and a new token
-            created. You won't be able to revert back to the old token.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleConfirm} color="primary" autoFocus>
-            Confirm Reset
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
+        onConfirm={handleConfirm}
+      />
+      <CopyDialog
         open={copy}
-        onClose={handleCloseCopy}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">Copy Content</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Press CTRL+C to copy the content of the field below.
-          </DialogContentText>
-          <TextField
-            autoFocus
-            value={application?.token || ""}
-            fullWidth
-            inputRef={tokenRef}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseCopy} color="primary">
-            Finished
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </form>
+        value={application?.token || ""}
+        onClose={() => setCopy(false)}
+      />
+    </>
   );
 }
 
