@@ -10,12 +10,13 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Toolbar from "@material-ui/core/Toolbar";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import HomeIcon from "@material-ui/icons/Home";
 import MenuIcon from "@material-ui/icons/Menu";
 import SettingsEthernetIcon from "@material-ui/icons/SettingsEthernet";
 import clsx from "clsx";
-import React, { useEffect, useState } from "react";
-import Api from "../Api";
-import { Application } from "../types";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { IApplication } from "../types";
 
 const drawerWidth = 240;
 
@@ -73,21 +74,12 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function Sidebar(props: React.PropsWithChildren<{}>) {
+export default function Sidebar(
+  props: React.PropsWithChildren<{ applications: Array<IApplication> }>
+) {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(true);
-
-  const [applications, setApplications] = React.useState<Array<Application>>(
-    []
-  );
-  console.log("applications", applications);
-
-  useEffect(() => {
-    Api.listApplications().then((applications) =>
-      setApplications(applications)
-    );
-  }, []);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -140,8 +132,22 @@ export default function Sidebar(props: React.PropsWithChildren<{}>) {
         </div>
         <Divider />
         <List>
-          {applications.map((application) => (
-            <ListItem button key={application.id}>
+          <ListItem button component={Link} to="/">
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
+          </ListItem>
+        </List>
+        <Divider />
+        <List>
+          {props.applications.map((application) => (
+            <ListItem
+              button
+              component={Link}
+              to={`/applications/${application.id}`}
+              key={application.id}
+            >
               <ListItemIcon>
                 <SettingsEthernetIcon />
               </ListItemIcon>

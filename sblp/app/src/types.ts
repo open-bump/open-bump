@@ -1,4 +1,4 @@
-export interface Application {
+export interface IApplication {
   id: string;
   name: string;
   host: string | null;
