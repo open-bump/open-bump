@@ -15,8 +15,9 @@ import MenuIcon from "@material-ui/icons/Menu";
 import SettingsEthernetIcon from "@material-ui/icons/SettingsEthernet";
 import clsx from "clsx";
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { IApplication } from "../types";
+import { ApplicationsState } from "../applicationsReducer";
 
 const drawerWidth = 240;
 
@@ -74,9 +75,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function Sidebar(
-  props: React.PropsWithChildren<{ applications: Array<IApplication> }>
-) {
+export default function Sidebar(props: React.PropsWithChildren<{}>) {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(true);
@@ -88,6 +87,11 @@ export default function Sidebar(
   const handleDrawerClose = () => {
     setOpen(false);
   };
+
+  const applications = useSelector<
+    ApplicationsState,
+    ApplicationsState["applications"]
+  >((state) => state.applications);
 
   return (
     <>
@@ -141,7 +145,7 @@ export default function Sidebar(
         </List>
         <Divider />
         <List>
-          {props.applications.map((application) => (
+          {applications.map((application) => (
             <ListItem
               button
               component={Link}
