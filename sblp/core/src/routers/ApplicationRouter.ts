@@ -2,6 +2,7 @@ import Koa from "koa";
 import uuid from "uuid";
 import ErrorFactory from "../errors/ErrorFactory";
 import Application from "../models/Application";
+import ApplicationService from "../models/ApplicationService";
 import User from "../models/User";
 import { CustomContext } from "../types";
 import BaseRouter from "./BaseRouter";
@@ -24,10 +25,20 @@ export default class ApplicationRouter extends BaseRouter {
       this.requireUser(),
       this.viewApplicationServices.bind(this)
     );
+    this.router.patch(
+      "/:application/services/:service",
+      this.requireUser(),
+      this.updateApplicationService.bind(this)
+    );
     this.router.post(
       "/:application/token",
       this.requireUser(),
       this.resetApplicationToken.bind(this)
+    );
+    this.router.post(
+      "/:application/services/:service/token",
+      this.requireUser(),
+      this.resetApplicationServiceToken.bind(this)
     );
   }
 
@@ -87,6 +98,32 @@ export default class ApplicationRouter extends BaseRouter {
   }
 
   /**
+   * PATCH /api/applications/:application/services/:service
+   */
+  public async updateApplicationService(ctx: CustomContext, _next: Koa.Next) {
+    const user: User = ctx.state.user;
+    const service = await ApplicationService.findOne({
+      where: { id: ctx.params.service },
+      include: [
+        {
+          model: Application,
+          as: "application",
+          where: { id: ctx.params.application, userId: user.id }
+        },
+        {
+          model: Application,
+          as: "target"
+        }
+      ]
+    });
+    if (!service) throw ErrorFactory.notFound("service", ctx.params.service);
+    if (ctx.request.body.authorization)
+      service.authorization = ctx.request.body.authorization;
+    if (service.changed()) await service.save();
+    ctx.body = service;
+  }
+
+  /**
    * POST /api/applications/:application/token
    */
   public async resetApplicationToken(ctx: CustomContext, _next: Koa.Next) {
@@ -99,5 +136,33 @@ export default class ApplicationRouter extends BaseRouter {
     application.token = uuid.v4();
     if (application.changed()) await application.save();
     ctx.body = application;
+  }
+
+  /**
+   * POST /api/applications/:application/services/:service/token
+   */
+  public async resetApplicationServiceToken(
+    ctx: CustomContext,
+    _next: Koa.Next
+  ) {
+    const user: User = ctx.state.user;
+    const service = await ApplicationService.findOne({
+      where: { id: ctx.params.service },
+      include: [
+        {
+          model: Application,
+          as: "application",
+          where: { id: ctx.params.application, userId: user.id }
+        },
+        {
+          model: Application,
+          as: "target"
+        }
+      ]
+    });
+    if (!service) throw ErrorFactory.notFound("service", ctx.params.service);
+    service.token = uuid.v4();
+    if (service.changed()) await service.save();
+    ctx.body = service;
   }
 }

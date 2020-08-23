@@ -11,7 +11,9 @@ import { useSelector } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { api } from "../App";
 import { ApplicationsState } from "../applicationsReducer";
-import ApplicationService from "./partials/ApplicationService";
+import ApplicationService, {
+  IApplicationServiceState
+} from "./partials/ApplicationService";
 import ConfirmDialog from "./utils/dialog/ConfirmDialog";
 import CopyDialog from "./utils/dialog/CopyDialog";
 
@@ -40,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(1)
   },
   fab: {
-    position: "absolute",
+    position: "fixed",
     bottom: theme.spacing(3),
     right: theme.spacing(3)
   },
@@ -52,8 +54,9 @@ const useStyles = makeStyles((theme) => ({
 function Application(props: RouteComponentProps<{ application: string }>) {
   const classes = useStyles();
 
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const [copy, setCopy] = useState(false);
+  const [applicationId, setApplicationId] = useState("");
 
   const application = useSelector<
     ApplicationsState,
@@ -62,7 +65,10 @@ function Application(props: RouteComponentProps<{ application: string }>) {
     state.applications.find(({ id }) => id === props.match.params.application)
   );
 
-  const defaultState = useMemo(
+  if (application?.id && application.id !== applicationId)
+    setApplicationId(application.id);
+
+  const defaultApplicationState = useMemo(
     () => ({
       name: application?.name || "",
       host: application?.host || "",
@@ -70,26 +76,53 @@ function Application(props: RouteComponentProps<{ application: string }>) {
     }),
     [application]
   );
-  const [state, setState] = React.useState(defaultState);
-  const [initialState, setInitialState] = React.useState(defaultState);
+
+  const defaultServicesState = useMemo<{
+    [id: string]: IApplicationServiceState;
+  }>(() => ({}), []);
+  const [applicationState, setApplicationState] = useState(
+    defaultApplicationState
+  );
+  const [initialApplicationState, setInitialApplicationState] = useState(
+    defaultApplicationState
+  );
+  const [servicesState, setServicesState] = useState(defaultServicesState);
+  const [initialServicesState, setInitialServicesState] = useState(
+    defaultServicesState
+  );
+
+  const services = application?.services;
 
   useEffect(() => {
-    setState(defaultState);
-    setInitialState(defaultState);
-  }, [application, defaultState]);
+    setApplicationState(defaultApplicationState);
+    setInitialApplicationState(defaultApplicationState);
+    const servicesState = { ...defaultServicesState };
+    if (services)
+      for (const service of services)
+        servicesState[service.id] = { authorization: service.authorization };
+    setServicesState(servicesState);
+    setInitialServicesState(servicesState);
+  }, [defaultApplicationState, defaultServicesState, services]);
 
   useEffect(() => {
-    if (!application) return;
-    api.getApplicationServices(application.id);
-  }, [application]);
+    if (applicationId) api.getApplicationServices(applicationId);
+  }, [applicationId]);
 
   const hasChanged = () =>
-    JSON.stringify(state) !== JSON.stringify(initialState);
+    JSON.stringify(applicationState) !==
+      JSON.stringify(initialApplicationState) ||
+    JSON.stringify(servicesState) !== JSON.stringify(initialServicesState);
 
   const handleSave = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!application) return;
-    api.patchApplication(application?.id, state);
+    if (!application || !services) return;
+    api.patchApplication(application.id, applicationState);
+    for (const service of services)
+      api.patchApplicationService(
+        application.id,
+        service.id,
+        servicesState[service.id]
+      );
   };
 
   const handleReset = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -113,8 +146,6 @@ function Application(props: RouteComponentProps<{ application: string }>) {
     setCopy(true);
   };
 
-  console.log("services", application?.services);
-
   return (
     <>
       <form onSubmit={handleSave}>
@@ -132,9 +163,12 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                     label="Name"
                     helperText="This is the name of your bot. It is only for informational purposes on this dashboard, other bots will use your bot's ID to retrieve it's name."
                     fullWidth
-                    value={state.name}
+                    value={applicationState.name}
                     onChange={(e) =>
-                      setState({ ...state, name: e.target.value })
+                      setApplicationState({
+                        ...applicationState,
+                        name: e.target.value
+                      })
                     }
                   />
                 </Grid>
@@ -154,9 +188,12 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                       'This is the domain other bots use as base when requesting bumps from your bot. Example: "openbump.bot.discord.one"'
                     }
                     fullWidth
-                    value={state.host}
+                    value={applicationState.host}
                     onChange={(e) =>
-                      setState({ ...state, host: e.target.value })
+                      setApplicationState({
+                        ...applicationState,
+                        host: e.target.value
+                      })
                     }
                   />
                 </Grid>
@@ -184,11 +221,14 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                 <Grid item xs={12}>
                   <TextField
                     label="Authorization"
-                    helperText="SBLP Centralized will provide this in the `Authorization` header when making requests to your server. Use this to verify the authenticity of the SBLP."
+                    helperText="SBLP Centralized will provide this in the `Authorization` header when making requests to your server. Use this to verify the authenticity of SBLP Centralized."
                     fullWidth
-                    value={state.authorization}
+                    value={applicationState.authorization}
                     onChange={(e) =>
-                      setState({ ...state, authorization: e.target.value })
+                      setApplicationState({
+                        ...applicationState,
+                        authorization: e.target.value
+                      })
                     }
                   />
                 </Grid>
@@ -212,7 +252,19 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                 <Grid item xs={12}>
                   {application?.services?.map((service) => (
                     <ApplicationService
+                      key={service.id}
                       application={application}
+                      state={
+                        servicesState[service.id] || {
+                          authorization: service.authorization
+                        }
+                      }
+                      setState={(state: IApplicationServiceState) => {
+                        setServicesState({
+                          ...servicesState,
+                          [service.id]: state
+                        });
+                      }}
                       service={service}
                     />
                   ))}
