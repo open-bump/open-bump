@@ -77,7 +77,6 @@ export default class ApplicationRouter extends BaseRouter {
     if (!application)
       throw ErrorFactory.notFound("application", ctx.params.application);
     if (ctx.request.body.name) application.name = ctx.request.body.name;
-    if (ctx.request.body.host) application.host = ctx.request.body.host;
     if (ctx.request.body.authorization)
       application.authorization = ctx.request.body.authorization;
     if (application.changed()) await application.save();
