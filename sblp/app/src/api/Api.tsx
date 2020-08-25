@@ -1,69 +1,88 @@
 import store from "../store";
 import { IApplication, IApplicationService } from "../types";
-import BaseApi from "./BaseApi";
+import BaseApi, { APIModel } from "./BaseApi";
 
 export default class Api extends BaseApi {
-  public async getApplications(): Promise<Array<IApplication>> {
-    const res = await this.get(`/api/applications`);
-    store.dispatch({ type: "SET_APPLICATIONS", payload: res });
-    return res;
+  public async getApplications() {
+    const res: Array<IApplication> = await this.get(`/api/applications`);
+    const ret = res.map((app) => ({
+      ...this.buildModel(app),
+      services: app.services?.map(this.buildModel)
+    }));
+    store.dispatch({ type: "SET_APPLICATIONS", payload: ret });
+    return ret;
   }
 
   public async patchApplication(
     application: string,
-    data: Partial<IApplication>
-  ): Promise<Array<IApplication>> {
-    const res = await this.patch(`/api/applications/${application}`, data);
-    store.dispatch({ type: "UPDATE_APPLICATION", payload: res });
-    return res;
+    data: Partial<IApplication> & APIModel<IApplication>
+  ) {
+    const res: IApplication = await this.patch(
+      `/api/applications/${application}`,
+      data.rebuild(data).raw()
+    );
+    const ret = this.buildModel(res);
+    store.dispatch({
+      type: "UPDATE_APPLICATION",
+      payload: ret
+    });
+    return ret;
   }
 
-  public async getApplicationServices(
-    application: string
-  ): Promise<Array<IApplicationService>> {
-    const res = await this.get(`/api/applications/${application}/services`);
+  public async getApplicationServices(application: string) {
+    const res: Array<IApplicationService> = await this.get(
+      `/api/applications/${application}/services`
+    );
+    const ret = res.map(this.buildModel);
     store.dispatch({
       type: "SET_SERVICES",
-      payload: { application, services: res }
+      payload: { application, services: ret }
     });
-    return res;
+    return ret;
   }
 
   public async patchApplicationService(
     application: string,
     service: string,
-    data: Partial<IApplication>
-  ): Promise<Array<IApplication>> {
-    const res = await this.patch(
+    data: Partial<IApplicationService>
+  ) {
+    delete data._previousDataValues;
+    const res: IApplicationService = await this.patch(
       `/api/applications/${application}/services/${service}`,
       data
     );
+    const ret = this.buildModel(res);
     store.dispatch({
       type: "UPDATE_SERVICE",
-      payload: { application, service: res }
+      payload: { application, service: ret }
     });
-    return res;
+    return ret;
   }
 
-  public async resetApplicationToken(
-    application: string
-  ): Promise<Array<IApplication>> {
-    const res = await this.post(`/api/applications/${application}/token`);
-    store.dispatch({ type: "UPDATE_APPLICATION", payload: res });
-    return res;
+  public async resetApplicationToken(application: string) {
+    const res: IApplication = await this.post(
+      `/api/applications/${application}/token`
+    );
+    const ret = this.buildModel(res);
+    store.dispatch({
+      type: "UPDATE_APPLICATION",
+      payload: { ...ret, services: ret.services?.map(this.buildModel) }
+    });
+    return ret;
   }
 
   public async resetApplicationServiceToken(
     application: string,
     service: string
-  ): Promise<Array<IApplication>> {
-    const res = await this.post(
+  ) {
+    const res: IApplicationService = await this.post(
       `/api/applications/${application}/services/${service}/token`
     );
+    const ret = this.buildModel(res);
     store.dispatch({
       type: "UPDATE_SERVICE",
-      payload: { application, service: res }
+      payload: { application, service: ret }
     });
-    return res;
+    return ret;
   }
 }

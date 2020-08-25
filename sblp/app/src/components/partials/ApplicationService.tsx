@@ -56,15 +56,14 @@ export interface IApplicationServiceState {
 
 interface IApplicationServiceProps {
   application: IApplication;
-  service: IApplicationService;
-  state: IApplicationServiceState;
-  setState: (state: IApplicationServiceState) => void;
+  state: IApplicationService;
+  setState: (state: IApplicationService) => void;
 }
 
 export default function ApplicationService(props: IApplicationServiceProps) {
   const classes = useStyles();
 
-  const { state, setState, application, service } = props;
+  const { application, state, setState } = props;
 
   const [open, setOpen] = useState(false);
   const [copy, setCopy] = useState(false);
@@ -80,7 +79,7 @@ export default function ApplicationService(props: IApplicationServiceProps) {
 
   const handleConfirm = () => {
     handleClose();
-    api.resetApplicationServiceToken(application.id, service.id);
+    api.resetApplicationServiceToken(application.id, state.id);
   };
 
   const handleCopy = () => {
@@ -96,7 +95,7 @@ export default function ApplicationService(props: IApplicationServiceProps) {
         >
           <div className={classes.column}>
             <Typography className={classes.heading}>
-              {service.target.name}
+              {state.target.name}
             </Typography>
           </div>
         </AccordionSummary>
@@ -109,7 +108,7 @@ export default function ApplicationService(props: IApplicationServiceProps) {
                   application.host || "yourbot.bot.discord.one"
                 }/.`}
                 fullWidth
-                value={service.token}
+                value={state.token}
                 disabled
                 InputProps={{
                   endAdornment: (
@@ -146,7 +145,7 @@ export default function ApplicationService(props: IApplicationServiceProps) {
       />
       <CopyDialog
         open={copy}
-        value={service.token || ""}
+        value={state.token || ""}
         onClose={() => setCopy(false)}
       />
     </>

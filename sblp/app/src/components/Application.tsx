@@ -1,30 +1,31 @@
 import {
+  Fab,
   Grid,
   makeStyles,
   Paper,
   TextField,
-  Typography
+  Typography,
+  Zoom
 } from "@material-ui/core";
+import SaveIcon from "@material-ui/icons/Save";
 import Alert from "@material-ui/lab/Alert";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { RouteComponentProps } from "react-router-dom";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { api } from "../App";
 import { ApplicationsState } from "../applicationsReducer";
+import { IApplicationService } from "../types";
 import ApplicationService from "./partials/ApplicationService";
 import NotFound from "./partials/NotFound";
 
 const useStyles = makeStyles((theme) => ({
-  paper: { padding: theme.spacing(2) }
+  paper: { padding: theme.spacing(2) },
+  fab: {
+    position: "fixed",
+    bottom: theme.spacing(3),
+    right: theme.spacing(3)
+  }
 }));
-
-interface IDataState {
-  name: string;
-  authorization: string;
-  services: Array<{
-    id: string;
-    authorization: string;
-  }>;
-}
 
 function Application(props: RouteComponentProps<{ application: string }>) {
   const classes = useStyles();
@@ -36,30 +37,59 @@ function Application(props: RouteComponentProps<{ application: string }>) {
     state.applications.find(({ id }) => id === props.match.params.application)
   );
 
-  const [data, setData] = useState<IDataState>({ name: "", authorization: "" });
+  const [id, setId] = useState("");
+  const [data, setData] = useState(application);
 
   useEffect(() => {
-    if (application)
-      setData({
-        name: application.name,
-        authorization: application.authorization || "",
-        services: (application.services || []).map((service) => ({
-          id: service.id,
-          authorization: service.authorization || ""
-        }))
-      });
+    if (application) setData(application);
+    setId(application?.id || "");
   }, [application]);
 
-  const handleFieldChange = (field: keyof IDataState) => (
+  useEffect(() => {
+    if (id) api.getApplicationServices(id);
+  }, [id]);
+
+  const hasChanged = (() => {
+    if (!data) return false;
+    return Boolean(
+      data.rebuild(data).changed() ||
+        data.services?.find((service) => service.rebuild(service).changed())
+    );
+  })();
+
+  const handleFieldChange = (field: keyof NonNullable<typeof data>) => (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setData({ ...data, [field]: event.target.value });
+    if (data) setData({ ...data, [field]: event.target.value });
+  };
+
+  const handleSave = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    return new Promise(async () => {
+      console.log(1);
+      if (!data || !data.services) return;
+      console.log(2);
+      if (data.rebuild(data).changed()) {
+        console.log(3);
+        await api.patchApplication(data.id, data);
+        console.log(4);
+      }
+      for (const service of data.services) {
+        console.log(5);
+        if (service.rebuild(service).changed()) {
+          console.log(6);
+          await api.patchApplicationService(data.id, service.id, service);
+          console.log(7);
+        }
+        console.log(8);
+      }
+    });
   };
 
   return (
     <>
-      {application ? (
-        <form>
+      {data ? (
+        <form onSubmit={handleSave}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <Paper className={classes.paper}>
@@ -85,40 +115,60 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                         "This is the domain other bots use as base when requesting bumps from your bot. It can only be changed by an SBLP Centralized administrator."
                       }
                       fullWidth
-                      value={application.host}
+                      value={data.host || ""}
                       disabled
                     />
                   </Grid>
                 </Grid>
               </Paper>
             </Grid>
-            <Grid item xs={12}>
-              <Paper className={classes.paper}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                    <Typography variant="h6" component="h2">
-                      Services
-                    </Typography>
+            {data.services && (
+              <Grid item xs={12}>
+                <Paper className={classes.paper}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <Typography variant="h6" component="h2">
+                        Services
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Alert variant="outlined" severity="warning">
+                        This is a dangerous section. Changing service tokens
+                        might break your bot's connection to other bots.
+                      </Alert>
+                    </Grid>
+                    <Grid item xs={12}>
+                      {data.services.map((service) => (
+                        <ApplicationService
+                          key={service.id}
+                          application={data}
+                          state={service}
+                          setState={(state: IApplicationService) =>
+                            setData({
+                              ...data,
+                              services: data.services?.map((service) =>
+                                service.id === state.id ? state : service
+                              )
+                            })
+                          }
+                        />
+                      ))}
+                    </Grid>
                   </Grid>
-                  <Grid item xs={12}>
-                    <Alert variant="outlined" severity="warning">
-                      This is a dangerous section. Changing service tokens might
-                      break your bot's connection to other bots.
-                    </Alert>
-                  </Grid>
-                  <Grid item xs={12}>
-                    {data.services.map((service, index) => (
-                      <ApplicationService
-                        key={service.id}
-                        state={service}
-                        onChange={handleFieldChange("services")}
-                      />
-                    ))}
-                  </Grid>
-                </Grid>
-              </Paper>
-            </Grid>
+                </Paper>
+              </Grid>
+            )}
           </Grid>
+          <Zoom in={hasChanged} unmountOnExit>
+            <Fab
+              aria-label="Save"
+              className={classes.fab}
+              color="primary"
+              type="submit"
+            >
+              <SaveIcon />
+            </Fab>
+          </Zoom>
         </form>
       ) : (
         <NotFound />

@@ -5,7 +5,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import TextField from "@material-ui/core/TextField";
-import React, { useEffect, useRef } from "react";
+import React, { createRef, useEffect } from "react";
 
 interface ICopyDialogProps {
   open: boolean;
@@ -14,7 +14,7 @@ interface ICopyDialogProps {
 }
 
 export default function CopyDialog(props: ICopyDialogProps) {
-  const inputRef = useRef<HTMLInputElement>();
+  const inputRef = createRef<HTMLInputElement>();
 
   const handleClose = (event?: any) => {
     if (event) event.preventDefault();
@@ -27,7 +27,7 @@ export default function CopyDialog(props: ICopyDialogProps) {
         inputRef.current?.select();
         document.execCommand("copy");
       });
-  }, [props.open]);
+  }, [props.open, inputRef]);
 
   return (
     <Dialog
