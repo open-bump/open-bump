@@ -16,8 +16,8 @@ export interface IApplicationService {
   id: string;
   applicationId: string;
   targetId: string;
-  token: string;
-  authorization: string;
+  token: string|null;
+  authorization: string|null;
   createdAt: string;
   updatedAt: string;
   target: IApplication;
