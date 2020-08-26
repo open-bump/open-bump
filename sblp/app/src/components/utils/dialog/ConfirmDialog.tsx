@@ -25,8 +25,6 @@ export default function ConfirmDialog(props: IConfirmDialogProps) {
     <Dialog
       open={props.open}
       onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">Reset Token?</DialogTitle>
       <DialogContent>
