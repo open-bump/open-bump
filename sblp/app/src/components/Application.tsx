@@ -19,6 +19,8 @@ import { IApplicationService } from "../types";
 import ApplicationService from "./partials/ApplicationService";
 import NewApplicationService, { INewApplicationServiceState } from "./partials/NewApplicationService";
 import NotFound from "./partials/NotFound";
+import ConfirmDialog from "./utils/dialog/ConfirmDialog";
+import CopyDialog from "./utils/dialog/CopyDialog";
 
 const useStyles = makeStyles((theme) => ({
   paper: { padding: theme.spacing(2) },
@@ -42,6 +44,28 @@ function Application(props: RouteComponentProps<{ application: string }>) {
   const [id, setId] = useState("");
   const [data, setData] = useState(application);
   const [openAddNewService, setOpenAddNewService] = useState(false);
+
+  const [open, setOpen] = useState(false);
+  const [copy, setCopy] = useState(false);
+
+  const handleReset = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleConfirm = () => {
+    handleClose();
+    if(!data) return;
+    api.resetApplicationToken(data.id);
+  };
+
+  const handleCopy = () => {
+    setCopy(true);
+  };
 
   useEffect(() => {
     if (application) setData(application);
@@ -92,9 +116,40 @@ function Application(props: RouteComponentProps<{ application: string }>) {
   return (
     <>
       {data ? (
-        <>
-          <form onSubmit={handleSave}>
-            <Grid container spacing={3}>
+        <form onSubmit={handleSave}>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Paper className={classes.paper}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <Typography variant="h6" component="h1">
+                      Bot Information
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Name"
+                      helperText="This is the name of your bot. It is only for informational purposes on this dashboard, other bots will use your bot's ID to retrieve it's name."
+                      fullWidth
+                      value={data.name}
+                      onChange={handleFieldChange("name")}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Domain"
+                      helperText={
+                        "This is the domain other bots use as base when requesting bumps from your bot. It can only be changed by an SBLP Centralized administrator."
+                      }
+                      fullWidth
+                      value={data.host || ""}
+                      disabled
+                    />
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+            {data.services && (
               <Grid item xs={12}>
                 <Paper className={classes.paper}>
                   <Grid container spacing={3}>
@@ -126,73 +181,19 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                   </Grid>
                 </Paper>
               </Grid>
-              {data.services && (
-                <Grid item xs={12}>
-                  <Paper className={classes.paper}>
-                    <Grid container spacing={3}>
-                      <Grid item xs={12}>
-                        <Typography variant="h6" component="h2">
-                          Services
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Alert variant="outlined" severity="warning">
-                          This is a dangerous section. Changing service tokens
-                          might break your bot's connection to other bots.
-                        </Alert>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Button
-                          color="primary"
-                          variant="outlined"
-                          onClick={() => setOpenAddNewService(true)}
-                        >
-                          Create New
-                        </Button>
-                      </Grid>
-                      <Grid item xs={12}>
-                        {data.services.map((service) => (
-                          <ApplicationService
-                            key={service.id}
-                            application={data}
-                            state={service}
-                            setState={(state: IApplicationService) =>
-                              setData({
-                                ...data,
-                                services: data.services?.map((service) =>
-                                  service.id === state.id ? state : service
-                                )
-                              })
-                            }
-                          />
-                        ))}
-                      </Grid>
-                    </Grid>
-                  </Paper>
-                </Grid>
-              )}
-            </Grid>
-            <Zoom in={hasChanged} unmountOnExit>
-              <Fab
-                aria-label="Save"
-                className={classes.fab}
-                color="primary"
-                type="submit"
-              >
-                <SaveIcon />
-              </Fab>
-            </Zoom>
-          </form>
-          <NewApplicationService
-            open={openAddNewService}
-            onClose={() => {
-              setOpenAddNewService(false);
-            }}
-            onConfirm={(data: INewApplicationServiceState) =>
-              setOpenAddNewService(false)
-            }
-          />
-        </>
+            )}
+          </Grid>
+          <Zoom in={hasChanged} unmountOnExit>
+            <Fab
+              aria-label="Save"
+              className={classes.fab}
+              color="primary"
+              type="submit"
+            >
+              <SaveIcon />
+            </Fab>
+          </Zoom>
+        </form>
       ) : (
         <NotFound />
       )}
