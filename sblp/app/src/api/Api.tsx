@@ -66,7 +66,7 @@ export default class Api extends BaseApi {
     const ret = this.buildModel(res);
     store.dispatch({
       type: "UPDATE_APPLICATION",
-      payload: { ...ret, services: ret.services?.map(this.buildModel) }
+      payload: ret
     });
     return ret;
   }
