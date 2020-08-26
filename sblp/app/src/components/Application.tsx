@@ -1,4 +1,5 @@
 import {
+  Button,
   Fab,
   Grid,
   makeStyles,
@@ -17,6 +18,8 @@ import { ApplicationsState } from "../applicationsReducer";
 import { IApplicationService } from "../types";
 import ApplicationService from "./partials/ApplicationService";
 import NotFound from "./partials/NotFound";
+import ConfirmDialog from "./utils/dialog/ConfirmDialog";
+import CopyDialog from "./utils/dialog/CopyDialog";
 
 const useStyles = makeStyles((theme) => ({
   paper: { padding: theme.spacing(2) },
@@ -39,6 +42,28 @@ function Application(props: RouteComponentProps<{ application: string }>) {
 
   const [id, setId] = useState("");
   const [data, setData] = useState(application);
+
+  const [open, setOpen] = useState(false);
+  const [copy, setCopy] = useState(false);
+
+  const handleReset = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleConfirm = () => {
+    handleClose();
+    if(!data) return;
+    api.resetApplicationToken(data.id);
+  };
+
+  const handleCopy = () => {
+    setCopy(true);
+  };
 
   useEffect(() => {
     if (application) setData(application);
@@ -88,7 +113,7 @@ function Application(props: RouteComponentProps<{ application: string }>) {
 
   return (
     <>
-      {data ? (
+      {data ? (<>
         <form onSubmit={handleSave}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -117,6 +142,38 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                       fullWidth
                       value={data.host || ""}
                       disabled
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Token"
+                      helperText={`This is the token other bots need to pass in the \`Authorization\` header when making requests to https://${
+                        data.host || "yourbot.bot.discord.one"
+                      }/.`}
+                      fullWidth
+                      value={data.token}
+                      disabled
+                      InputProps={{
+                        endAdornment: (
+                          <>
+                            <Button color="primary" onClick={handleCopy}>
+                              Copy
+                            </Button>
+                            <Button color="primary" onClick={handleReset}>
+                              Reset
+                            </Button>
+                          </>
+                        )
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Authorization"
+                      helperText="SBLP Centralized will pass this token when making requests to your bot. You can use it to verify the authenticity of SBLP Centralized."
+                      fullWidth
+                      value={data.authorization}
+                      onChange={handleFieldChange("authorization")}
                     />
                   </Grid>
                 </Grid>
@@ -169,7 +226,17 @@ function Application(props: RouteComponentProps<{ application: string }>) {
               <SaveIcon />
             </Fab>
           </Zoom>
-        </form>
+        </form>     
+         <ConfirmDialog
+        open={open}
+        onClose={handleClose}
+        onConfirm={handleConfirm}
+      />
+      <CopyDialog
+        open={copy}
+        value={data.token || ''}
+        onClose={() => setCopy(false)}
+      /></>
       ) : (
         <NotFound />
       )}
