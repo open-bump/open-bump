@@ -33,8 +33,6 @@ export default function CopyDialog(props: ICopyDialogProps) {
     <Dialog
       open={props.open}
       onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">Copy Content</DialogTitle>
       <DialogContent>
