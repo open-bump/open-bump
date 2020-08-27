@@ -1,20 +1,16 @@
 import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-
-
-
-    FormControl, Grid,
-
-
-
-    InputLabel,
-
-    MenuItem, Select, TextField,
-    Typography
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography
 } from "@material-ui/core";
 import React, { useState } from "react";
 
@@ -44,7 +40,7 @@ export default function NewApplicationService(
       <DialogContent>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Typography>
+            <Typography >
               If you add a new service, SBLP Centralized will start sending your
               bot's bump requests to the new bot too. Also, you will be provided
               a token which you need to hand over to the other bot's
