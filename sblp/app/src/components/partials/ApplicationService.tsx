@@ -94,7 +94,7 @@ export default function ApplicationService(props: IApplicationServiceProps) {
           aria-controls="panel1c-content"
         >
           <div className={classes.column}>
-            <Typography className={classes.heading}>
+            <Typography className={classes.heading} component="h3">
               {state.target.name}
             </Typography>
           </div>
