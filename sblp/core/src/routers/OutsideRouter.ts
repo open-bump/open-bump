@@ -37,7 +37,7 @@ export default class OutsideRouter extends BaseRouter {
       verified: ["application", "bot"]
     };
 
-    const url = `${provider.getBase()}sblp/request`;
+    const url = `${provider.publicBase}sblp/request`;
     console.log(`[DEBUG] URL: ${url}`);
 
     try {

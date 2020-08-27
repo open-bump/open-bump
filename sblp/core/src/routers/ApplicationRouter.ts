@@ -79,6 +79,7 @@ export default class ApplicationRouter extends BaseRouter {
     if (ctx.request.body.name) application.name = ctx.request.body.name;
     if (ctx.request.body.authorization)
       application.authorization = ctx.request.body.authorization;
+    if (ctx.request.body.base) application.base = ctx.request.body.base;
     if (application.changed()) await application.save();
     ctx.body = application;
   }

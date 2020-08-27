@@ -7,6 +7,7 @@ export interface IApplication extends APIModel<IApplication> {
   userId: string;
   bot: string;
   base: string;
+  publicBase: string;
   token: string | null;
   authorization: string | null;
   createdAt: string;
