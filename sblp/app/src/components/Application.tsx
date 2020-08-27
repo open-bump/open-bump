@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Fab,
   Grid,
@@ -9,7 +10,6 @@ import {
   Zoom
 } from "@material-ui/core";
 import SaveIcon from "@material-ui/icons/Save";
-import Alert from "@material-ui/lab/Alert";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
@@ -187,24 +187,22 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                   <Paper className={classes.paper}>
                     <Grid container spacing={3}>
                       <Grid item xs={12}>
-                        <Typography variant="h6" component="h2">
-                          Services
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Alert variant="outlined" severity="warning">
-                          This is a dangerous section. Changing service tokens
-                          might break your bot's connection to other bots.
-                        </Alert>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Button
-                          color="primary"
-                          variant="outlined"
-                          onClick={() => setOpenAddNewService(true)}
-                        >
-                          Create New
-                        </Button>
+                        <Box display="flex" alignContent="space-between">
+                          <Box flex={1}>
+                            <Typography variant="h6" component="h2">
+                              Services
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <Button
+                              color="primary"
+                              variant="outlined"
+                              onClick={() => setOpenAddNewService(true)}
+                            >
+                              Create New
+                            </Button>
+                          </Box>
+                        </Box>
                       </Grid>
                       <Grid item xs={12}>
                         {data.services.map((service) => (
