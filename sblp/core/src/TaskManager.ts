@@ -45,7 +45,7 @@ export default class TaskManager {
     for (const service of application.applicationServices) {
       const { target } = service;
 
-      if (!target.getBase()) continue;
+      if (!target.publicBase) continue;
 
       const subtask: ISubTask = {
         task,
@@ -128,7 +128,7 @@ export default class TaskManager {
       `Starting subtask of task ${task.id} by app ${application.name} (${application.id})`
     );
 
-    const url = `${target.getBase()}sblp/request`;
+    const url = `${target.publicBase}sblp/request`;
     console.log(`[DEBUG] URL: ${url}`);
 
     try {

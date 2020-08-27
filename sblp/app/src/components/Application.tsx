@@ -49,7 +49,7 @@ function Application(props: RouteComponentProps<{ application: string }>) {
   const [openAddNewService, setOpenAddNewService] = useState(false);
 
   const [openConfirm, setOpenConfirm] = useState(false);
-  const [openCopy, setOpenCopy] = useState(false);
+  const [openCopy, setOpenCopy] = useState("");
 
   const handleReset = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
@@ -66,8 +66,8 @@ function Application(props: RouteComponentProps<{ application: string }>) {
     api.resetApplicationToken(data.id);
   };
 
-  const handleCopy = () => {
-    setOpenCopy(true);
+  const handleCopy = (value: string) => {
+    setOpenCopy(value);
   };
 
   useEffect(() => {
@@ -151,18 +151,57 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                       />
                     </Grid>
                     {data.external ? (
-                      <></>
+                      <>
+                        <Grid item xs={12}>
+                          <TextField
+                            label="Base URL"
+                            helperText={
+                              "This is the base url used when SBLP Centralized makes requests to this application. Base URLs do not include the `/sblp/request` suffix."
+                            }
+                            placeholder="https://yourbot.bot.discord.one/"
+                            fullWidth
+                            value={data.base || ""}
+                            onChange={handleFieldChange("base")}
+                          />
+                        </Grid>
+                      </>
                     ) : (
                       <>
                         <Grid item xs={12}>
                           <TextField
-                            label="Domain"
+                            label="Private Base URL"
                             helperText={
-                              "This is the domain other bots use as base when requesting bumps from your bot. It can only be changed by an SBLP Centralized administrator."
+                              "This is the base url used when SBLP Centralized forwards other bots' requests to your bot. Base URLs do not include the `/sblp/request` suffix."
+                            }
+                            placeholder="http://203.0.113.124/"
+                            fullWidth
+                            value={data.base || ""}
+                            onChange={handleFieldChange("base")}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            label="Public Base URL"
+                            helperText={
+                              "This is the base url other bots use to request bumps from your bot. Base URLs do not include the `/sblp/request` suffix."
                             }
                             fullWidth
-                            value={data.host || ""}
+                            value={data.publicBase || ""}
                             disabled
+                            InputProps={{
+                              endAdornment: (
+                                <>
+                                  <Button
+                                    color="primary"
+                                    onClick={() =>
+                                      handleCopy(data.publicBase || "")
+                                    }
+                                  >
+                                    Copy
+                                  </Button>
+                                </>
+                              )
+                            }}
                           />
                         </Grid>
                         <Grid item xs={12}>
@@ -177,7 +216,10 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                             InputProps={{
                               endAdornment: (
                                 <>
-                                  <Button color="primary" onClick={handleCopy}>
+                                  <Button
+                                    color="primary"
+                                    onClick={() => handleCopy(data.token || "")}
+                                  >
                                     Copy
                                   </Button>
                                   <Button color="primary" onClick={handleReset}>
@@ -263,9 +305,9 @@ function Application(props: RouteComponentProps<{ application: string }>) {
             onConfirm={handleConfirm}
           />
           <CopyDialog
-            open={openCopy}
-            value={data.token || ""}
-            onClose={() => setOpenCopy(false)}
+            open={Boolean(openCopy)}
+            value={openCopy || ""}
+            onClose={() => setOpenCopy("")}
           />
           <NewApplicationService
             open={openAddNewService}

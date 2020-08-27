@@ -59,8 +59,25 @@ export default class Application extends Model<Application> {
   @Column(DataType.STRING(20))
   bot!: string;
 
-  @Column(DataType.STRING)
+  @Column({
+    type: DataType.STRING,
+    get: function (this: Application) {
+      let base = this.getDataValue("base");
+      return base && !base.endsWith("/") ? `${base}/` : base;
+    }
+  })
   base?: string | null;
+
+  @Column({
+    type: DataType.VIRTUAL,
+    get: function (this: Application) {
+      let base;
+      if (this.getDataValue("external")) base = this.getDataValue("base");
+      else base = `https://${this.getDataValue("host")}/`;
+      return base && !base.endsWith("/") ? `${base}/` : base;
+    }
+  })
+  publicBase!: string;
 
   @HasMany(() => ApplicationService, "applicationId")
   applicationServices!: Array<ApplicationService>;
@@ -80,10 +97,4 @@ export default class Application extends Model<Application> {
   @AllowNull(false)
   @Column(DataType.BOOLEAN)
   external!: boolean;
-
-  public getBase() {
-    let url = this.base;
-    if (url && !url.endsWith("/")) url += "/";
-    return url;
-  }
 }
