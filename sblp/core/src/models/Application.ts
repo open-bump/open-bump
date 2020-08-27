@@ -76,6 +76,11 @@ export default class Application extends Model<Application> {
   @Column(DataType.STRING)
   authorization!: string;
 
+  @Default(false)
+  @AllowNull(false)
+  @Column(DataType.BOOLEAN)
+  external!: boolean;
+
   public getBase() {
     let url = this.base;
     if (url && !url.endsWith("/")) url += "/";

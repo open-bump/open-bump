@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Chip,
   Fab,
   Grid,
   makeStyles,
@@ -17,7 +18,9 @@ import { api } from "../App";
 import { ApplicationsState } from "../applicationsReducer";
 import { IApplicationService } from "../types";
 import ApplicationService from "./partials/ApplicationService";
-import NewApplicationService, { INewApplicationServiceState } from "./partials/NewApplicationService";
+import NewApplicationService, {
+  INewApplicationServiceState
+} from "./partials/NewApplicationService";
 import NotFound from "./partials/NotFound";
 import ConfirmDialog from "./utils/dialog/ConfirmDialog";
 import CopyDialog from "./utils/dialog/CopyDialog";
@@ -123,9 +126,20 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                 <Paper className={classes.paper}>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
-                      <Typography variant="h6" component="h1">
-                        Bot Information
-                      </Typography>
+                      <Box display="flex">
+                        <Box>
+                          <Typography variant="h6" component="h1">
+                            Bot Information
+                          </Typography>
+                        </Box>
+                        <Box ml={1}>
+                          {data.external ? (
+                            <Chip label="External" color="secondary" />
+                          ) : (
+                            <Chip label="SBLP Centralized" color="primary" />
+                          )}
+                        </Box>
+                      </Box>
                     </Grid>
                     <Grid item xs={12}>
                       <TextField
@@ -136,53 +150,59 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                         onChange={handleFieldChange("name")}
                       />
                     </Grid>
-                    <Grid item xs={12}>
-                      <TextField
-                        label="Domain"
-                        helperText={
-                          "This is the domain other bots use as base when requesting bumps from your bot. It can only be changed by an SBLP Centralized administrator."
-                        }
-                        fullWidth
-                        value={data.host || ""}
-                        disabled
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <TextField
-                        label="Token"
-                        helperText={`This is the token other bots need to pass in the \`Authorization\` header when making requests to https://${
-                          data.host || "yourbot.bot.discord.one"
-                        }/.`}
-                        fullWidth
-                        value={data.token}
-                        disabled
-                        InputProps={{
-                          endAdornment: (
-                            <>
-                              <Button color="primary" onClick={handleCopy}>
-                                Copy
-                              </Button>
-                              <Button color="primary" onClick={handleReset}>
-                                Reset
-                              </Button>
-                            </>
-                          )
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <TextField
-                        label="Authorization"
-                        helperText="SBLP Centralized will pass this token when making requests to your bot. You can use it to verify the authenticity of SBLP Centralized."
-                        fullWidth
-                        value={data.authorization}
-                        onChange={handleFieldChange("authorization")}
-                      />
-                    </Grid>
+                    {data.external ? (
+                      <></>
+                    ) : (
+                      <>
+                        <Grid item xs={12}>
+                          <TextField
+                            label="Domain"
+                            helperText={
+                              "This is the domain other bots use as base when requesting bumps from your bot. It can only be changed by an SBLP Centralized administrator."
+                            }
+                            fullWidth
+                            value={data.host || ""}
+                            disabled
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            label="Token"
+                            helperText={`This is the token other bots need to pass in the \`Authorization\` header when making requests to https://${
+                              data.host || "yourbot.bot.discord.one"
+                            }/.`}
+                            fullWidth
+                            value={data.token}
+                            disabled
+                            InputProps={{
+                              endAdornment: (
+                                <>
+                                  <Button color="primary" onClick={handleCopy}>
+                                    Copy
+                                  </Button>
+                                  <Button color="primary" onClick={handleReset}>
+                                    Reset
+                                  </Button>
+                                </>
+                              )
+                            }}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            label="Authorization"
+                            helperText="SBLP Centralized will pass this token when making requests to your bot. You can use it to verify the authenticity of SBLP Centralized."
+                            fullWidth
+                            value={data.authorization}
+                            onChange={handleFieldChange("authorization")}
+                          />
+                        </Grid>
+                      </>
+                    )}
                   </Grid>
                 </Paper>
               </Grid>
-              {data.services && (
+              {data.services && !data.external && (
                 <Grid item xs={12}>
                   <Paper className={classes.paper}>
                     <Grid container spacing={3}>

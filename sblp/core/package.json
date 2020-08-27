@@ -1,6 +1,6 @@
 {
   "name": "sblp",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "SBLP provides an easy way to synchronize bumps over multiple bump bots.",
   "main": "index.js",
   "scripts": {
