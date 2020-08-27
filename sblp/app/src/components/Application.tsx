@@ -45,26 +45,26 @@ function Application(props: RouteComponentProps<{ application: string }>) {
   const [data, setData] = useState(application);
   const [openAddNewService, setOpenAddNewService] = useState(false);
 
-  const [open, setOpen] = useState(false);
-  const [copy, setCopy] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [openCopy, setOpenCopy] = useState(false);
 
   const handleReset = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
-    setOpen(true);
+    setOpenConfirm(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setOpenConfirm(false);
   };
 
   const handleConfirm = () => {
     handleClose();
-    if(!data) return;
+    if (!data) return;
     api.resetApplicationToken(data.id);
   };
 
   const handleCopy = () => {
-    setCopy(true);
+    setOpenCopy(true);
   };
 
   useEffect(() => {
@@ -116,40 +116,9 @@ function Application(props: RouteComponentProps<{ application: string }>) {
   return (
     <>
       {data ? (
-        <form onSubmit={handleSave}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Paper className={classes.paper}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                    <Typography variant="h6" component="h1">
-                      Bot Information
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Name"
-                      helperText="This is the name of your bot. It is only for informational purposes on this dashboard, other bots will use your bot's ID to retrieve it's name."
-                      fullWidth
-                      value={data.name}
-                      onChange={handleFieldChange("name")}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Domain"
-                      helperText={
-                        "This is the domain other bots use as base when requesting bumps from your bot. It can only be changed by an SBLP Centralized administrator."
-                      }
-                      fullWidth
-                      value={data.host || ""}
-                      disabled
-                    />
-                  </Grid>
-                </Grid>
-              </Paper>
-            </Grid>
-            {data.services && (
+        <>
+          <form onSubmit={handleSave}>
+            <Grid container spacing={3}>
               <Grid item xs={12}>
                 <Paper className={classes.paper}>
                   <Grid container spacing={3}>
@@ -178,22 +147,118 @@ function Application(props: RouteComponentProps<{ application: string }>) {
                         disabled
                       />
                     </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Token"
+                        helperText={`This is the token other bots need to pass in the \`Authorization\` header when making requests to https://${
+                          data.host || "yourbot.bot.discord.one"
+                        }/.`}
+                        fullWidth
+                        value={data.token}
+                        disabled
+                        InputProps={{
+                          endAdornment: (
+                            <>
+                              <Button color="primary" onClick={handleCopy}>
+                                Copy
+                              </Button>
+                              <Button color="primary" onClick={handleReset}>
+                                Reset
+                              </Button>
+                            </>
+                          )
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Authorization"
+                        helperText="SBLP Centralized will pass this token when making requests to your bot. You can use it to verify the authenticity of SBLP Centralized."
+                        fullWidth
+                        value={data.authorization}
+                        onChange={handleFieldChange("authorization")}
+                      />
+                    </Grid>
                   </Grid>
                 </Paper>
               </Grid>
-            )}
-          </Grid>
-          <Zoom in={hasChanged} unmountOnExit>
-            <Fab
-              aria-label="Save"
-              className={classes.fab}
-              color="primary"
-              type="submit"
-            >
-              <SaveIcon />
-            </Fab>
-          </Zoom>
-        </form>
+              {data.services && (
+                <Grid item xs={12}>
+                  <Paper className={classes.paper}>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12}>
+                        <Typography variant="h6" component="h2">
+                          Services
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Alert variant="outlined" severity="warning">
+                          This is a dangerous section. Changing service tokens
+                          might break your bot's connection to other bots.
+                        </Alert>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Button
+                          color="primary"
+                          variant="outlined"
+                          onClick={() => setOpenAddNewService(true)}
+                        >
+                          Create New
+                        </Button>
+                      </Grid>
+                      <Grid item xs={12}>
+                        {data.services.map((service) => (
+                          <ApplicationService
+                            key={service.id}
+                            application={data}
+                            state={service}
+                            setState={(state: IApplicationService) =>
+                              setData({
+                                ...data,
+                                services: data.services?.map((service) =>
+                                  service.id === state.id ? state : service
+                                )
+                              })
+                            }
+                          />
+                        ))}
+                      </Grid>
+                    </Grid>
+                  </Paper>
+                </Grid>
+              )}
+            </Grid>
+            <Zoom in={hasChanged} unmountOnExit>
+              <Fab
+                aria-label="Save"
+                className={classes.fab}
+                color="primary"
+                type="submit"
+              >
+                <SaveIcon />
+              </Fab>
+            </Zoom>
+          </form>
+          <ConfirmDialog
+            open={openConfirm}
+            onClose={handleClose}
+            onConfirm={handleConfirm}
+          />
+          <CopyDialog
+            open={openCopy}
+            value={data.token || ""}
+            onClose={() => setOpenCopy(false)}
+          />
+          <NewApplicationService
+            open={openAddNewService}
+            onClose={() => {
+              setOpenAddNewService(false);
+            }}
+            onConfirm={(data: INewApplicationServiceState) =>
+              setOpenAddNewService(false)
+            }
+          />
+        </>
       ) : (
         <NotFound />
       )}
