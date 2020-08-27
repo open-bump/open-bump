@@ -12,6 +12,7 @@ export interface IApplication extends APIModel<IApplication> {
   createdAt: string;
   updatedAt: string;
   services?: Array<IApplicationService>;
+  external: boolean;
 }
 
 export interface IApplicationService extends APIModel<IApplicationService> {
