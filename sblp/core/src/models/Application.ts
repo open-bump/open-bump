@@ -25,7 +25,18 @@ import User from "./User";
           include: [
             {
               model: Application,
-              as: "target"
+              as: "target",
+              attributes: {
+                exclude: [
+                  "token",
+                  "authorization",
+                  "host",
+                  "base",
+                  "userId",
+                  "bot",
+                  "publicBase"
+                ]
+              }
             }
           ]
         }
