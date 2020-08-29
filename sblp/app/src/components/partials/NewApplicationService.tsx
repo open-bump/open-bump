@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  FormHelperText,
   Grid,
   InputLabel,
   MenuItem,
@@ -40,24 +41,28 @@ export default function NewApplicationService(
       <DialogContent>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Typography >
+            <Typography>
               If you add a new service, SBLP Centralized will start sending your
-              bot's bump requests to the new bot too. Also, you will be provided
-              a token which you need to hand over to the other bot's
+              bot's bump requests to the new bot. You will also be provided a
+              token, which you need to hand over to the other bot's
               administrator.
             </Typography>
           </Grid>
           <Grid item xs={12}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Age</InputLabel>
+              <InputLabel id="select-application-label">Application</InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
+                labelId="select-application-label"
+                id="select-application"
               >
-                <MenuItem value={10}>Ten</MenuItem>
-                <MenuItem value={20}>Twenty</MenuItem>
-                <MenuItem value={30}>Thirty</MenuItem>
+                <MenuItem value={"jfakls2df"}>Beta Bump</MenuItem>
+                <MenuItem value={"2389ujdks"}>Test Portal</MenuItem>
+                <MenuItem value={"dj832lk9s"}>Test Bump</MenuItem>
               </Select>
+              <FormHelperText>
+                You can only add bots known to SBLP Centralized. If you're
+                missing a bot, please ask an admin.
+              </FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={12}>
