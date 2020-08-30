@@ -41,6 +41,19 @@ import User from "./User";
           ]
         }
       ]
+    },
+    sanitized: {
+      attributes: {
+        exclude: [
+          "token",
+          "authorization",
+          "host",
+          "base",
+          "userId",
+          "bot",
+          "publicBase"
+        ]
+      }
     }
   }
 })
