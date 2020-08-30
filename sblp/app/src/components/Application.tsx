@@ -18,9 +18,7 @@ import { api } from "../App";
 import { ApplicationsState } from "../applicationsReducer";
 import { IApplicationService } from "../types";
 import ApplicationService from "./partials/ApplicationService";
-import NewApplicationService, {
-  INewApplicationServiceState
-} from "./partials/NewApplicationService";
+import NewApplicationService, { INewApplicationServiceState } from "./partials/NewApplicationService";
 import NotFound from "./partials/NotFound";
 import ConfirmDialog from "./utils/dialog/ConfirmDialog";
 import CopyDialog from "./utils/dialog/CopyDialog";
@@ -310,6 +308,7 @@ function Application(props: RouteComponentProps<{ application: string }>) {
             onClose={() => setOpenCopy("")}
           />
           <NewApplicationService
+          application={data}
             open={openAddNewService}
             onClose={() => {
               setOpenAddNewService(false);

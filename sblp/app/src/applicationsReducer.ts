@@ -21,6 +21,13 @@ type Action =
         application: string;
         service: IApplicationService;
       };
+    }
+  | {
+      type: "DELETE_SERVICE";
+      payload: {
+        application: string;
+        service: string;
+      };
     };
 
 export default (state = initialState, action: Action) => {
@@ -55,10 +62,28 @@ export default (state = initialState, action: Action) => {
           application.id === action.payload.application
             ? {
                 ...application,
-                services: application.services?.map((service) =>
-                  service.id === action.payload.service.id
-                    ? action.payload.service
-                    : service
+                services: application.services?.find(
+                  ({ id }) => id === action.payload.service.id
+                )
+                  ? application.services?.map((service) =>
+                      service.id === action.payload.service.id
+                        ? action.payload.service
+                        : service
+                    )
+                  : [...(application.services || []), action.payload.service]
+              }
+            : application
+        )
+      };
+    case "DELETE_SERVICE":
+      return {
+        ...state,
+        applications: state.applications.map((application) =>
+          application.id === action.payload.application
+            ? {
+                ...application,
+                services: application.services?.filter(
+                  (service) => service.id !== action.payload.service
                 )
               }
             : application

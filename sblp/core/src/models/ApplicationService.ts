@@ -45,3 +45,27 @@ export default class ApplicationService extends Model<ApplicationService> {
   @Column(DataType.STRING)
   authorization!: string;
 }
+
+setTimeout(
+  () =>
+    ApplicationService.addScope("withTarget", {
+      include: [
+        {
+          model: Application,
+          as: "target",
+          attributes: {
+            exclude: [
+              "token",
+              "authorization",
+              "host",
+              "base",
+              "userId",
+              "bot",
+              "publicBase"
+            ]
+          }
+        }
+      ]
+    }),
+  10
+);

@@ -1,6 +1,8 @@
 import {
   Accordion,
+  AccordionActions,
   AccordionSummary,
+  Divider,
   Grid,
   makeStyles,
   TextField
@@ -86,6 +88,10 @@ export default function ApplicationService(props: IApplicationServiceProps) {
     setCopy(true);
   };
 
+  const handleDelete = () => {
+    api.deleteApplicationService(application.id, state.id);
+  };
+
   return (
     <>
       <Accordion>
@@ -137,6 +143,12 @@ export default function ApplicationService(props: IApplicationServiceProps) {
             </Grid>
           </Grid>
         </AccordionDetails>
+        <Divider />
+        <AccordionActions>
+          <Button size="small" color="secondary" onClick={handleDelete}>
+            Delete
+          </Button>
+        </AccordionActions>
       </Accordion>
       <ConfirmDialog
         open={open}

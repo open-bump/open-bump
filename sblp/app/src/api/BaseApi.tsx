@@ -42,6 +42,16 @@ export default abstract class BaseApi {
     }
   }
 
+  protected async delete(...args: Parameters<AxiosInstance["delete"]>) {
+    try {
+      return (await this.instance.delete(...args)).data;
+    } catch (error) {
+      if (error?.response?.status === 401)
+        return void this.login(window.location.href) || [];
+      throw error;
+    }
+  }
+
   protected async post(...args: Parameters<AxiosInstance["post"]>) {
     try {
       return (await this.instance.post(...args)).data;
