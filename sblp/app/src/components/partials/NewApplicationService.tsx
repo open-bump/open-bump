@@ -71,8 +71,8 @@ export default function NewApplicationService(
         state.authorization
       )
       .then(() => props.onClose())
-      .then(() => reloadServices(props.application.id))
-      .then(() => setState(defaultState));
+      .then(() => setState(defaultState))
+      .then(() => reloadServices(props.application.id));
   };
 
   return (
@@ -108,7 +108,7 @@ export default function NewApplicationService(
                       <Select
                         labelId="select-application-label"
                         id="select-application"
-                        value={state.target}
+                        value={state.target || ""}
                         onChange={handleStateChange("target")}
                       >
                         {data.map((application) => (
