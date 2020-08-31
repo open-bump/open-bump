@@ -8,6 +8,8 @@ import React from "react";
 
 interface IConfirmDialogProps {
   open: boolean;
+  title?: string;
+  content?: string;
   onClose: () => void;
   onConfirm: () => void;
 }
@@ -22,15 +24,18 @@ export default function ConfirmDialog(props: IConfirmDialogProps) {
   };
 
   return (
-    <Dialog
-      open={props.open}
-      onClose={handleClose}
-    >
-      <DialogTitle id="alert-dialog-title">Reset Token?</DialogTitle>
+    <Dialog open={props.open} onClose={handleClose}>
+      <DialogTitle id="alert-dialog-title">
+        {props.title || <>Reset Token?</>}
+      </DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
-          The current token will be revoked immediately and a new token created.
-          You won't be able to revert back to the old token.
+          {props.content || (
+            <>
+              The current token will be revoked immediately and a new token
+              created. You won't be able to revert back to the old token.
+            </>
+          )}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
