@@ -97,7 +97,7 @@ export default function NewApplicationService(
                 administrator.
               </Typography>
             </Grid>
-            {available.length && (
+            {Boolean(available.length) && (
               <>
                 <Grid item xs={12}>
                   <FormControl fullWidth>
