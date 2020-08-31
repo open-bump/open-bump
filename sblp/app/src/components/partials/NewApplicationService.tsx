@@ -15,7 +15,9 @@ import {
 } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { api } from "../../App";
+import { ApplicationsState } from "../../applicationsReducer";
 import { IApplication } from "../../types";
 
 export interface INewApplicationServiceState {
@@ -39,15 +41,13 @@ export default function NewApplicationService(
   };
   const [state, setState] = useState<INewApplicationServiceState>(defaultState);
 
-  const [data, setData] = useState<Array<IApplication> | null>(null);
-
-  const reloadServices = async (application: string) =>
-    await api
-      .getAvailableServices(application)
-      .then((services) => setData(services));
+  const available = useSelector<
+    ApplicationsState,
+    ApplicationsState["available"]
+  >((state) => state.available);
 
   useEffect(() => {
-    reloadServices(props.application.id);
+    api.getAvailableServices(props.application.id);
   }, [props.application.id]);
 
   const handleStateChange = (field: keyof NonNullable<typeof state>) => (
@@ -72,7 +72,7 @@ export default function NewApplicationService(
       )
       .then(() => props.onClose())
       .then(() => setState(defaultState))
-      .then(() => reloadServices(props.application.id));
+      .then(() => api.getAvailableServices(props.application.id));
   };
 
   return (
@@ -81,7 +81,7 @@ export default function NewApplicationService(
         <DialogTitle id="form-dialog-title">Add New Service</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
-            {data && data.length === 0 && (
+            {!available.length && (
               <Grid item xs={12}>
                 <Alert variant="outlined" severity="warning">
                   Your bot already is using all services and you can not add
@@ -97,43 +97,42 @@ export default function NewApplicationService(
                 administrator.
               </Typography>
             </Grid>
-            {!data ||
-              (data.length !== 0 && (
-                <>
-                  <Grid item xs={12}>
-                    <FormControl fullWidth>
-                      <InputLabel id="select-application-label">
-                        Application
-                      </InputLabel>
-                      <Select
-                        labelId="select-application-label"
-                        id="select-application"
-                        value={state.target || ""}
-                        onChange={handleStateChange("target")}
-                      >
-                        {data.map((application) => (
-                          <MenuItem value={application.id} key={application.id}>
-                            {application.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      <FormHelperText>
-                        You can only add bots known to SBLP Centralized. If
-                        you're missing a bot, please ask an admin.
-                      </FormHelperText>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Authorization"
-                      helperText="This token is used to make requests to other bots. Insert the other bot's `Token` in here."
-                      fullWidth
-                      value={state.authorization}
-                      onChange={handleStateChange("authorization")}
-                    />
-                  </Grid>
-                </>
-              ))}
+            {available.length && (
+              <>
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel id="select-application-label">
+                      Application
+                    </InputLabel>
+                    <Select
+                      labelId="select-application-label"
+                      id="select-application"
+                      value={state.target || ""}
+                      onChange={handleStateChange("target")}
+                    >
+                      {available.map((application) => (
+                        <MenuItem value={application.id} key={application.id}>
+                          {application.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>
+                      You can only add bots known to SBLP Centralized. If you're
+                      missing a bot, please ask an admin.
+                    </FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Authorization"
+                    helperText="This token is used to make requests to other bots. Insert the other bot's `Token` in here."
+                    fullWidth
+                    value={state.authorization}
+                    onChange={handleStateChange("authorization")}
+                  />
+                </Grid>
+              </>
+            )}
           </Grid>
         </DialogContent>
         <DialogActions>

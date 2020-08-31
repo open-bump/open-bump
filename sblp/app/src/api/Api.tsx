@@ -61,6 +61,7 @@ export default class Api extends BaseApi {
       })}`
     );
     const ret = res.map(this.buildModel);
+    store.dispatch({ type: "SET_AVAILABLE", payload: ret });
     return ret;
   }
 

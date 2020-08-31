@@ -2,15 +2,18 @@ import { IApplication, IApplicationService } from "./types";
 
 export interface ApplicationsState {
   applications: IApplication[];
+  available: IApplication[];
 }
 
 const initialState: ApplicationsState = {
-  applications: []
+  applications: [],
+  available: []
 };
 
 type Action =
   | { type: "SET_APPLICATIONS"; payload: Array<IApplication> }
   | { type: "UPDATE_APPLICATION"; payload: IApplication }
+  | { type: "SET_AVAILABLE"; payload: Array<IApplication> }
   | {
       type: "SET_SERVICES";
       payload: { application: string; services: Array<IApplicationService> };
@@ -45,6 +48,11 @@ export default (state = initialState, action: Action) => {
             ? { ...application, ...action.payload }
             : application
         )
+      };
+    case "SET_AVAILABLE":
+      return {
+        ...state,
+        available: action.payload
       };
     case "SET_SERVICES":
       return {

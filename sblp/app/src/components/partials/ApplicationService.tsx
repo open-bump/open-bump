@@ -67,29 +67,36 @@ export default function ApplicationService(props: IApplicationServiceProps) {
 
   const { application, state, setState } = props;
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<false | "reset" | "delete">(false);
   const [copy, setCopy] = useState(false);
 
   const handleReset = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
-    setOpen(true);
+    setOpen("reset");
+  };
+
+  const handleDelete = () => {
+    setOpen("delete");
   };
 
   const handleClose = () => {
     setOpen(false);
   };
 
-  const handleConfirm = () => {
+  const handleConfirmReset = () => {
     handleClose();
     api.resetApplicationServiceToken(application.id, state.id);
   };
 
-  const handleCopy = () => {
-    setCopy(true);
+  const handleConfirmDelete = () => {
+    handleClose();
+    api
+      .deleteApplicationService(application.id, state.id)
+      .then(() => api.getAvailableServices(application.id));
   };
 
-  const handleDelete = () => {
-    api.deleteApplicationService(application.id, state.id);
+  const handleCopy = () => {
+    setCopy(true);
   };
 
   return (
@@ -151,9 +158,16 @@ export default function ApplicationService(props: IApplicationServiceProps) {
         </AccordionActions>
       </Accordion>
       <ConfirmDialog
-        open={open}
+        open={open === "reset"}
         onClose={handleClose}
-        onConfirm={handleConfirm}
+        onConfirm={handleConfirmReset}
+      />
+      <ConfirmDialog
+        open={open === "delete"}
+        title="Delete Service?"
+        content="The service will be deleted immediately and you'll need to add it again to restore functionality."
+        onClose={handleClose}
+        onConfirm={handleConfirmDelete}
       />
       <CopyDialog
         open={copy}
