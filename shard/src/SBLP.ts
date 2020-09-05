@@ -239,10 +239,9 @@ export class SBLPBumpEntity {
         console.log(`[DEBUG] [${application.name}] URL: ${url}`);
       }
 
-      const res: HTTPBumpResponse = await fetch("https://proxy.discord.one/", {
+      const res: HTTPBumpResponse = await fetch(url, {
         method: "POST",
         headers: {
-          "x-target": url,
           authorization: application.authorization,
           "content-type": "application/json"
         },

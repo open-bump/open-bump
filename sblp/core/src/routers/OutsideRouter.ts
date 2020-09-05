@@ -1,6 +1,5 @@
 import Koa from "koa";
 import fetch from "node-fetch";
-import config from "../config";
 import ErrorFactory from "../errors/ErrorFactory";
 import Application from "../models/Application";
 import ApplicationService from "../models/ApplicationService";
@@ -41,13 +40,11 @@ export default class OutsideRouter extends BaseRouter {
     console.log(`[DEBUG] URL: ${url}`);
 
     try {
-      const res: object = await fetch("https://proxy.discord.one/", {
+      const res: object = await fetch(url, {
         method: "POST",
         headers: {
-          "x-target": url,
           authorization: provider.authorization,
-          "content-type": "application/json",
-          "x-proxy-auth": config.settings.proxyAuth
+          "content-type": "application/json"
         },
         body: JSON.stringify(payload)
       }).then((res) => res.json());
