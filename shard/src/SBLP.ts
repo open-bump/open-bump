@@ -235,7 +235,9 @@ export class SBLPBumpEntity {
       this.providers[application.bot] = prototypeStartResponse;
 
       const url = `${application.getBase()}sblp/request`;
-      console.log(`[DEBUG] URL: ${url}`);
+      if (application.sblpSandbox) {
+        console.log(`[DEBUG] [${application.name}] URL: ${url}`);
+      }
 
       const res: HTTPBumpResponse = await fetch("https://proxy.discord.one/", {
         method: "POST",
@@ -251,6 +253,9 @@ export class SBLPBumpEntity {
         })
       }).then((res) => res.json());
 
+      if (application.sblpSandbox)
+        console.log(`[DEBUG] [${application.name}] Response:`, res);
+
       if (this.timeout) return;
 
       if (res.error) {
@@ -260,6 +265,10 @@ export class SBLPBumpEntity {
       }
       this.triggerUpdate();
     } catch (error) {
+      if (application.sblpSandbox) {
+        console.log(`[DEBUG] [${application.name}] Timeout: ${this.timeout}`);
+        console.log(`[DEBUG] [${application.name}] Error:`, error);
+      }
       if (this.timeout) return;
       const prototypeErrorResponse: BumpErrorResponse = {
         type: MessageType.ERROR,
