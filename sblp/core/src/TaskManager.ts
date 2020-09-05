@@ -1,6 +1,5 @@
 import fetch from "node-fetch";
 import uuid from "uuid";
-import config from "./config";
 import BaseError from "./errors/BaseError";
 import Application from "./models/Application";
 import ApplicationService from "./models/ApplicationService";
@@ -132,13 +131,11 @@ export default class TaskManager {
     console.log(`[DEBUG] URL: ${url}`);
 
     try {
-      const res: object = await fetch("https://proxy.discord.one/", {
+      const res: object = await fetch(url, {
         method: "POST",
         headers: {
-          "x-target": url,
           authorization: subtask.service.authorization,
-          "content-type": "application/json",
-          "x-proxy-auth": config.settings.proxyAuth
+          "content-type": "application/json"
         },
         body: JSON.stringify(task.body)
       }).then((res) => res.json());
