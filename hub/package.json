@@ -40,7 +40,7 @@
     "mongoose-findorcreate": "^3.0.0",
     "ms": "^2.1.2",
     "mysql2": "^2.1.0",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "patreon": "^0.4.1",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.2.1",
