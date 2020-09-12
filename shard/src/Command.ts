@@ -10,6 +10,7 @@ export default abstract class Command {
   public aliases: Array<string> = [];
   public abstract syntax: string;
   public abstract description: string;
+  public cooldown = 0;
   public vanished = false;
   public interactive: false | string = false;
   private permissions: Discord.PermissionResolvable = [
