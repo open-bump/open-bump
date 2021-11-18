@@ -57,17 +57,13 @@ export default class GuildCreateEvent extends Event<"guildCreate"> {
       const url = `${application.getBase()}guilds/${guild.id}`;
       console.log(`[DEBUG] URL: ${url}`);
 
-      const [res, guildData]: [Response, HTTPGuild] = await fetch(
-        "https://proxy.discord.one/",
-        {
-          method: "GET",
-          headers: {
-            "x-target": url,
-            authorization: application.authorization,
-            "content-type": "application/json"
-          }
+      const [res, guildData]: [Response, HTTPGuild] = await fetch(url, {
+        method: "GET",
+        headers: {
+          authorization: application.authorization,
+          "content-type": "application/json"
         }
-      ).then(async (res) => [res, await res.json()]);
+      }).then(async (res) => [res, await res.json()]);
       if (res.status === 200) sharedGuildData.push(guildData);
     }
 
@@ -129,7 +125,7 @@ export default class GuildCreateEvent extends Event<"guildCreate"> {
     }
     if (!guildDatabase.feed) {
       steps.push(
-        `**Set a bump channel to recieve other servers:**\n` +
+        `**Set a bump channel to receive other servers:**\n` +
           `Create a text channel for ${
             this.instance.client.user?.username
           } and use the command \`${Utils.getPrefix(
