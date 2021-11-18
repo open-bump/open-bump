@@ -61,7 +61,7 @@ export default class Premium {
               `Please note that you lost your bonus of ${Utils.formatCurrency(
                 config.settings.nitroboost?.bonus || 0
               )}. ` +
-              `In case of a negative account balance, you may recieve further messages from this bot.`
+              `In case of a negative account balance, you may receive further messages from this bot.`
         };
         await user.send({ embed });
       } catch (error) {}

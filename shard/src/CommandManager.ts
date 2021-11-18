@@ -1,5 +1,6 @@
 import * as parser from "discord-command-parser";
 import Discord from "discord.js";
+import ms from "ms";
 import * as uuid from "uuid";
 import Command from "./Command";
 import AboutCommand from "./commands/AboutCommand";
@@ -17,6 +18,7 @@ import PremiumCommand from "./commands/PremiumCommand";
 import PreviewCommand from "./commands/PreviewCommand";
 import SandboxCommand from "./commands/SandboxCommand";
 import SetBannerCommand from "./commands/SetBannerCommand";
+import SetBotCommand from "./commands/SetBotCommand";
 import SetChannelCommand from "./commands/SetChannelCommand";
 import SetColorCommand from "./commands/SetColorCommand";
 import SetDescriptionCommand from "./commands/SetDescriptionCommand";
@@ -42,6 +44,8 @@ export default class CommandManager {
   private running: Array<string> = [];
 
   private commands: { [name: string]: Command } = {};
+
+  private lastCommandUsage: { [key: string]: number } = {};
 
   constructor(private instance: OpenBump) {
     this.registerCommands();
@@ -167,6 +171,39 @@ export default class CommandManager {
               )}sandbox toggle\` to disable.`
           );
 
+        const cooldown = command.cooldown * 1000;
+
+        if (
+          this.lastCommandUsage[`${message.author.id}:${command.name}`] &&
+          cooldown
+        ) {
+          const lastUsage = this.lastCommandUsage[
+            `${message.author.id}:${command.name}`
+          ];
+          if (lastUsage + cooldown > Date.now()) {
+            const embed = {
+              color: Utils.Colors.ORANGE,
+              title: `${Utils.Emojis.IMPORTANTNOTICE} Cooldown`,
+              description: `Please wait ${ms(
+                lastUsage + cooldown - Date.now(),
+                { long: true }
+              )} before using this command again.`
+            };
+            return void (await channel.send({ embed }));
+          }
+        }
+
+        if (cooldown) {
+          this.lastCommandUsage[
+            `${message.author.id}:${command.name}`
+          ] = Date.now();
+          setTimeout(() => {
+            delete this.lastCommandUsage[
+              `${message.author.id}:${command.name}`
+            ];
+          }, cooldown);
+        }
+
         await command.run(
           parsed,
           guildDatabase,
@@ -201,6 +238,7 @@ export default class CommandManager {
     this.registerCommand(new AutobumpCommand(this.instance));
     this.registerCommand(new NsfwCommand(this.instance));
     this.registerCommand(new SetBannerCommand(this.instance));
+    this.registerCommand(new SetBotCommand(this.instance));
     this.registerCommand(new SetChannelCommand(this.instance));
     this.registerCommand(new SetColorCommand(this.instance));
     this.registerCommand(new SetDescriptionCommand(this.instance));

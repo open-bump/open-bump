@@ -26,7 +26,7 @@ export default class SBLPRouter extends BaseRouter {
     const shard = this.instance.shardManager.getShardById(shardId);
     if (!shard || !shard.ready) throw ErrorFactory.shardNotAvailable(shardId);
     const response = await shard.emitSBLPDirect(
-      ctx.custom.application.id,
+      ctx.state.application.id,
       body
     );
     ctx.body = response;

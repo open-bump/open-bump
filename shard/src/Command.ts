@@ -11,6 +11,7 @@ export default abstract class Command {
   public aliases: Array<string> = [];
   public abstract syntax: string;
   public abstract description: string;
+  public cooldown = 0;
   public vanished = false;
   public category: keyof typeof CommandManager.Categories = "GENERAL";
   public interactive: false | string = false;

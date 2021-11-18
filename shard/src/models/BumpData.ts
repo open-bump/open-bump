@@ -10,6 +10,7 @@ import {
   Table
 } from "sequelize-typescript";
 import Guild from "./Guild";
+import TopGGBot from "./TopGGBot";
 
 @Table({
   tableName: "BumpData"
@@ -39,4 +40,11 @@ export default class BumpData extends Model<BumpData> {
 
   @Column(DataType.INTEGER)
   color?: number | null;
+
+  @ForeignKey(() => TopGGBot)
+  @Column
+  botId!: string;
+
+  @BelongsTo(() => TopGGBot)
+  bot!: TopGGBot;
 }

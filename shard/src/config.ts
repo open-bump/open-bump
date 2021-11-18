@@ -64,6 +64,7 @@ interface IConfig extends config.IConfig {
     topgg: {
       enabled: boolean;
       token: string;
+      count: boolean;
     };
   };
   captchas: {

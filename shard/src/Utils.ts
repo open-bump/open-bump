@@ -745,9 +745,10 @@ class Lists {
       console.error("Error while posting stats to top.gg:", error)
     );
 
-    this.loopPostTopGG();
-
-    console.log("Started top.gg");
+    if (config.lists.topgg.count) {
+      this.loopPostTopGG();
+      console.log("Started top.gg");
+    }
   }
 
   private static async loopPostTopGG() {
@@ -790,6 +791,11 @@ class Lists {
     } catch (error) {
       return false;
     }
+  }
+
+  public static async getBotTopGG(botId: string) {
+    if (!this.dbl) return null;
+    return this.dbl.getBot(botId);
   }
 
   public static isWeekendTopGG() {

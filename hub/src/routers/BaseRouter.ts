@@ -16,7 +16,7 @@ export default abstract class BaseRouter {
 
   protected requireAuthorization(features: Array<string> = []) {
     return async (ctx: Koa.Context, next?: Koa.Next) => {
-      if (!ctx.custom) ctx.custom = {};
+      if (!ctx.state) ctx.state = {};
       const token = ctx.headers["authorization"];
       if (!token) throw ErrorFactory.unauthorized();
       const application =
@@ -26,7 +26,7 @@ export default abstract class BaseRouter {
       for (const feature of features)
         if (!appFeatures.includes(feature)) throw ErrorFactory.forbidden();
 
-      ctx.custom.application = application;
+      ctx.state.application = application;
       if (next) return await next();
     };
   }
